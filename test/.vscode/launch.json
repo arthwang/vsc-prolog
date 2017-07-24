@@ -1,0 +1,34 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Prolog Files",
+      "type": "prolog",
+      "request": "launch",
+      "runtimeExecutable": "/opt/swipl/bin/swipl",
+      "runtimeArgs": [],
+      "env": {},
+      "program": "${file}",
+      "cwd": "${fileDirname}",
+      "startupQuery": "start",
+      "stopOnEntry": true,
+      "console": "integratedTerminal",
+      "terminalDebuggerPort": 5959
+    },
+    {
+      "name": "Adapter test",
+      "type": "prolog",
+      "request": "launch",
+      "runtimeExecutable": "/opt/swipl/bin/swipl",
+      "runtimeArgs": [],
+      "env": {},
+      "program": "${file}",
+      "cwd": "${fileDirname}",
+      "startupQuery": "start",
+      "stopOnEntry": true,
+      "console": "integratedTerminal",
+      "debugServer": 4711,
+      "terminalDebuggerPort": 5959
+    }
+  ]
+}
