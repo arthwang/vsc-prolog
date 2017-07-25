@@ -34,7 +34,8 @@ This extension contributes the following settings:
 ## Known Issues
 
 Calling out known issues can help limit users opening duplicate issues against your extension.
-Formatting doesn't work when there are singleton variables including named underscore-starting singleton variables in the scopes to be formatted.
+### Formatting doesn't work when there are singleton variables including named underscore-starting singleton variables in the scopes to be formatted.
+### During debug tracing, prompt for stdin input doesn't display in debug console. When the yellow location arrow in editor disappears and the curren goal is a read from stdin, then the tracer is waiting for your input. Then in the input box at the bottom of the debug console TYPE a COLON (:) followed by the content of input, that is used to defferiate input with the other function of the input box: expressions for evaluation. In the later case, just input valid prolog terms.
 
 
 ## Release Notes

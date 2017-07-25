@@ -22,21 +22,20 @@ min_numlist([H|T], Min0, Min) :-
 %!	start
 %
 %
-% start :-
+start :-
 %     % nb_setval(test, 200),
-    % data(D),
-    % min_numlist(D, Min),
+    data(D),
+    min_numlist(D, Min),
 %     % NN is 100/0,
 %     % writeln(nn:NN),
 %     regex('(\\d+)', [], abc123, Captures),
 %     writeln(Captures),
-%     format('Min=~d~n', [Min]),
-%     fail.
-% start.
-%  :-
-%     % prompt(_, '|:'),
-%     read_line_to_string(user_input, Str),
-%     writeln(got:Str).
+    format('Min=~d~n', [Min]),
+    fail.
+start :-
+    prompt(_, 'input:'),
+    read_line_to_string(user_input, Str),
+    writeln(got:Str).
 
 data(D) :-
     D=[3, 6, 9, 1].
