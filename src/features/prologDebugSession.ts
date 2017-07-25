@@ -17,6 +17,7 @@ import Utils from "../utils/utils";
 import * as cp from "child_process";
 import { spawn, SpawnOptions } from "process-promises";
 import { TerminalDebugServer } from "./terminalDebugServer";
+import * as Net from "net";
 
 export class PrologDebugSession extends DebugSession {
   private static SCOPEREF = 1;
@@ -150,9 +151,42 @@ export class PrologDebugSession extends DebugSession {
           `-a ${this._runtimeArgs.length > 0 ? this._runtimeArgs : null}`
         ]
       };
-      this.runInTerminalRequest(opts, 2000, response => {});
+      this.runInTerminalRequest(opts, 5000, termResp => {
+        if (termResp.success) {
+          // require("wait-for-port")("localhost", 5959, err => {
+          //   if (err) {
+          //     this.debugOutput("Debugger in terminal error.");
+          //     //close
+          //   }
+          setTimeout(_ => {
+            let socket = Net.connect(5959, "localhost", _ => {
+              this._prologDebugger = new PrologDebugger(args, this, socket);
+              this._prologDebugger.initPrologDebugger();
+              this.addListeners();
+              this.sendResponse(response);
+              this.sendEvent(new InitializedEvent());
+            })
+              .on("data", data => {
+                this._prologDebugger.relayData(data.toString("utf8"));
+              })
+              .on("close", err => {
+                this.debugOutput("connection to debugger closed.");
+                socket.destroy();
+              });
+          }, 5000);
+        } else {
+          this.debugOutput(termResp.message);
+        }
+      });
+    } else {
+      this._prologDebugger = await new PrologDebugger(args, this);
+      this.addListeners();
+      this.sendResponse(response);
+      this.sendEvent(new InitializedEvent());
     }
-    this._prologDebugger = await new PrologDebugger(args, this);
+  }
+
+  private addListeners() {
     this._prologDebugger.addListener(
       "responseBreakpoints",
       (bps: DebugProtocol.SetBreakpointsResponse) => {
@@ -165,10 +199,7 @@ export class PrologDebugSession extends DebugSession {
         this.sendResponse(fbps);
       }
     );
-    this.sendResponse(response);
-    this.sendEvent(new InitializedEvent());
   }
-
   protected threadsRequest(response: DebugProtocol.ThreadsResponse): void {
     response.body = {
       threads: [new Thread(PrologDebugSession.THREAD_ID, "thread 1")]
@@ -200,7 +231,7 @@ export class PrologDebugSession extends DebugSession {
     args: DebugProtocol.ConfigurationDoneArguments
   ): void {
     this.sendResponse(response);
-    this._prologDebugger.startup(`${this._startupQuery}`);
+    // this._prologDebugger.startup(`${this._startupQuery}`);
   }
 
   private evaluateExpression(exp: string) {

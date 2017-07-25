@@ -58,13 +58,14 @@ export class PrologDebugger extends EventEmitter {
 
   constructor(
     launchRequestArguments: LaunchRequestArguments,
-    debugSession: PrologDebugSession
+    debugSession: PrologDebugSession,
+    client?: Net.Socket
   ) {
     super();
     this._launchRequestArguments = launchRequestArguments;
     this._debugSession = debugSession;
     this._soureLineLocations = {};
-
+    this._client = client || null;
     this.initDebugger();
 
     console.log("prolog debugger constructed");
@@ -138,7 +139,7 @@ export class PrologDebugger extends EventEmitter {
   public query(goal: string) {
     if (!/^\n$/.test(goal)) {
       goal = goal.replace(/\n+/g, "\n");
-      if (this._debugSession.isInTerminal()) {
+      if (this._debugSession.isInTerminal() && this._client) {
         this._client.write(goal);
       } else if (this._prologProc) {
         this._prologProc.stdin.write(goal);
@@ -174,9 +175,18 @@ export class PrologDebugger extends EventEmitter {
   }
   private initDebugger() {
     if (this._debugSession.isInTerminal()) {
-      setTimeout(_ => {
-        this.initForTerminal();
-      }, 5000);
+      // let waitForPort = require("wait-for-port");
+      // waitForPort(
+      //   "localhost",
+      //   this._launchRequestArguments.terminalDebuggerPort,
+      //   err => {
+      //     if (err) {
+      //       this._debugSession.debugOutput("Debug server error.");
+      //       return;
+      //     }
+      //     this.initForTerminal();
+      //   }
+      // );
     } else {
       this.initForInternalConsole();
     }
@@ -184,38 +194,40 @@ export class PrologDebugger extends EventEmitter {
 
   private initForTerminal() {
     // this._client = new Net.Socket();
-
-    this._client = Net.connect(
-      // this._launchRequestArguments.terminalDebuggerPort,
-      5959,
-      "localhost",
-      _ => {
-        console.log("client connected");
-        this.initPrologDebugger();
-      }
-    )
-      .on("data", data => {
-        this.relayData(data.toString());
-      })
-      .on("close", _ => {
-        this._debugSession.debugOutput("connection closed");
-        this._client.destroy();
-      });
+    // this._client = Net.connect(
+    //   this._launchRequestArguments.terminalDebuggerPort,
+    //   "localhost",
+    //   _ => {
+    //     console.log("client connected");
+    //     this.initPrologDebugger();
+    //   }
+    // )
+    //   .on("data", data => {
+    //     this.relayData(data.toString());
+    //   })
+    //   .on("close", _ => {
+    //     this._debugSession.debugOutput("connection closed");
+    //     this._client.destroy();
+    //   });
   }
 
-  private relayData(data: string) {
-    // this._debugSession.sendEvent(new OutputEvent("\n" + data, "stdout"));
+  public relayData(data: string) {
+    this._debugSession.sendEvent(
+      new OutputEvent("\nto relay:" + data, "stdout")
+    );
     if (/"response":/.test(data)) {
       this.handleOutput(data);
     } else if (!this.filterOffOutput(data)) {
       this._debugSession.debugOutput("\n" + data);
     }
   }
-  private initPrologDebugger() {
+  public initPrologDebugger() {
     this.query(`
           use_module('${__dirname}/debugger').\n
           prolog_debugger:load_source_file('${this._launchRequestArguments
-            .program}').\n`);
+            .program}').
+          prolog_debugger:startup(${this._launchRequestArguments.startupQuery}).
+            `);
   }
   private async initForInternalConsole() {
     this.killPrologProc();
