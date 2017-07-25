@@ -8,6 +8,5 @@ src/**
 tsconfig.json
 syntaxes/prolog.tmLanguage.yaml
 vsc-extension-quickstart.md
-.vscode/symbols.json
 
 
