@@ -25,7 +25,7 @@ export class TerminalDebugServer {
       this._socket = socket;
       socket
         .on("data", data => {
-          console.log("data:" + data.toString());
+          console.log("data:" + data.toString("utf8"));
           this._queryProlog(data.toString());
         })
         .on("close", _ => {
@@ -40,8 +40,8 @@ export class TerminalDebugServer {
   private spawnProlog() {
     console.log("spawning prolog ...");
 
-    // spawn(this._prologExec, this._runtimeArgs.concat([]), undefined)
-    spawn("swipl", ["-q"], undefined)
+    // spawn(this._prologExec, this._runtimeArgs.concat(["-q"]), undefined)
+    spawn("swipl", [], undefined)
       .on("process", proc => {
         if (proc.pid) {
           console.log("proc pid:" + proc.pid);

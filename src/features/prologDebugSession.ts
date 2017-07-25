@@ -11,25 +11,31 @@ import {
 } from "vscode-debugadapter";
 import { DebugProtocol } from "vscode-debugprotocol";
 import * as fs from "fs";
-import { PrologDebugger, LaunchRequestArguments } from "./prologDebugger";
+import {
+  ITraceCmds,
+  LaunchRequestArguments,
+  PrologDebugger
+} from "./prologDebugger";
 import { basename } from "path";
 import Utils from "../utils/utils";
 import * as cp from "child_process";
 import { spawn, SpawnOptions } from "process-promises";
 import { TerminalDebugServer } from "./terminalDebugServer";
+import * as Net from "net";
 
 export class PrologDebugSession extends DebugSession {
   private static SCOPEREF = 1;
   public static THREAD_ID = 100;
   // private _args: LaunchRequestArguments;
-  private _supportsRunInTerminal: boolean;
-  private _console: string;
+  // private _supportsRunInTerminal: boolean;
+  // private _console: string;
   private _prologDebugger: PrologDebugger;
   private _runtimeExecutable: string;
   private _runtimeArgs: string[];
   private _startupQuery: string;
   private _startFile: string;
   private _cwd: string;
+  private _traceCmds: ITraceCmds;
   private _currentVariables: DebugProtocol.Variable[] = [];
   private _stackFrames: DebugProtocol.StackFrame[] = [];
 
@@ -40,14 +46,14 @@ export class PrologDebugSession extends DebugSession {
     this.setDebuggerPathFormat("native");
   }
 
-  public isInTerminal(): boolean {
-    return this._supportsRunInTerminal && this._console !== "internalConsole";
-  }
+  // public isInTerminal(): boolean {
+  //   return this._supportsRunInTerminal && this._console !== "internalConsole";
+  // }
   protected initializeRequest(
     response: DebugProtocol.InitializeResponse,
     args: DebugProtocol.InitializeRequestArguments
   ): void {
-    this._supportsRunInTerminal = args.supportsRunInTerminalRequest;
+    // this._supportsRunInTerminal = args.supportsRunInTerminalRequest;
     // this.sendEvent(new InitializedEvent());
     response.body = {
       supportsConfigurationDoneRequest: true,
@@ -134,24 +140,7 @@ export class PrologDebugSession extends DebugSession {
     this._cwd = args.cwd;
     this._runtimeExecutable = args.runtimeExecutable || "swipl";
     this._runtimeArgs = args.runtimeArgs || null;
-    this._console =
-      typeof args.console === "string" ? args.console : "internalConsole";
-    if (this.isInTerminal()) {
-      const opts: DebugProtocol.RunInTerminalRequestArguments = {
-        kind: args.console === "integratedTerminal" ? "integrated" : "external",
-        cwd: args.cwd,
-        title: "Prolog Debugger",
-        env: args.env,
-        args: [
-          "node",
-          `${__dirname}/terminalDebugServer.js`,
-          `-p ${args.terminalDebuggerPort}`,
-          `-e ${this._runtimeExecutable}`,
-          `-a ${this._runtimeArgs.length > 0 ? this._runtimeArgs : null}`
-        ]
-      };
-      this.runInTerminalRequest(opts, 2000, response => {});
-    }
+    this._traceCmds = args.traceCmds;
     this._prologDebugger = await new PrologDebugger(args, this);
     this._prologDebugger.addListener(
       "responseBreakpoints",
@@ -168,7 +157,6 @@ export class PrologDebugSession extends DebugSession {
     this.sendResponse(response);
     this.sendEvent(new InitializedEvent());
   }
-
   protected threadsRequest(response: DebugProtocol.ThreadsResponse): void {
     response.body = {
       threads: [new Thread(PrologDebugSession.THREAD_ID, "thread 1")]
@@ -200,7 +188,6 @@ export class PrologDebugSession extends DebugSession {
     args: DebugProtocol.ConfigurationDoneArguments
   ): void {
     this.sendResponse(response);
-    this._prologDebugger.startup(`${this._startupQuery}`);
   }
 
   private evaluateExpression(exp: string) {
@@ -228,19 +215,18 @@ export class PrologDebugSession extends DebugSession {
       if (args.context === "repl") {
         const vars = this._currentVariables;
         let exp = args.expression.trim();
-
-        for (let i = 0; i < vars.length; i++) {
-          let re = new RegExp("\\b" + vars[i].name + "\\b", "g");
-          exp = exp.replace(re, vars[i].value);
+        if (exp.startsWith(":")) {
+          //work around for input from stdin
+          let input = "input" + args.expression;
+          this._prologDebugger.query(input + "\n");
+        } else {
+          for (let i = 0; i < vars.length; i++) {
+            let re = new RegExp("\\b" + vars[i].name + "\\b", "g");
+            exp = exp.replace(re, vars[i].value);
+          }
+          this.debugOutput(args.expression);
+          this.evaluate(exp);
         }
-
-        this.debugOutput(args.expression);
-
-        this.evaluate(exp);
-        // this._prologDebugger.query("b\n");
-        // this._prologDebugger.query(`call((${exp}).\n`);
-        // this._prologDebugger.query("end_of_file.\n");
-
         response.body = { result: "", variablesReference: 0 };
       }
       this.sendResponse(response);
@@ -284,7 +270,7 @@ export class PrologDebugSession extends DebugSession {
     response: DebugProtocol.ContinueResponse,
     args: DebugProtocol.ContinueArguments
   ): void {
-    this._prologDebugger.query("l\n");
+    this._prologDebugger.query(`cmd:${this._traceCmds.continue[1]}\n`);
     this.sendResponse(response);
   }
 
@@ -292,21 +278,21 @@ export class PrologDebugSession extends DebugSession {
     response: DebugProtocol.NextResponse,
     args: DebugProtocol.NextArguments
   ): void {
-    this._prologDebugger.query("s\n");
+    this._prologDebugger.query(`cmd:${this._traceCmds.stepover[1]}\n`);
     this.sendResponse(response);
   }
   protected stepInRequest(
     response: DebugProtocol.StepInResponse,
     args: DebugProtocol.StepInArguments
   ): void {
-    this._prologDebugger.query("c\n");
+    this._prologDebugger.query(`cmd:${this._traceCmds.stepinto[1]}\n`);
     this.sendResponse(response);
   }
   protected stepOutRequest(
     response: DebugProtocol.StepOutResponse,
     args: DebugProtocol.StepOutArguments
   ): void {
-    this._prologDebugger.query("u\n");
+    this._prologDebugger.query(`cmd:${this._traceCmds.stepout[1]}\n`);
     this.sendResponse(response);
   }
   protected disconnectRequest(

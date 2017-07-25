@@ -106,8 +106,7 @@
               "cwd",
               "runtimeExecutable",
               "runtimeArgs",
-              "terminalDebuggerPort",
-              "console"
+              "traceCmds"
             ],
             "properties": {
               "program": {
@@ -158,19 +157,15 @@
                 },
                 "default": []
               },
-              "terminalDebuggerPort": {
-                "type": "number",
-                "description": "Port for tracing in internalTerminal or externalTerminal",
-                "default": 5959
-              },
-              "console": {
-                "type": "string",
-                "enum": [
-                  "internalConsole",
-                  "integratedTerminal",
-                  "externalTerminal"
-                ],
-                "default": "externalTerminal"
+              "traceCmds": {
+                "type": "object",
+                "description": "Mapping between vscode debug commands and prolog trace options.",
+                "default": {
+                  "continue": ["leap", "l"],
+                  "stepover": ["skip", "s"],
+                  "stepinto": ["creep", "c"],
+                  "stepout": ["up", "u"]
+                }
               }
             }
           }
@@ -187,8 +182,12 @@
             "cwd": "${fileDirname}",
             "startupQuery": "start",
             "stopOnEntry": true,
-            "terminalDebuggerPort": 5959,
-            "console": "externalTerminal"
+            "traceCmds": {
+              "continue": ["leap", "l"],
+              "stepover": ["skip", "s"],
+              "stepinto": ["creep", "c"],
+              "stepout": ["up", "u"]
+            }
           }
         ]
       }

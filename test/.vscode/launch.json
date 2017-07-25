@@ -12,8 +12,12 @@
       "cwd": "${fileDirname}",
       "startupQuery": "start",
       "stopOnEntry": true,
-      "console": "integratedTerminal",
-      "terminalDebuggerPort": 5959
+      "traceCmds": {
+        "continue": ["leap", "l"],
+        "stepover": ["skip", "s"],
+        "stepinto": ["creep", "c"],
+        "stepout": ["up", "u"]
+      }
     },
     {
       "name": "Adapter test",
@@ -26,9 +30,13 @@
       "cwd": "${fileDirname}",
       "startupQuery": "start",
       "stopOnEntry": true,
-      "console": "integratedTerminal",
-      "debugServer": 4711,
-      "terminalDebuggerPort": 5959
+      "traceCmds": {
+        "continue": ["leap", "l"],
+        "stepover": ["skip", "s"],
+        "stepinto": ["creep", "c"],
+        "stepout": ["up", "u"]
+      },
+      "debugServer": 4711
     }
   ]
 }

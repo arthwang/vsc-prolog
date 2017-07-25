@@ -16,6 +16,12 @@ import {
 import { basename } from "path";
 import * as Net from "net";
 
+export interface ITraceCmds {
+  continue: string[2];
+  stepover: string[2];
+  stepinto: string[2];
+  stepout: string[2];
+}
 export interface LaunchRequestArguments
   extends DebugProtocol.LaunchRequestArguments {
   program?: string;
@@ -27,6 +33,7 @@ export interface LaunchRequestArguments
   startupQuery?: string;
   terminalDebuggerPort?: number;
   console?: string;
+  traceCmds?: ITraceCmds;
 }
 export interface ITraceCmds {
   Run: string[];
@@ -54,7 +61,7 @@ export class PrologDebugger extends EventEmitter {
   private _fbpResponse: DebugProtocol.SetFunctionBreakpointsResponse;
   private _soureLineLocations: ISourceLineLocations;
 
-  private _client: Net.Socket = null;
+  // private _client: Net.Socket = null;
 
   constructor(
     launchRequestArguments: LaunchRequestArguments,
@@ -64,8 +71,8 @@ export class PrologDebugger extends EventEmitter {
     this._launchRequestArguments = launchRequestArguments;
     this._debugSession = debugSession;
     this._soureLineLocations = {};
-
-    this.initDebugger();
+    // this._client = client || null;
+    this.createPrologProc();
 
     console.log("prolog debugger constructed");
   }
@@ -138,11 +145,11 @@ export class PrologDebugger extends EventEmitter {
   public query(goal: string) {
     if (!/^\n$/.test(goal)) {
       goal = goal.replace(/\n+/g, "\n");
-      if (this._debugSession.isInTerminal()) {
-        this._client.write(goal);
-      } else if (this._prologProc) {
-        this._prologProc.stdin.write(goal);
+      let from = goal.indexOf(":");
+      if (from < 0) {
+        return;
       }
+      this._prologProc.stdin.write(goal.substr(from + 1));
     }
   }
 
@@ -172,52 +179,16 @@ export class PrologDebugger extends EventEmitter {
   public get pid(): number {
     return this._prologProc.pid;
   }
-  private initDebugger() {
-    if (this._debugSession.isInTerminal()) {
-      setTimeout(_ => {
-        this.initForTerminal();
-      }, 5000);
-    } else {
-      this.initForInternalConsole();
-    }
-  }
 
-  private initForTerminal() {
-    // this._client = new Net.Socket();
-
-    this._client = Net.connect(
-      // this._launchRequestArguments.terminalDebuggerPort,
-      5959,
-      "localhost",
-      _ => {
-        console.log("client connected");
-        this.initPrologDebugger();
-      }
-    )
-      .on("data", data => {
-        this.relayData(data.toString());
-      })
-      .on("close", _ => {
-        this._debugSession.debugOutput("connection closed");
-        this._client.destroy();
-      });
-  }
-
-  private relayData(data: string) {
-    // this._debugSession.sendEvent(new OutputEvent("\n" + data, "stdout"));
-    if (/"response":/.test(data)) {
-      this.handleOutput(data);
-    } else if (!this.filterOffOutput(data)) {
-      this._debugSession.debugOutput("\n" + data);
-    }
-  }
-  private initPrologDebugger() {
-    this.query(`
+  public initPrologDebugger() {
+    this._prologProc.stdin.write(`
           use_module('${__dirname}/debugger').\n
           prolog_debugger:load_source_file('${this._launchRequestArguments
-            .program}').\n`);
+            .program}').
+          prolog_debugger:startup(${this._launchRequestArguments.startupQuery}).
+            `);
   }
-  private async initForInternalConsole() {
+  private async createPrologProc() {
     this.killPrologProc();
     let pp = await spawn(
       this._launchRequestArguments.runtimeExecutable,
@@ -231,7 +202,12 @@ export class PrologDebugger extends EventEmitter {
         }
       })
       .on("stdout", data => {
-        this.relayData(data);
+        // this._debugSession.debugOutput("\n" + data);
+        if (/"response":/.test(data)) {
+          this.handleOutput(data);
+        } else if (!this.filterOffOutput(data)) {
+          this._debugSession.debugOutput("\n" + data);
+        }
       })
       .on("stderr", err => {
         this._debugSession.sendEvent(new OutputEvent(err + "\n", "stderr"));
@@ -240,11 +216,8 @@ export class PrologDebugger extends EventEmitter {
         this._debugSession.sendEvent(new TerminatedEvent());
       })
       .then(result => {
-        this._debugSession.sendEvent(
-          new OutputEvent(
-            "\nProlog process exit with code:" + result.exitCode,
-            "stdout"
-          )
+        this._debugSession.debugOutput(
+          "\nProlog process exit with code:" + result.exitCode
         );
       })
       .catch(error => {
@@ -257,7 +230,7 @@ export class PrologDebugger extends EventEmitter {
             : `Failed to run swipl using path: ${this._launchRequestArguments
                 .runtimeExecutable}. Reason is unknown.`;
         }
-        this._debugSession.sendEvent(new OutputEvent("\n" + message, "stderr"));
+        this._debugSession.debugOutput("\n" + message);
         throw new Error(error);
       });
   }
@@ -265,7 +238,7 @@ export class PrologDebugger extends EventEmitter {
   private consult() {
     let fileName = this._launchRequestArguments.program;
     let goals = "['" + fileName + "'].\n";
-    this.query(goals);
+    this._prologProc.stdin.write(goals);
   }
 
   public setBreakpoints(
@@ -282,7 +255,7 @@ export class PrologDebugger extends EventEmitter {
         hitCondition: bp.hitCondition
       });
     });
-    let cmd = `prolog_debugger:set_breakpoints('${path}', ${JSON.stringify(
+    let cmd = `cmd:prolog_debugger:set_breakpoints('${path}', ${JSON.stringify(
       bps.join(";")
     )}).\n`;
     this.query(cmd);
@@ -296,11 +269,11 @@ export class PrologDebugger extends EventEmitter {
       return bp.name;
     });
     this._fbpResponse = response;
-    let cmd = `prolog_debugger:spy_predicates([${preds}]).\n`;
+    let cmd = `cmd:prolog_debugger:spy_predicates([${preds}]).\n`;
     this.query(cmd);
   }
   public startup(goal: string) {
-    let cmd = `prolog_debugger:startup(${goal}).\n`;
+    let cmd = `cmd:prolog_debugger:startup(${goal}).\n`;
     this.query(cmd);
   }
   public dispose(): void {

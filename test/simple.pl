@@ -1,7 +1,7 @@
 %%
 
 
-start :-
+start1 :-
     read_line_to_string(current_input, Str),
     writeln(hello:Str).
 
