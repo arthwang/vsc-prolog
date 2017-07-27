@@ -1,6 +1,8 @@
-out
+out/**/*.js
+out/**/*.map
 node_modules
 .vscode/symbols.json
 .vscodeignore
 node_trace.1.log
 vsc-extension-quickstart.md
+src/**/*.js
