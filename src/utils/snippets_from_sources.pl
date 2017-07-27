@@ -9,6 +9,8 @@
 :- (dynamic dir_handled/1, module_spec/2).
 
 :- (volatile dir_handled/1).
+start :-
+    generate_vscode_swipl_snippets([]).
 
 generate_vscode_swipl_snippets(Options) :-
     option(detailed_description(TrueOrFalse), Options, true),
