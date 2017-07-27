@@ -481,11 +481,8 @@ update_snippet_dict(SnippetItem) :-
     ->  Pred=Pred1
     ;   atomic_list_concat([ModSpec, ":", Pred1], Pred)
     ),
-    (   get_dict(Pred, DictIn, _)
-    ;   put_dict(Pred, DictIn, SnippetItem, NewDict),
-        nb_linkval(snippet_dict, NewDict)
-    ).
-   
+    put_dict(Pred, DictIn, SnippetItem, NewDict),
+    nb_linkval(snippet_dict, NewDict).
 
 write_to_json_file(File, Dict) :-
     open(File, write, WStream),
