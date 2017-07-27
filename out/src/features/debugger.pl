@@ -6,7 +6,6 @@
 :- (dynamic subterm_pos/4, clause_handled/2, file_chars/2, file_chars_computed/1, user:prolog_trace_interception/4, file_lines/2, file_line_start_end/4, file_lines_computed/1).
 
 :- use_module(library(http/json)).
-% :- use_module(library(prolog_clause)).
 
 :- (initialization init).
 
