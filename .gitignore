@@ -6,3 +6,4 @@ node_modules
 node_trace.1.log
 vsc-extension-quickstart.md
 src/**/*.js
+test
