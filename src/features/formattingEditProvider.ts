@@ -37,7 +37,7 @@ export default class PrologDocumentFormatter
     this._insertSpaces = this._section.get("format.insertSpaces", true);
     this._tabDistance = this._insertSpaces ? 0 : this._tabSize;
     this._executable = this._section.get("executablePath", "swipl");
-    this._args = ["-f", "none", "--nodebug", "-q"];
+    this._args = ["--nodebug", "-q"];
     this._outputChannel = window.createOutputChannel("PrologFormatter");
   }
   private validRange(doc: TextDocument, initRange: Range): Range {
@@ -100,13 +100,20 @@ export default class PrologDocumentFormatter
     }
   }
 
+  private outputMsg(msg: string) {
+    this._outputChannel.append(msg);
+    this._outputChannel.show();
+  }
   private getFormattedCode(doc: TextDocument, range: Range): TextEdit[] {
     let textEdits: TextEdit[] = [];
     let validRange = this.validRange(doc, range);
+    let docText = jsesc(doc.getText(), { quotes: "double" });
     let goals = `
-      consult('${__dirname}/formatter.pl').\n
-      read_and_portray_term(${this._tabSize}, ${this._tabDistance}).\n
-      ${doc.getText(validRange)}
+      use_module('${__dirname}/formatter.pl').
+      open_string("${docText}", S),
+      load_files(doctxt, [stream(S)]).
+      formatter:read_and_portray_term(${this._tabSize}, ${this._tabDistance}).\n
+      ${doc.getText(validRange)}\n
     `;
     let runOptions = {
       cwd: workspace.rootPath,
@@ -116,23 +123,25 @@ export default class PrologDocumentFormatter
     let prologProcess = cp.spawnSync(this._executable, this._args, runOptions);
     if (prologProcess.status === 0) {
       let txt = prologProcess.stdout.toString();
+      let varsMsg = prologProcess.stderr.toString();
+
       txt = txt
         .replace(/^true\.\s*/, "")
         .replace(/^\s*Stream.*?\n\s*\n/, "")
         .replace(/@#&\n*end_of_file[\s\S]*?$/, "")
         .trim();
       if (txt === "") {
+        this.outputMsg(varsMsg);
         return;
       }
       let txtArrays: string[] = txt.split("@#&\n");
       txtArrays.shift();
 
-      let varsMsg = prologProcess.stderr.toString();
-      if (/error/.test(varsMsg)) {
-        this._outputChannel.append("Error:" + varsMsg);
+      if (txtArrays.length === 0) {
+        this.outputMsg(varsMsg);
         return;
       }
-      let vars = varsMsg.match(/'[^']*'/g);
+      let vars = varsMsg.match(/variables\((.+)\)/)[1].match(/'[^']*'/g);
       let varsArrays: Array<string>[] = vars.map(item => {
         return item.replace(/'/g, "").split(",");
       });

@@ -22,7 +22,7 @@ min_numlist([H|T], Min0, Min) :-
 %!	start
 %
 %
-start :-
+start1 :-
 %     % nb_setval(test, 200),
     data(D),
     min_numlist(D, Min),
@@ -32,7 +32,7 @@ start :-
 %     writeln(Captures),
     format('Min=~d~n', [Min]),
     fail.
-start :-
+start1 :-
     prompt(_, 'input:'),
     read_line_to_string(user_input, Str),
     writeln(got:Str).
