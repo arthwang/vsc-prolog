@@ -1,5 +1,5 @@
-out/**/*.js
-out/**/*.map
+out
+!out/**/*.pl
 node_modules
 .vscode/symbols.json
 .vscodeignore
