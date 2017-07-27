@@ -6,18 +6,16 @@
 :- use_module(library(sgml)).
 :- use_module(library(xpath)).
 
-:- dynamic
-    dir_handled/1,
-    module_spec/2.
+:- (dynamic dir_handled/1, module_spec/2).
 
-:- volatile
-    dir_handled/1.
+:- (volatile dir_handled/1).
 
 generate_vscode_swipl_snippets(Options) :-
     option(detailed_description(TrueOrFalse), Options, true),
     nb_setval(detailed_description, TrueOrFalse),
     option(dict_in(DictIn), Options, _{}),
-    option(json_file(SnippetsFile), Options, './snippets/prolog.json'),
+    option(json_file(SnippetsFile1), Options, './snippets/prolog.json'),
+    absolute_file_name(SnippetsFile1, SnippetsFile),
     nb_linkval(snippet_dict, DictIn),
     retractall(dir_handled(_)),
     retractall(module_spec(_)),
@@ -33,13 +31,15 @@ generate_vscode_swipl_snippets(Options) :-
 
 traverse_dirs :-
     file_search_path(library, Dir0),
-    forall(absolute_file_name(Dir0, Dir,
+    forall(absolute_file_name(Dir0,
+                              Dir,
+                              
                               [ expand(true),
                                 file_type(directory),
                                 file_errors(fail),
                                 solutions(all)
                               ]),
-	       handle_dir(Dir)),
+           handle_dir(Dir)),
     fail.
 traverse_dirs.
 
@@ -47,14 +47,12 @@ handle_dir(Dir) :-
     dir_handled(Dir), !.
 handle_dir(Dir) :-
     assert(dir_handled(Dir)),
-    ensure_slash(Dir, DirS),!,
+    ensure_slash(Dir, DirS), !,
     writeln('Enter directory':Dir),
-    setup_call_cleanup(
-                       working_directory(Old, DirS),
+    setup_call_cleanup(working_directory(Old, DirS),
                        handle_dir,
-                       working_directory(_, Old)
-                      ),
-    writeln(Dir:' over.'),!.
+                       working_directory(_, Old)),
+    writeln(Dir:' over.'), !.
 
 handle_dir :-
     get_plfiles(Files),
@@ -66,7 +64,7 @@ recurse_subdirs :-
 recurse_subdirs :-
     directory_files('.', Entries1),
     delete(Entries1, '.', Entries2),
-    delete(Entries2, '..', Entries),
+    delete(Entries2, .., Entries),
     maplist(absolute_file_name, Entries, AbsoluteEntries),
     include(exists_directory, AbsoluteEntries, SubDirs),
     forall(member(SubDir, SubDirs), handle_dir(SubDir)).
@@ -80,30 +78,30 @@ get_plfiles(Files) :-
     pattern_files(Patterns, Files),
     close(MkIndx), !.
 get_plfiles(Files) :-
-	findall(Pattern, source_file_pattern(Pattern), Patterns),
+    findall(Pattern, source_file_pattern(Pattern), Patterns),
     pattern_files(Patterns, Files).
 
 source_file_pattern(Pattern) :-
-	user:prolog_file_type(PlExt, prolog),
-	atom_concat('*.', PlExt, Pattern).
+    user:prolog_file_type(PlExt, prolog),
+    atom_concat(*., PlExt, Pattern).
 
 pattern_files([], []).
 pattern_files([H|T], Files) :-
-	expand_file_name(H, Files0),
-	'$append'(Files0, Rest, Files),
-	pattern_files(T, Rest).
+    expand_file_name(H, Files0),
+    '$append'(Files0, Rest, Files),
+    pattern_files(T, Rest).
 
 ensure_slash(Dir, DirS) :-
     (   sub_atom(Dir, _, 1, 0, /)
-    ->  DirS = Dir
+    ->  DirS=Dir
     ;   atom_concat(Dir, /, DirS)
     ).
 
 vscode_swipl_snippets_from_source(FileSpec) :-
     format("Handling file: ~w~n", FileSpec),
-    doc_file_objects(FileSpec, _, Objects, FileOptions, []),  
+    doc_file_objects(FileSpec, _, Objects, FileOptions, []),
     option(module(Module), FileOptions),
-    option(public(Exports), FileOptions),
+    option((public Exports), FileOptions),
     maplist(digout_predicate_indicator, Objects, Objects1),
     flatten(Objects1, Objects2),
     exclude(exported_pred_in_objects(Module, Objects2), Exports, Objects3),
@@ -113,9 +111,9 @@ vscode_swipl_snippets_from_source(FileSpec) :-
 vscode_swipl_snippets_from_source(_).
 
 add_nocomment_predicate(Module, Pred, doc(Module:Pred, null, Comm)) :-
-    Pred = Fac/Arity,
+    Pred=Fac/Arity,
     gen_params(Arity, 1, Params),
-    Predicate =.. [Fac|Params],
+    Predicate=..[Fac|Params],
     term_to_atom(Predicate, Comm).
 
 gen_params(Arity, Num, [H|T]) :-
@@ -469,21 +467,20 @@ tag_need_separator(4, p, '!@#!@#').
 update_snippet_dict :-
     nb_getval(current_snippet, SnippetItem),
     update_snippet_dict(SnippetItem).
-    
+
 update_snippet_dict(SnippetItem) :-
     get_dict(prefix, SnippetItem, Prefix),
-    Prefix =~ "[()~!@#$:.%&{\\\\[/+\\-<>?= ]", !.
+    Prefix=~"[()~!@#$:.%&{\\\\[/+\\-<>?= ]", !.
 update_snippet_dict(SnippetItem) :-
     nb_getval(snippet_dict, DictIn),
     nb_getval(current_pred, Pred1),
     nb_getval(current_module, ModSpec),
-    (   ModSpec == null
-    ->  Pred = Pred1
+    (   ModSpec==null
+    ->  Pred=Pred1
     ;   atomic_list_concat([ModSpec, ":", Pred1], Pred)
     ),
     (   get_dict(Pred, DictIn, _)
-    ;
-        put_dict(Pred, DictIn, SnippetItem,NewDict),
+    ;   put_dict(Pred, DictIn, SnippetItem, NewDict),
         nb_linkval(snippet_dict, NewDict)
     ).
    

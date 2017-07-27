@@ -124,6 +124,8 @@ export default class PrologDocumentFormatter
     if (prologProcess.status === 0) {
       let txt = prologProcess.stdout.toString();
       let varsMsg = prologProcess.stderr.toString();
+      // console.log("output:" + txt);
+      // console.log("err:" + varsMsg);
 
       txt = txt
         .replace(/^true\.\s*/, "")
@@ -171,9 +173,18 @@ export default class PrologDocumentFormatter
     let commReg = /\s*\/\*[\s\S]*?\*\/\n*|\s*%.*?\n+/g;
     let commMatchs: RegExpExecArray;
     while ((commMatchs = commReg.exec(origTxt))) {
+      // exclude % in quotes
+      let mtch = commMatchs[0];
+      if (
+        mtch.startsWith("%") &&
+        ((/"/.test(mtch) && mtch.match(/"/).length % 2 === 1) ||
+          (/'/.test(mtch) && mtch.match(/'/).length % 2 === 1))
+      ) {
+        continue;
+      }
       let origSeg = origTxt.slice(lastOrigPos, commMatchs.index);
       let noSpaceOrig = origSeg.replace(/\s|\n|\t|\(|\)/g, "");
-      lastOrigPos = commMatchs.index + commMatchs[0].length;
+      lastOrigPos = commMatchs.index + mtch.length;
       let i = 0,
         noSpaceFormatted: string = "";
       while (i < chars) {
