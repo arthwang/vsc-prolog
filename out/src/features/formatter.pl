@@ -1,18 +1,20 @@
-
+%%
+:- module(formatter, []).
 read_and_portray_term(TabSize, TabDistance) :-
-    % load_libraries(DocName),
     set_setting(listing:body_indentation, TabSize),
     set_setting(listing:tab_distance, TabDistance),
     nb_setval(last_pred, null),
     nb_setval(vars1, []),
     nb_setval(vars2, []),
-    setup_call_cleanup(open('/tmp/tmp.pl', update, StreamW),
-                       read_and_portray_term(user_input, StreamW, vars1),
+    new_memory_file(MFHandler),
+    setup_call_cleanup(open_memory_file(MFHandler, update, StreamW),
+                       read_and_portray_term1(user_input, StreamW, vars1),
                        close(StreamW)),
-    setup_call_cleanup(open('/tmp/tmp.pl', read, StreamR),
-                       read_and_portray_term(StreamR, user_output, vars2),
-                       close(StreamR)),
     nb_getval(vars1, Vars1),
+    setup_call_cleanup(open_memory_file(MFHandler, read, StreamR),
+                       read_and_portray_term1(StreamR, user_output, vars2),
+                       close(StreamR)),
+    free_memory_file(MFHandler),
     nb_getval(vars2, Vars2),
     (   maplist(var_name, Vars1, Vars2, [_|Varsa])
     ->  reverse(Varsa, Vars),
@@ -23,13 +25,16 @@ read_and_portray_term(TabSize, TabDistance) :-
 read_and_portray_term(_, _) :-
     halt.
 
-read_and_portray_term(StreamR, StreamW, Vars) :-
+load_doc_text(DocText):-
+    open_string(DocText, Stream),
+    load_files(doctext, [stream(Stream),module(user)]).
+
+read_and_portray_term1(StreamR, StreamW, Vars) :-
     repeat,
     catch(
         read_term(StreamR, Term, [variable_names(VarsNames)]),
-        _,    
-        (print_message(error, syntax), halt)),
-    
+        E,    
+        (print_message(error, E), halt)),
     nb_update_val(Vars, VarsNames),
     (   Vars==vars2
     ->  writeln(@#&),
@@ -38,29 +43,6 @@ read_and_portray_term(StreamR, StreamW, Vars) :-
     ),
     portray_clause(StreamW, Term),
     Term=end_of_file, !.
-
-load_libraries(DocName) :-
-    setup_call_cleanup(open(DocName, read, Stream),
-                       load_libraries1(Stream),
-                       close(Stream)).
-
-load_libraries1(Stream) :-
-    repeat,
-    read_term(Stream, Term, [encoding(utf8)]),
-    (
-    load_library(Term),
-    fail;
-    Term=end_of_file
-        ).
-
-load_library((:-use_module(Lib))) :-
-    use_module(Lib), 
-    writeln(Lib:loaded),!.
-load_library((:-use_module(Lib, Imports))) :-
-    use_module(Lib, Imports), !.
-load_library(_).
-     
-    
 
 var_name(Vars1, Vars2, Vars) :-
     is_list(Vars1),
@@ -101,7 +83,3 @@ term_pred((:-P), Name/Arity) :-
     functor(P, Name, Arity), !.
 term_pred(P, Name/Arity) :-
     functor(P, Name, Arity).
-
-start:-
-    writeln('hellooooooooo'),
-    read_and_portray_term(4, 0).

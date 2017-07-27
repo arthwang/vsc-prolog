@@ -1,8 +1,6 @@
 %%
 :- use_module(library(regex)).
 
-start(Str) :-
-    % regex('\\d+', [], Str, Captures),
-
- Str =~ '\\d+',
-    format('~s contains digitals.~n', [Str]).
+start :-
+ Str1=~'\\d+',
+ writeln(str:Str1).
