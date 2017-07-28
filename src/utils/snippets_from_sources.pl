@@ -355,64 +355,60 @@ filter_dom1([H|T], [H|FT]) :-
     filter_dom1(T, FT).
 filter_dom1([_|T], Filtered) :-
     filter_dom1(T, Filtered).
-filter_dom1([], []).
+filter_dom1([],[]).
 
 handle_dt([H|T]) :-
-    H = element(dt, _, _), !,
-    xpath(H, /self(normalize_space), Pred1), 
+    H=element(dt, _, _), !,
+    xpath(H, /self(normalize_space), Pred1),
     atomic_replace(Pred1, "\n", "", Pred2),
     regex_str("^(\\[.+])?(.+)", [], Pred2, Pred3),
-    (length(Pred3, 2)
-    -> reverse(Pred3, R),
-       atomic_list_concat(R, Pred)
-    ;
-      Pred3 = [Pred]
+    (   length(Pred3, 2)
+    ->  reverse(Pred3, R),
+        atomic_list_concat(R, Pred)
+    ;   Pred3=[Pred]
     ),
     regex_str("^([^(]+)(\\((.+)\\))?", [], Pred, [Factor|Params1]),
-    (  Params1 == []
-    -> atomic_list_concat([Factor, "$1\n$0"], SnippetBody),
-       Arity is 0
-    ;  Params1 = [_, Params],
-       split_string(Params, ",", " ", ParamList),
-       length(ParamList, Arity),
-       params_to_snippet(ParamList, 1, "", SnippetBody1),
-       End is Arity + 1,
-       atomic_list_concat([Factor, '(', SnippetBody1, ")$", End, "\n$0"], SnippetBody)
+    (   Params1==[]
+    ->  atomic_list_concat([Factor, "$1\n$0"], SnippetBody),
+        Arity is 0
+    ;   Params1=[_, Params],
+        split_string(Params, ",", " ", ParamList),
+        length(ParamList, Arity),
+        params_to_snippet(ParamList, 1, "", SnippetBody1),
+        End is Arity+1,
+        atomic_list_concat([Factor, '(', SnippetBody1, ")$", End, "\n$0"], SnippetBody)
     ),
-    (  regex_str("^([-: ]+)(.+)?", [], Factor, Factor1)
-    -> Factor1 = [_, Factor2]
-    ;  Factor2 = Factor
+    (   regex_str("^([-: ]+)(.+)?", [], Factor, Factor1)
+    ->  Factor1=[_, Factor2]
+    ;   Factor2=Factor
     ),
     atomic_list_concat([Pred2, '.\n'], InitDesc),
-    dict_create(SnipDict, _, [
-        prefix: Factor2,
-        body: SnippetBody,
-        description: InitDesc
-    ]),
+    dict_create(SnipDict,
+                _,
+                [prefix:Factor2, body:SnippetBody, description:InitDesc]),
     nb_getval(current_snippet, CurrSnippet),
-    (  CurrSnippet == null
-    -> true
-    ;  update_snippet_dict
-    ),    
+    (   CurrSnippet==null
+    ->  true
+    ;   update_snippet_dict
+    ),
     nb_linkval(current_snippet, SnipDict),
     atom_string(FactorA, Factor),
     term_to_atom(FactorA/Arity, FA),
     nb_setval(current_pred, FA),
     handle_dt(T), !.
 handle_dt([H|T]) :-
-    H = element(dd, _, _), !,
-    (  nb_getval(detailed_description, true)
-    -> 
-        xpath(H, /self(content), Content), 
+    H=element(dd, _, _), !,
+    (   nb_getval(detailed_description, true)
+    ->  xpath(H, /self(content), Content),
         format_description(1, 4, Content, NewContent),
-        NewDD = element(dd, [], NewContent),
-        xpath(NewDD, /self(text), Desc1),  
+        NewDD=element(dd, [], NewContent),
+        xpath(NewDD, /self(text), Desc1),
         atomic_replace(Desc1, '\n', ' ', Desc2),
         atomic_replace(Desc2, '!@#', '\n', Desc)
     ;   xpath(H, /self(text), Text),
-        ( regex_str("^([^.]+\\.)", [], Text, [Text1]),
-          atomic_replace(Text1, "\n", "", Desc)
-        ; Desc = ''
+        (   regex_str("^([^.]+\\.)", [], Text, [Text1]),
+            atomic_replace(Text1, "\n", "", Desc)
+        ;   Desc=''
         )
     ),
     nb_getval(current_snippet, SnipDict),
@@ -426,37 +422,36 @@ handle_dt([]) :-
     update_snippet_dict.
 
 format_description(Level, FinalLevel, Content, FinalContent) :-
-    Level =< FinalLevel,
+    Level=<FinalLevel,
     scan_content(Level, Content, NewContent),
-    NextLevel is Level + 1,
+    NextLevel is Level+1,
     format_description(NextLevel, FinalLevel, NewContent, FinalContent).
 format_description(_, _, FinalContent, FinalContent) :- !.
-    
+
 scan_content(Level, [H|T], [HH|TT]) :-
-    add_newline(Level, H, HH), !, 
+    add_newline(Level, H, HH), !,
     scan_content(Level, T, TT), !.
 scan_content(Level, [H|T], [HH|TT]) :-
-    H = element(Tag, Attrs, Content),
+    H=element(Tag, Attrs, Content),
     scan_content(Level, Content, NewContent),
-    HH = element(Tag, Attrs, NewContent),
+    HH=element(Tag, Attrs, NewContent),
     scan_content(Level, T, TT), !.
 scan_content(Level, [H|T], [H|TT]) :-
     scan_content(Level, T, TT), !.
 scan_content(_, [], []).
-    
+
 add_newline(_, Elem, Text) :-
-    Elem = element(pre, _, _),
+    Elem=element(pre, _, _),
     xpath(Elem, /self(text), Text1),
     atomic_replace(Text1, "\n", "!@#", Text2),
     atomic_list_concat(['!@#!@#', Text2, '!@#!@#'], Text).
 add_newline(Level, Elem, Text) :-
-    Elem = element(Tag, _, _),
+    Elem=element(Tag, _, _),
     tag_need_separator(Level, Tag, Sep), !,
     xpath(Elem, /self(text), Text1),
     atomic_list_concat([Text1, Sep], Text). 
     
     
-% '!@#' as newline
 tag_need_separator(1, li, '!@#').
 tag_need_separator(1, pre, '!@#!@#').
 tag_need_separator(2, ul, '!@#').
@@ -464,7 +459,6 @@ tag_need_separator(2, ol, '!@#').
 tag_need_separator(3, dd, '!@#!@#').
 tag_need_separator(4, dt, ': ').
 tag_need_separator(4, p, '!@#!@#').
-
 
 update_snippet_dict :-
     nb_getval(current_snippet, SnippetItem),
@@ -491,15 +485,14 @@ write_to_json_file(File, Dict) :-
 
 params_to_snippet([PH|PT], ParamNum, CurrSnippet, Snippet) :-
     regex_str("([^+\\-?:@ !]+)", [], PH, [Param]),
-    ( CurrSnippet == ""
-    ->  Curr1 = CurrSnippet
-    ;  atomic_list_concat([CurrSnippet, ", "], Curr1)
+    (   CurrSnippet==""
+    ->  Curr1=CurrSnippet
+    ;   atomic_list_concat([CurrSnippet, ", "], Curr1)
     ),
     atomic_list_concat([Curr1, "${", ParamNum, ":", Param, "}"], NewSnippet),
-    NextNum is ParamNum + 1,
+    NextNum is ParamNum+1,
     params_to_snippet(PT, NextNum, NewSnippet, Snippet).
 params_to_snippet([], _, Snippet, Snippet).
-    
 
 regex_str(Pattern, Options, String, RetStrs) :-
     regex(Pattern, Options, String, Codes),
@@ -507,20 +500,20 @@ regex_str(Pattern, Options, String, RetStrs) :-
     reverse(RetStrs1, RetStrs).
 
 atomic_replace(Term, SubAtomic, ReplacedWith, NewTerm) :-
-    atomic(Term), 
+    atomic(Term),
     atomic_list_concat(TermList, SubAtomic, Term),
     atomic_list_concat(TermList, ReplacedWith, NewTerm).
-    
+
 find_index(File) :-
     file_search_path(_, Path1),
-    absolute_file_name(Path1,Path), 
+    absolute_file_name(Path1, Path),
     make_library_index(Path),
-    atomic_list_concat([Path, "/INDEX.pl"], Pattern), 
+    atomic_list_concat([Path, "/INDEX.pl"], Pattern),
     expand_file_name(Pattern, [File]),
     exists_file(File).
- 
-  print_list(List) :-
+
+print_list(List) :-
     is_list(List), !,
     forall(member(Elem, List), writeln(Elem)).
-  print_list(NotList) :-
-    writeln((NotList)).
+print_list(NotList) :-
+    writeln(NotList).
