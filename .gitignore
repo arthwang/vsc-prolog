@@ -1,9 +1,7 @@
 out
-!out/**/*.pl
 node_modules
-.vscodeignore
 node_trace.1.log
 vsc-extension-quickstart.md
 src/**/*.js
-test
 .vscode/symbols.json
+!out/**/*.pl
