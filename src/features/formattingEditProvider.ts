@@ -1,7 +1,7 @@
 ("use strict");
-import { Stream } from "stream";
-import { SpawnResult } from "process-promises";
+import { spawn } from "process-promises";
 import * as cp from "child_process";
+import * as fs from "fs";
 import {
   CancellationToken,
   DocumentFormattingEditProvider,
@@ -15,10 +15,27 @@ import {
   window,
   workspace,
   WorkspaceConfiguration,
-  Position
+  Position,
+  extensions
 } from "vscode";
 import * as jsesc from "jsesc";
-import { spawn } from "process-promises";
+import * as scopeInfo from "scope-info";
+
+interface IComment {
+  location: number; // character location in the range
+  comment: string;
+}
+
+interface ITermInfo {
+  charsSofar: number;
+  startLine: number;
+  startChar: number;
+  isValid: boolean;
+  termStr: string;
+  comments: IComment[];
+  endLine?: number;
+  endChar?: number;
+}
 
 export default class PrologDocumentFormatter
   implements DocumentRangeFormattingEditProvider,
@@ -31,6 +48,11 @@ export default class PrologDocumentFormatter
   private _executable: string;
   private _args: string[];
   private _outputChannel: OutputChannel;
+  private _textEdits: TextEdit[] = [];
+  private _currentTermInfo: ITermInfo = null;
+  private _si: Thenable<ScopeInfoAPI>;
+  private _startChars: number;
+
   constructor() {
     this._section = workspace.getConfiguration("prolog");
     this._tabSize = this._section.get("format.tabSize", 4);
@@ -39,31 +61,102 @@ export default class PrologDocumentFormatter
     this._executable = this._section.get("executablePath", "swipl");
     this._args = ["--nodebug", "-q"];
     this._outputChannel = window.createOutputChannel("PrologFormatter");
+    this.initScopeInfo();
+  }
+  private async initScopeInfo() {
+    const siExt = extensions.getExtension<scopeInfo.ScopeInfoAPI>(
+      "siegebell.scope-info"
+    );
+    this._si = await siExt.activate();
+  }
+
+  private getClauseHeadStart(
+    doc: TextDocument,
+    line: number,
+    char: number
+  ): Position {
+    const token: scopeInfo.Token = this._si.getScopeAt(
+      doc,
+      new Position(line, char)
+    );
+
+    if (
+      token &&
+      token.scopes.indexOf("meta.clause.head.prolog") > -1 &&
+      token.scopes.indexOf("keyword.control.clause.bodybegin.prolog") === -1 &&
+      token.text !== " "
+    ) {
+      return token.range.start;
+    }
+
+    if (char === 0) {
+      line--;
+      if (line < 0) {
+        line = 0;
+        return new Position(0, 0);
+      }
+      char = doc.lineAt(line).text.length - 1;
+    } else {
+      char--;
+    }
+    return this.getClauseHeadStart(doc, line, char);
+  }
+
+  private getClauseEnd(
+    doc: TextDocument,
+    line: number,
+    char: number
+  ): Position {
+    const token: scopeInfo.Token = this._si.getScopeAt(
+      doc,
+      new Position(line, char)
+    );
+
+    if (
+      token &&
+      token.scopes.indexOf("keyword.control.clause.bodyend.prolog") > -1
+    ) {
+      return new Position(line, char + 1);
+    }
+
+    if (char === doc.lineAt(line).text.length) {
+      line++;
+      if (line === doc.lineCount) {
+        line--;
+        return new Position(line, doc.lineAt(line).text.length);
+      }
+      char = 0;
+    } else {
+      char++;
+    }
+
+    return this.getClauseEnd(doc, line, char);
+  }
+
+  private isClauseEndDot(
+    doc: TextDocument,
+    line: number,
+    char: number
+  ): boolean {
+    const token: scopeInfo.Token = this._si.getScopeAt(
+      doc,
+      new Position(line, char)
+    );
+    return token.scopes.indexOf("keyword.control.clause.bodyend.prolog") > -1;
   }
   private validRange(doc: TextDocument, initRange: Range): Range {
-    // let textLines: string[] = doc.getText().split("\n");
-    let startLine = initRange.start.line,
-      endLine = initRange.end.line;
-    let endRe = /\.\s*$/,
-      endRe1 = /%.*\.\s*$/;
-    while (
-      startLine > 0 &&
-      !(
-        endRe.test(doc.lineAt(startLine - 1).text) &&
-        !endRe1.test(doc.lineAt(startLine - 1).text)
-      )
-    )
-      startLine--;
-    while (/^\s*$/.test(doc.lineAt(startLine).text)) startLine++;
-    while (
-      endLine < doc.lineCount &&
-      !(
-        endRe.test(doc.lineAt(endLine).text) &&
-        !endRe1.test(doc.lineAt(endLine).text)
-      )
-    )
-      endLine++;
-    return new Range(startLine, 0, endLine, 200);
+    let startPos: Position = this.getClauseHeadStart(
+      doc,
+      initRange.start.line,
+      initRange.start.character
+    );
+    let endPos: Position = this.getClauseEnd(
+      doc,
+      initRange.end.line,
+      initRange.end.character
+    );
+
+    return startPos && endPos ? new Range(startPos, endPos) : null;
   }
   public provideDocumentRangeFormattingEdits(
     doc: TextDocument,
@@ -71,12 +164,15 @@ export default class PrologDocumentFormatter
     options: FormattingOptions,
     token: CancellationToken
   ): TextEdit[] | Thenable<TextEdit[]> {
-    return this.getFormattedCode(doc, range);
+    return this.getTextEdits(doc, range);
   }
 
-  public provideDocumentFormattingEdits(doc: TextDocument) {
-    let range = new Range(0, 0, doc.lineCount - 1, 200);
-    return this.getFormattedCode(doc, range);
+  public provideDocumentFormattingEdits(
+    doc: TextDocument
+  ): TextEdit[] | Thenable<TextEdit[]> {
+    let charZ = doc.lineAt(doc.lineCount - 1).text.length;
+    let range = new Range(0, 0, doc.lineCount - 1, charZ);
+    return this.getTextEdits(doc, range);
   }
 
   public provideOnTypeFormattingEdits(
@@ -86,15 +182,17 @@ export default class PrologDocumentFormatter
     options: FormattingOptions,
     token: CancellationToken
   ): TextEdit[] | Thenable<TextEdit[]> {
-    let lineTxt = doc.lineAt(position.line).text;
-    if (ch === "." && !/^\s*\./.test(lineTxt) && /\.$/.test(lineTxt)) {
+    if (
+      ch === "." &&
+      this.isClauseEndDot(doc, position.line, position.character - 1)
+    ) {
       let range = new Range(
         position.line,
         0,
         position.line,
-        position.character
+        position.character - 1
       );
-      return this.getFormattedCode(doc, range);
+      return this.getTextEdits(doc, range);
     } else {
       return [];
     }
@@ -104,98 +202,247 @@ export default class PrologDocumentFormatter
     this._outputChannel.append(msg);
     this._outputChannel.show();
   }
-  private getFormattedCode(doc: TextDocument, range: Range): TextEdit[] {
-    let textEdits: TextEdit[] = [];
+
+  private async getTextEdits(doc: TextDocument, range: Range) {
+    await this.getFormattedCode(doc, range);
+    return this._textEdits;
+  }
+
+  private async getFormattedCode(doc: TextDocument, range: Range) {
+    this._textEdits = [];
+    this._currentTermInfo = null;
     let validRange = this.validRange(doc, range);
+    if (!validRange) {
+      return [];
+    }
     let docText = jsesc(doc.getText(), { quotes: "double" });
+    let rangeTxt = jsesc(doc.getText(validRange), { quotes: "double" });
     let goals = `
       use_module('${__dirname}/formatter.pl').
       open_string("${docText}", S),
       load_files(doctxt, [stream(S)]).
-      formatter:read_and_portray_term(${this._tabSize}, ${this._tabDistance}).\n
-      ${doc.getText(validRange)}\n
+      setup_call_cleanup(
+        (new_memory_file(MemFH), open_memory_file(MemFH, write, MemWStream)),
+        (split_string("${rangeTxt}", '\n', '', TxtLst),
+         forall(member(Line, TxtLst), writeln(MemWStream, Line)),
+         close(MemWStream),
+         open_memory_file(MemFH, read, MemRStream),
+         formatter:read_and_portray_term(${this._tabSize}, ${this
+      ._tabDistance}, MemRStream)),
+        (close(MemRStream), free_memory_file(MemFH))
+      ).\n
     `;
-    let runOptions = {
-      cwd: workspace.rootPath,
-      encoding: "utf8",
-      input: goals
-    };
-    let prologProcess = cp.spawnSync(this._executable, this._args, runOptions);
-    if (prologProcess.status === 0) {
-      let txt = prologProcess.stdout.toString();
-      let varsMsg = prologProcess.stderr.toString();
-      // console.log("output:" + txt);
-      // console.log("err:" + varsMsg);
+    let termStr = "";
+    let prologProc = null;
 
-      txt = txt
-        .replace(/^true\.\s*/, "")
-        .replace(/^\s*Stream.*?\n\s*\n/, "")
-        .replace(/@#&\n*end_of_file[\s\S]*?$/, "")
-        .trim();
-      if (txt === "") {
-        this.outputMsg(varsMsg);
-        return;
-      }
-      let txtArrays: string[] = txt.split("@#&\n");
-      txtArrays.shift();
-
-      if (txtArrays.length === 0) {
-        this.outputMsg(varsMsg);
-        return;
-      }
-      let vars = varsMsg.match(/variables\((.+)\)/)[1].match(/'[^']*'/g);
-      let varsArrays: Array<string>[] = vars.map(item => {
-        return item.replace(/'/g, "").split(",");
-      });
-
-      txt = txtArrays
-        .map((clause, i) => {
-          return this.restoreVariableNames(clause, varsArrays[i]);
+    try {
+      await spawn(this._executable, this._args, {})
+        .on("process", proc => {
+          if (proc.pid) {
+            prologProc = proc;
+            proc.stdin.write(goals);
+            proc.stdin.end();
+          }
         })
-        .join("");
-      txt = this.getTextWithComments(doc, validRange, txt);
-      textEdits = [new TextEdit(validRange, txt)];
-    } else {
-      this._outputChannel.append("Error: " + prologProcess.error.message);
+        .on("stdout", data => {
+          if (/::::::ALLOVER/.test(data)) {
+            this.resolve_terms(doc, termStr, validRange, true);
+          }
+          if (/TERMSEGMENTBEGIN:::/.test(data)) {
+            this.resolve_terms(doc, termStr, validRange);
+            termStr = data + "\n";
+          } else {
+            termStr += data + "\n";
+          }
+        })
+        .on("stderr", err => {
+          console.log("err:" + err);
+        })
+        .on("close", _ => {
+          console.log("closed");
+        });
+    } catch (error) {
+      let message: string = null;
+      if ((<any>error).code === "ENOENT") {
+        message = `Cannot debug the prolog file. The Prolog executable was not found. Correct the 'prolog.executablePath' configure please.`;
+      } else {
+        message = error.message
+          ? error.message
+          : `Failed to run swipl using path: ${this
+              ._executable}. Reason is unknown.`;
+      }
     }
-    return textEdits;
   }
 
+  private getPositionFromChars(doc: TextDocument, chars: number): Position {
+    let txtLines = doc.getText().slice(0, chars).split("\n");
+    let lines = txtLines.length;
+    let char = txtLines[lines - 1].length;
+    return new Position(lines - 1, char);
+  }
+  private resolve_terms(
+    doc: TextDocument,
+    text: string,
+    range: Range,
+    last: boolean = false
+  ) {
+    if (!/TERMSEGMENTBEGIN:::/.test(text)) {
+      return;
+    }
+    let termPosRe = /TERMPOSBEGIN:::(\d+):::TERMPOSEND/;
+    let varsRe = /VARIABLESBEGIN:::\[([\s\S]*?)\]:::VARIABLESEND/;
+    let termRe = /TERMBEGIN:::([\s\S]+?):::TERMEND/;
+    let commsRe = /COMMENTSBIGIN:::([\s\S]*?):::COMMENTSEND/;
+    let termPos = text.match(termPosRe),
+      term = text.match(termRe),
+      vars = text.match(varsRe),
+      comms = text.match(commsRe);
+    let commsObj: { comments: IComment[] } = JSON.parse(comms[1]);
+    let commsArr = commsObj.comments;
+
+    let formattedTerm = this.restoreVariableNames(term[1], vars[1].split(","));
+    let termCharA = parseInt(termPos[1]);
+    if (commsArr.length > 0) {
+      termCharA =
+        termCharA < commsArr[0].location ? termCharA : commsArr[0].location;
+      commsArr.forEach((comm: IComment) => {
+        comm.location -= termCharA;
+      });
+    }
+
+    if (!this._currentTermInfo) {
+      (this._startChars = doc.getText(
+        new Range(new Position(0, 0), range.start)
+      ).length), (this._currentTermInfo = {
+        charsSofar: 0,
+        startLine: range.start.line,
+        startChar: range.start.character,
+        isValid: vars[1] === "givingup" ? false : true,
+        termStr: formattedTerm,
+        comments: commsArr
+      });
+    } else {
+      let endPos = this.getPositionFromChars(doc, termCharA + this._startChars);
+      this._currentTermInfo.endLine = endPos.line;
+      this._currentTermInfo.endChar = endPos.character;
+      if (this._currentTermInfo.isValid) {
+        // preserve original gaps between terms
+        let lastAfterTerm = doc
+          .getText()
+          .slice(this._currentTermInfo.charsSofar, termCharA)
+          .match(/\s*$/)[0];
+        this._currentTermInfo.termStr = this._currentTermInfo.termStr.replace(
+          /\s*$/, // replace new line produced by portray_clause with original gaps
+          lastAfterTerm
+        );
+        this.generateTextEdit(doc);
+      }
+
+      this._currentTermInfo.charsSofar = termCharA;
+      this._currentTermInfo.startLine = this._currentTermInfo.endLine;
+      this._currentTermInfo.startChar = this._currentTermInfo.endChar;
+      this._currentTermInfo.termStr = formattedTerm;
+      this._currentTermInfo.isValid = vars[1] === "givingup" ? false : true;
+      this._currentTermInfo.comments = commsArr;
+      if (last) {
+        this._currentTermInfo.endLine = range.end.line;
+        this._currentTermInfo.endChar = range.end.character;
+        if (this._currentTermInfo.comments.length > 0) {
+          this._currentTermInfo.termStr = "";
+          this.generateTextEdit(doc);
+        }
+      }
+    }
+  }
+
+  private generateTextEdit(doc: TextDocument) {
+    let termRange = new Range(
+      this._currentTermInfo.startLine,
+      this._currentTermInfo.startChar,
+      this._currentTermInfo.endLine,
+      this._currentTermInfo.endChar
+    );
+    if (this._currentTermInfo.comments.length > 0) {
+      let newComms = this.mergeComments(
+        doc,
+        termRange,
+        this._currentTermInfo.comments
+      );
+      this._currentTermInfo.termStr = this.getTextWithComments(
+        doc,
+        termRange,
+        this._currentTermInfo.termStr,
+        newComms
+      );
+    }
+    this._textEdits.push(
+      new TextEdit(termRange, this._currentTermInfo.termStr)
+    );
+  }
+
+  // merge adjcent comments between which there are only spaces, including new lines
+  private mergeComments(
+    doc: TextDocument,
+    range: Range,
+    comms: IComment[]
+  ): IComment[] {
+    let origTxt = doc.getText(range);
+    let newComms: IComment[] = [];
+    newComms.push(comms[0]);
+    let i = 1;
+    while (i < comms.length) {
+      let loc = comms[i].location;
+      let last = newComms.length - 1;
+      let lastLoc = newComms[last].location;
+      let lastComm = newComms[last].comment;
+      let lastEnd = lastLoc + lastComm.length;
+      let middleTxt = origTxt.slice(lastEnd, comms[i].location);
+      if (middleTxt.replace(/\s|\n|\t/g, "").length === 0) {
+        newComms[last].comment += middleTxt + comms[i].comment;
+      } else {
+        newComms.push(comms[i]);
+      }
+      i++;
+    }
+    return newComms;
+  }
   private getTextWithComments(
     doc: TextDocument,
     range: Range,
-    formatedText: string
+    formatedText: string,
+    comms: IComment[]
   ): string {
     let origTxt = doc.getText(range);
+
     let chars = origTxt.length;
     let txtWithComm = "";
     let lastOrigPos = 0;
-    let commReg = /\s*\/\*[\s\S]*?\*\/\n*|\s*%.*?\n+/g;
-    let commMatchs: RegExpExecArray;
-    while ((commMatchs = commReg.exec(origTxt))) {
-      // exclude % in quotes
-      let mtch = commMatchs[0];
-      if (
-        mtch.startsWith("%") &&
-        ((/"/.test(mtch) && mtch.match(/"/).length % 2 === 1) ||
-          (/'/.test(mtch) && mtch.match(/'/).length % 2 === 1))
-      ) {
-        continue;
-      }
-      let origSeg = origTxt.slice(lastOrigPos, commMatchs.index);
+    for (let i = 0; i < comms.length; i++) {
+      let index = comms[i].location;
+      let comment = comms[i].comment;
+      let origSeg = origTxt.slice(lastOrigPos, index);
+
       let noSpaceOrig = origSeg.replace(/\s|\n|\t|\(|\)/g, "");
-      lastOrigPos = commMatchs.index + mtch.length;
-      let i = 0,
+      lastOrigPos = index + comment.length;
+      let j = 0,
         noSpaceFormatted: string = "";
-      while (i < chars) {
+      while (j < chars) {
         if (noSpaceFormatted === noSpaceOrig) {
+          if (origTxt.charAt(index + comment.length) === "\n") {
+            comment += "\n";
+            lastOrigPos++;
+          }
           let tail = origSeg.match(/[()]*$/)[0].length;
-          txtWithComm += formatedText.slice(0, i + tail) + commMatchs[0];
-          formatedText = formatedText.slice(i + tail).replace(/^\n/, "");
+          let spaces = origSeg.match(/\s*$/)[0];
+          if (spaces.length > 0) {
+            comment = spaces + comment;
+          }
+          txtWithComm += formatedText.slice(0, j + tail) + comment;
+          formatedText = formatedText.slice(j + tail).replace(/^\n/, "");
           break;
         }
 
-        let char = formatedText.charAt(i);
+        let char = formatedText.charAt(j);
         if (
           char !== " " &&
           char !== "\n" &&
@@ -205,7 +452,7 @@ export default class PrologDocumentFormatter
         ) {
           noSpaceFormatted += char;
         }
-        i++;
+        j++;
       }
     }
     return txtWithComm + formatedText;

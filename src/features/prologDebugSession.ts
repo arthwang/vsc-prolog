@@ -20,7 +20,6 @@ import { basename } from "path";
 import Utils from "../utils/utils";
 import * as cp from "child_process";
 import { spawn, SpawnOptions } from "process-promises";
-import { TerminalDebugServer } from "./terminalDebugServer";
 import * as Net from "net";
 
 export class PrologDebugSession extends DebugSession {

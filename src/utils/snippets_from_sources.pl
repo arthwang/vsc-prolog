@@ -1,3 +1,5 @@
+%% snippets_from_sources.pl
+
 :- use_module(library(pldoc)).
 :- use_module(library(pldoc/doc_html)).
 :- use_module(library(pldoc/doc_process)).
@@ -9,6 +11,7 @@
 :- (dynamic dir_handled/1, module_spec/2).
 
 :- (volatile dir_handled/1).
+
 start :-
     generate_vscode_swipl_snippets([]).
 
@@ -27,9 +30,11 @@ generate_vscode_swipl_snippets(Options) :-
     option(doc_dirs(DirSpecs), Options, [swi(doc)]),
     vscode_swipl_snippets_from_html_under_dirs(DirSpecs),
     nb_getval(snippet_dict, ResltDict),
-    write_to_json_file(SnippetsFile, ResltDict).
+    write_to_json_file(SnippetsFile,ResltDict).
 
 %% ----------------------------------------------------
+
+
 
 traverse_dirs :-
     file_search_path(library, Dir0),
@@ -70,13 +75,12 @@ recurse_subdirs :-
     maplist(absolute_file_name, Entries, AbsoluteEntries),
     include(exists_directory, AbsoluteEntries, SubDirs),
     forall(member(SubDir, SubDirs), handle_dir(SubDir)).
-    
-    
+
 get_plfiles(Files) :-
     absolute_file_name('MKINDEX.pl', F),
     access_file(F, read),
     open("MKINDEX.pl", read, MkIndx),
-    read(MkIndx, :-make_library_index(_, Patterns)),
+    read(MkIndx,  (:-make_library_index(_, Patterns))),
     pattern_files(Patterns, Files),
     close(MkIndx), !.
 get_plfiles(Files) :-
@@ -119,26 +123,28 @@ add_nocomment_predicate(Module, Pred, doc(Module:Pred, null, Comm)) :-
     term_to_atom(Predicate, Comm).
 
 gen_params(Arity, Num, [H|T]) :-
-    Num =< Arity, !, 
+    Num=<Arity, !,
     atomic_list_concat(['Param', Num], H),
-    Num1 is Num + 1,
+    Num1 is Num+1,
     gen_params(Arity, Num1, T).
 gen_params(_, _, []).
-    
+
 export_with_module(Module, Export, Module:Export).
-    
+
 exported_pred_in_objects(Module, PredsInObjs, ExportedPred) :-
     memberchk(Module:ExportedPred, PredsInObjs).
 
 digout_predicate_indicator(Doc, PI) :-
-    Doc = doc(PI, _, _).
+    Doc=doc(PI, _, _).
 
 isExportedPredicate(Exports, PI) :-
-    PI = _:PI1,
+    PI=_:PI1,
     memberchk(PI1, Exports).
+
 write_objects(Module, Exports, [doc(PI, Pos, Comment)|T]) :-
     is_list(PI), !,
-    forall(member(PIMember, PI), write_objects1(Module, Exports, PIMember, Pos, Comment)),
+    forall(member(PIMember, PI),
+           write_objects1(Module, Exports, PIMember, Pos, Comment)),
     write_objects(Module, Exports, T).
 write_objects(Module, Exports, [doc(PI, Pos, Comment)|T]) :-
     write_objects1(Module, Exports, PI, Pos, Comment),
@@ -146,52 +152,50 @@ write_objects(Module, Exports, [doc(PI, Pos, Comment)|T]) :-
 write_objects(Module, Exports, [_|T]) :-
     write_objects(Module, Exports, T), !.
 write_objects(_, _, []).
-    
+
 write_objects1(_, Exports, PI, _, _) :-
     \+ isExportedPredicate(Exports, PI), !.
 write_objects1(_, _, PI, _, _) :-
-    PI = _:Pred/_,
+    PI=_:Pred/_,
     % exclude these kinds of predicates in snippets
-    Pred =~ "[()~!@#:.%&{\\\\[/+\\-<>?= ]", !. 
-
+    Pred=~"[()~!@#:.%&{\\\\[/+\\-<>?= ]", !.
 write_objects1(Module, _, PI, Pos, Comment) :-
-    PI = Module:Pred/Arity,
-    (
-    atom_concat('$', _, Pred)->
-    atom_concat('\\', Pred, Pred1)
-;
-Pred1 = Pred
-        ),
+    PI=Module:Pred/Arity,
+    (   atom_concat($, _, Pred)
+    ->  atom_concat(\, Pred, Pred1)
+    ;   Pred1=Pred
+    ),
     gen_snippet_body(Pred1, Arity, Comment, Body),
     uncomment_comment(Comment, UnComm),
     (   nb_getval(detailed_description, false)
-    ->
-        (   Pos == null
-        ->  Desc = Comment
-        ;
-            parse_comment(Comment, Pos, Parsed),
+    ->  (   Pos==null
+        ->  Desc=Comment
+        ;   parse_comment(Comment, Pos, Parsed),
             memberchk(predicate(_, Summary, _), Parsed),
-            (   Arity =:= 0
-            ->  Desc = Summary
-            ;   A1 is Arity - 1,
-                atomic_list_concat([" *(", Pred, "\\([^,]+(,[^),]+){", A1, "}\\)[^.]*\\.)"], Pattern),
+            (   Arity=:=0
+            ->  Desc=Summary
+            ;   A1 is Arity-1,
+                atomic_list_concat(
+                                   [ " *(",
+                                     Pred,
+                                     "\\([^,]+(,[^),]+){",
+                                     A1,
+                                     "}\\)[^.]*\\.)"
+                                   ],
+                                   Pattern),
                 regex_str(Pattern, [], UnComm, [PredSig|_]),
-                atomic_list_concat([PredSig,'\t', Summary], Desc)
+                atomic_list_concat([PredSig, '\t', Summary], Desc)
             )
-       )
-    ;   
-        Desc = UnComm
+        )
+    ;   Desc=UnComm
     ),
-
-    dict_create(Snippet, _, [
-        prefix:Pred,
-        body:[Body],
-        description:Desc
-    ]),
+    dict_create(Snippet,
+                _,
+                [prefix:Pred, body:[Body], description:Desc]),
     term_to_atom(PI, PIA),
     shortest_module_spec(Module, Subs),
     atomic_list_concat([Subs, PIA], Key1),
-    atom_concat('/', Key, Key1),
+    atom_concat(/, Key, Key1),
     nb_getval(snippet_dict, DictIn),
     put_dict(Key, DictIn, Snippet, NewDict),
     nb_linkval(snippet_dict, NewDict).
@@ -203,13 +207,11 @@ shortest_module_spec(Module, Subs) :-
     file_search_path(library, Path),
     absolute_file_name(Path, Abs),
     sub_atom(Dir, 0, _, After, Abs),
-    (   (   module_spec(Module, Subs1),
-            atom_length(Subs1, Len1),
-            After < Len1,
-            retract(module_spec(Module, _))
-        )
-    ;
-        \+ module_spec(Module, _)
+    (   module_spec(Module, Subs1),
+        atom_length(Subs1, Len1),
+        After<Len1,
+        retract(module_spec(Module, _))
+    ;   \+ module_spec(Module, _)
     ),
     atom_length(Abs, Start),
     sub_atom(Dir, Start, _, 0, Subs),
@@ -217,32 +219,30 @@ shortest_module_spec(Module, Subs) :-
     fail.
 shortest_module_spec(Module, Subs) :-
     module_spec(Module, Subs).
-    
 
 is_valid_directory(Dir, FileName) :-
-  FileName \= '.',
-  FileName \= '..',
-  directory_file_path(Dir, FileName, Path),
-  exists_directory(Path).
+    FileName\=('.'),
+    FileName\= ..,
+    directory_file_path(Dir, FileName, Path),
+    exists_directory(Path).
 
 valid_subdirs(Parent, SubDirs) :-
-  directory_files(Parent, Entries1),
-  include(is_valid_directory(Parent), Entries1, SubDirs).
+    directory_files(Parent, Entries1),
+    include(is_valid_directory(Parent), Entries1, SubDirs).
 
-    
- is_in_subdir(Module, BaseDir, ParentDir, RelativePath) :-
-   atomic_list_concat([BaseDir, ParentDir, '/', Module], FullPath),
-   file_name_extension(FullPath, '.pl', Name),
-    (exists_file(Name)
-    ;is_in_different_file(BaseDir, ParentDir, Module)
-    ),
-   atomic_list_concat([ParentDir, '/', Module], RelativePath), !.
 is_in_subdir(Module, BaseDir, ParentDir, RelativePath) :-
-  atomic_list_concat([BaseDir, '/', ParentDir], NewBase),
-  valid_subdirs(NewBase, SubDirs),
-  member(SubDir, SubDirs),
-  atomic_list_concat([ParentDir, '/', SubDir], NewParent),
-  is_in_subdir(Module, BaseDir, NewParent, RelativePath).
+    atomic_list_concat([BaseDir, ParentDir, /, Module], FullPath),
+    file_name_extension(FullPath, '.pl', Name),
+    (   exists_file(Name)
+    ;   is_in_different_file(BaseDir, ParentDir, Module)
+    ),
+    atomic_list_concat([ParentDir, /, Module], RelativePath), !.
+is_in_subdir(Module, BaseDir, ParentDir, RelativePath) :-
+    atomic_list_concat([BaseDir, /, ParentDir], NewBase),
+    valid_subdirs(NewBase, SubDirs),
+    member(SubDir, SubDirs),
+    atomic_list_concat([ParentDir, /, SubDir], NewParent),
+    is_in_subdir(Module, BaseDir, NewParent, RelativePath).
 
 is_in_different_file(BaseDir, ParentDir, Module) :-
     atomic_list_concat([BaseDir, ParentDir], Dir),
@@ -250,21 +250,21 @@ is_in_different_file(BaseDir, ParentDir, Module) :-
     member(File, Files),
     file_name_extension(_, '.pl', File),
     directory_file_path(Dir, File, FullName),
-    setup_call_cleanup(
-        open(FullName, read, FS),
-        (catch(read(FS, :-module(Module, _)),_,fail), !), 
-        close(FS)).
-
+    setup_call_cleanup(open(FullName, read, FS),
+                       ( catch(read(FS,  (:-module(Module, _))),
+                               _,
+                               fail), !
+                       ),
+                       close(FS)).
 
 uncomment_comment(Comment, UnComm) :-
-    (Comment =~ "^%!"; Comment =~ "^%%"), !,
+    (   Comment=~"^%!"
+    ;   Comment=~"^%%"
+    ), !,
     sub_string(Comment, 2, _, 0, Comm0),
     atomic_replace(Comm0, "\n%!", "\n", Comm1),
     atomic_replace(Comm1, "\n%%", "\n", Comm2),
     atomic_replace(Comm2, "\n%", "\n", UnComm).
-    
-% uncomment_comment(Comment, UnComm) :-
-%     sub_string(Comment, 3, _, 2, UnComm),!.
 uncomment_comment(Comm, Comm).
 
 gen_snippet_body(Pred, 0, _, Body) :-
@@ -273,7 +273,7 @@ gen_snippet_body(Pred, Arity, Comm, Body) :-
     regex_str("([^(]*\\([^)]+\\))+", [s], Comm, Params),
     get_param_list(Arity, Params, ParamList),
     params_to_snippet(ParamList, 1, "", Snippet),
-    End is Arity + 1,
+    End is Arity+1,
     atomic_list_concat([Pred, "(", Snippet, ")$", End, "\n$0"], Body).
 
 get_param_list(Arity, [H|_], ParamList) :-
@@ -282,10 +282,8 @@ get_param_list(Arity, [H|_], ParamList) :-
     length(ParamList, Arity), !.
 get_param_list(Arity, [_|T], ParamList) :-
     get_param_list(Arity, T, ParamList), !.
-get_param_list(_, [], _) :- fail.
-
-
-%% ---------------------------------------------------
+get_param_list(_, [], _) :-
+    fail.
 
 vscode_swipl_snippets_from_html_under_dirs(DirSpecs) :-
     get_html_files_under_dirs(DirSpecs, HtmlFiles),
@@ -302,6 +300,7 @@ get_html_files_under_dir(DirSpec, Files) :-
     atomic_list_concat([Dir1, '/*'], Pattern),
     expand_file_name(Pattern, Subs),
     get_html_files_under_dir1(Subs, Files).
+
 get_html_files_under_dir1([H|T], Files) :-
     exists_directory(H),
     get_html_files_under_dir(H, Files1),
@@ -314,15 +313,14 @@ get_html_files_under_dir1([_|T], Files) :-
     get_html_files_under_dir1(T, Files), !.
 get_html_files_under_dir1([], []).
 
-
 vscode_swipl_snippets_from_html(HtmlFile) :-
     writeln("Handling html file":HtmlFile),
     nb_linkval(current_snippet, null),
     load_html(HtmlFile, Dom, []),
     nb_setval(current_module, null),
     filter_dom(Dom, Filtered),
-    Filtered \= [], 
-    handle_contents(Filtered),!.
+    Filtered\=[],
+    handle_contents(Filtered), !.
 vscode_swipl_snippets_from_html(_).
 
 handle_contents([element(module, _, [Module])|T]) :-
@@ -332,30 +330,30 @@ handle_contents([element(dl, _, Contents)|T]) :-
     handle_dt(Contents),
     handle_contents(T).
 handle_contents([]).
-    
+
 filter_dom(Dom, Filtered) :-
     xpath(Dom, //body, element(body, _, Subs)),
     filter_dom1(Subs, Filtered).
+
 filter_dom1([H|T], Filtered) :-
-    (   H = element(h2, _, _)
-    ;   H = element(h3, _, _)
+    (   H=element(h2, _, _)
+    ;   H=element(h3, _, _)
     ), !,
     xpath(H, /self(text), Text),
-    (   
-        (regex_str("library\\(([^).]+)\\)", [], Text, [Mod])
-        ;regex_str("([^ .]+)\\.pl:", [], Text, [Mod]))
-    ->  
-        FH = element(module, [], [Mod]),
+    (   (   regex_str("library\\(([^).]+)\\)", [], Text, [Mod])
+        ;   regex_str("([^ .]+)\\.pl:", [], Text, [Mod])
+        )
+    ->  FH=element(module, [], [Mod]),
         filter_dom1(T, FT),
-        Filtered = [FH|FT]
+        Filtered=[FH|FT]
     ;   filter_dom1(T, Filtered)
     ), !.
 filter_dom1([H|T], [H|FT]) :-
-    H = element(dl, _, [element(dt, [class=pubdef], _)|_]), !,
+    H=element(dl, _, [element(dt, [class=pubdef], _)|_]), !,
     filter_dom1(T, FT).
 filter_dom1([_|T], Filtered) :-
     filter_dom1(T, Filtered).
-filter_dom1([],[]).
+filter_dom1([], []).
 
 handle_dt([H|T]) :-
     H=element(dt, _, _), !,
@@ -449,9 +447,8 @@ add_newline(Level, Elem, Text) :-
     Elem=element(Tag, _, _),
     tag_need_separator(Level, Tag, Sep), !,
     xpath(Elem, /self(text), Text1),
-    atomic_list_concat([Text1, Sep], Text). 
-    
-    
+    atomic_list_concat([Text1, Sep], Text).
+
 tag_need_separator(1, li, '!@#').
 tag_need_separator(1, pre, '!@#!@#').
 tag_need_separator(2, ul, '!@#').

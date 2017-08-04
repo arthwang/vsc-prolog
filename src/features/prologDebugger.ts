@@ -5,7 +5,6 @@ import { spawn } from "process-promises";
 import Utils from "../utils/utils";
 import { DebugProtocol } from "vscode-debugprotocol";
 import { PrologDebugSession } from "./prologDebugSession";
-import { TerminalDebugServer } from "./terminalDebugServer";
 import {
   StoppedEvent,
   StackFrame,
