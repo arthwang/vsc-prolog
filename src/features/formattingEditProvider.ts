@@ -18,8 +18,8 @@ import {
   Position,
   extensions
 } from "vscode";
+import { ScopeInfoAPI, Token } from "scope-info";
 import * as jsesc from "jsesc";
-import * as scopeInfo from "scope-info";
 
 interface IComment {
   location: number; // character location in the range
@@ -50,7 +50,7 @@ export default class PrologDocumentFormatter
   private _outputChannel: OutputChannel;
   private _textEdits: TextEdit[] = [];
   private _currentTermInfo: ITermInfo = null;
-  private _si: Thenable<ScopeInfoAPI>;
+  private _si: ScopeInfoAPI;
   private _startChars: number;
 
   constructor() {
@@ -64,9 +64,7 @@ export default class PrologDocumentFormatter
     this.initScopeInfo();
   }
   private async initScopeInfo() {
-    const siExt = extensions.getExtension<scopeInfo.ScopeInfoAPI>(
-      "siegebell.scope-info"
-    );
+    const siExt = extensions.getExtension<ScopeInfoAPI>("siegebell.scope-info");
     this._si = await siExt.activate();
   }
 
@@ -75,10 +73,7 @@ export default class PrologDocumentFormatter
     line: number,
     char: number
   ): Position {
-    const token: scopeInfo.Token = this._si.getScopeAt(
-      doc,
-      new Position(line, char)
-    );
+    const token: Token = this._si.getScopeAt(doc, new Position(line, char));
 
     if (
       token &&
@@ -107,10 +102,7 @@ export default class PrologDocumentFormatter
     line: number,
     char: number
   ): Position {
-    const token: scopeInfo.Token = this._si.getScopeAt(
-      doc,
-      new Position(line, char)
-    );
+    const token: Token = this._si.getScopeAt(doc, new Position(line, char));
 
     if (
       token &&
@@ -138,10 +130,7 @@ export default class PrologDocumentFormatter
     line: number,
     char: number
   ): boolean {
-    const token: scopeInfo.Token = this._si.getScopeAt(
-      doc,
-      new Position(line, char)
-    );
+    const token: Token = this._si.getScopeAt(doc, new Position(line, char));
     return token.scopes.indexOf("keyword.control.clause.bodyend.prolog") > -1;
   }
   private validRange(doc: TextDocument, initRange: Range): Range {

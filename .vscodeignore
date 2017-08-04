@@ -1,12 +1,9 @@
-.vscode/**
-.vscode-test/**
-out/test/**
-test/**
-src/**
-**/*.map
-.gitignore
-tsconfig.json
-syntaxes/prolog.tmLanguage.yaml
-vsc-extension-quickstart.md
-
+*
+*/**
+!out/src/**/*.js
+!out/src/**/*.pl
+!node_modules/vscode-nls/**/*
+!node_modules/vscode-debugprotocol/**/*
+!syntaxes/*.json
+!README.md
 
