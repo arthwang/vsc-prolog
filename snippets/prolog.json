@@ -4131,18 +4131,6 @@
     "description":"[det]csv(?Rows, +Options)//.\nProlog DCG to `read/write' CSV data. Options:  separator(+Code): The comma-separator. Must be a character code. Default is (of course)  the comma. Character codes can be specified using the 0' notion. E.g.,  using separator(0';) parses a semicolon separated file.\n\nignore_quotes(+Boolean): If true (default false), threat double quotes as a normal  character.\n\nstrip(+Boolean): If true (default false), strip leading and  trailing blank space. RFC4180 says that blank space is part of the data.\n\nconvert(+Boolean): If true (default), use name/2  on the field data. This translates the field into a number if possible.\n\nfunctor(+Atom): Functor to use for creating row terms. Default is row.\n\narity(?Arity): Number of fields in each row. This predicate raises a domain_error(row_arity(Expected), Found)  if a row is found with different arity.\n\nmatch_arity(+Boolean): If false (default true), do not reject CSV  files where lines provide a varying number of fields (columns). This can  be a work-around to use some incorrect CSV files.\n\n ",
     "prefix":"csv"
   },
-  "csv:csv/3": {
-    "body": ["csv(${1:'Param1'}, ${2:'Param2'}, ${3:'Param3'})$4\n$0" ],
-    "description":"csv('Param1','Param2','Param3')",
-    "prefix":"csv"
-  },
-  "csv:csv/4": {
-    "body": [
-      "csv(${1:'Param1'}, ${2:'Param2'}, ${3:'Param3'}, ${4:'Param4'})$5\n$0"
-    ],
-    "description":"csv('Param1','Param2','Param3','Param4')",
-    "prefix":"csv"
-  },
   "csv:csv_read_file/2": {
     "body":"csv_read_file(${1:File}, ${2:Rows})$3\n$0",
     "description":"[det]csv_read_file(+File, -Rows).\n",

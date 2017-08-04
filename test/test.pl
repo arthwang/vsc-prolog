@@ -1,6 +1,18 @@
 %%
+/*second line comment*/
 :- use_module(library(regex)).
+    % spaces before comment 
 
-% start :-
-%     Str1=~'\\d+',
-%     writeln(str:Str1).
+% about predicate
+start1 :-
+/* block comment
+ */
+ 
+    % Str1=~'\\d+',
+  Str1=hello, %middle comments.
+/*abc. */   writeln(str:Str1).% comments at end.
+
+
+    /* footer comments
+
+    */
