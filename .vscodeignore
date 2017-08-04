@@ -5,5 +5,6 @@
 !node_modules/vscode-nls/**/*
 !node_modules/vscode-debugprotocol/**/*
 !syntaxes/*.json
+!snippets
 !README.md
 

@@ -9,9 +9,8 @@ start1 :-
  */
  
     % Str1=~'\\d+',
-  Str1=hello, %middle comments.
-/*abc. */   writeln(str:Str1).% comments at end.
-
+    Str1=hello, %middle comments.
+    writeln(str:Str1).% comments at end.
 
     /* footer comments
 
