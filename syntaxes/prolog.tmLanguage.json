@@ -47,7 +47,7 @@
     },
     {
       "name": "meta.clause.head.prolog",
-      "begin": "^\\s*([a-z][a-zA-Z0-9_]*)(\\(?)(?=.*:-.*)",
+      "begin": "^\\s*([a-z][a-zA-Z0-9_]*)(\\(?)(?=[\\s\\S]*?:-.*)",
       "beginCaptures": {
         "1": {
           "name": "entity.name.function.clause.prolog"
@@ -142,7 +142,7 @@
     },
     {
       "name": "meta.fact.prolog",
-      "begin": "^\\s*([a-zA-Z][a-zA-Z0-9_]*)(\\(?)(?!.*(:-|-->).*)",
+      "begin": "^\\s*([a-zA-Z][a-zA-Z0-9_]*)(\\(?)(?![\\s\\S]*?(:-|-->).*)",
       "beginCaptures": {
         "1": {
           "name": "entity.name.function.fact.prolog"

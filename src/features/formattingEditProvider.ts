@@ -20,7 +20,6 @@ import {
 } from "vscode";
 import { ScopeInfoAPI, Token } from "scope-info";
 import * as jsesc from "jsesc";
-import { Range } from "vscode";
 
 interface IComment {
   location: number; // character location in the range
@@ -70,16 +69,18 @@ export default class PrologDocumentFormatter
   }
 
   private getClauseHeadStart(doc: TextDocument, line: number): Position {
-    let firstNonSpcIndex = doc.lineAt(line).text.match(/[^\s]/).index;
-    const token: Token = this._si.getScopeAt(
-      doc,
-      new Position(line, firstNonSpcIndex)
-    );
+    let firstNonSpc = doc.lineAt(line).text.match(/[^\s]/);
+    if (firstNonSpc) {
+      let firstNonSpcIndex = firstNonSpc.index;
+      const token: Token = this._si.getScopeAt(
+        doc,
+        new Position(line, firstNonSpcIndex)
+      );
 
-    if (token && token.scopes.indexOf("meta.clause.head.prolog") > -1) {
-      return new Position(line, firstNonSpcIndex);
+      if (token && token.scopes.indexOf("meta.clause.head.prolog") > -1) {
+        return new Position(line, firstNonSpcIndex);
+      }
     }
-
     line--;
     if (line < 0) {
       line = 0;
@@ -245,6 +246,7 @@ export default class PrologDocumentFormatter
     let char = txtLines[lines - 1].length;
     return new Position(lines - 1, char);
   }
+
   private resolve_terms(
     doc: TextDocument,
     text: string,
