@@ -20,6 +20,7 @@ import {
 } from "vscode";
 import { ScopeInfoAPI, Token } from "scope-info";
 import * as jsesc from "jsesc";
+import { Range } from "vscode";
 
 interface IComment {
   location: number; // character location in the range
@@ -68,61 +69,40 @@ export default class PrologDocumentFormatter
     this._si = await siExt.activate();
   }
 
-  private getClauseHeadStart(
-    doc: TextDocument,
-    line: number,
-    char: number
-  ): Position {
-    const token: Token = this._si.getScopeAt(doc, new Position(line, char));
+  private getClauseHeadStart(doc: TextDocument, line: number): Position {
+    let firstNonSpcIndex = doc.lineAt(line).text.match(/[^\s]/).index;
+    const token: Token = this._si.getScopeAt(
+      doc,
+      new Position(line, firstNonSpcIndex)
+    );
 
-    if (
-      token &&
-      token.scopes.indexOf("meta.clause.head.prolog") > -1 &&
-      token.scopes.indexOf("keyword.control.clause.bodybegin.prolog") === -1 &&
-      token.text !== " "
-    ) {
-      return token.range.start;
+    if (token && token.scopes.indexOf("meta.clause.head.prolog") > -1) {
+      return new Position(line, firstNonSpcIndex);
     }
 
-    if (char === 0) {
-      line--;
-      if (line < 0) {
-        line = 0;
-        return new Position(0, 0);
-      }
-      char = doc.lineAt(line).text.length - 1;
-    } else {
-      char--;
+    line--;
+    if (line < 0) {
+      line = 0;
+      return new Position(0, 0);
     }
-    return this.getClauseHeadStart(doc, line, char);
+    return this.getClauseHeadStart(doc, line);
   }
 
-  private getClauseEnd(
-    doc: TextDocument,
-    line: number,
-    char: number
-  ): Position {
-    const token: Token = this._si.getScopeAt(doc, new Position(line, char));
-
-    if (
-      token &&
-      token.scopes.indexOf("keyword.control.clause.bodyend.prolog") > -1
-    ) {
-      return new Position(line, char + 1);
-    }
-
-    if (char === doc.lineAt(line).text.length) {
-      line++;
-      if (line === doc.lineCount) {
-        line--;
-        return new Position(line, doc.lineAt(line).text.length);
+  private getClauseEnd(doc: TextDocument, line: number): Position {
+    let lineTxt = doc.lineAt(line).text;
+    let dotIndex = lineTxt.indexOf(".");
+    while (dotIndex > -1) {
+      if (this.isClauseEndDot(doc, line, dotIndex)) {
+        return new Position(line, dotIndex + 1);
       }
-      char = 0;
-    } else {
-      char++;
+      dotIndex = lineTxt.indexOf(".", dotIndex + 1);
     }
-
-    return this.getClauseEnd(doc, line, char);
+    line++;
+    if (line === doc.lineCount) {
+      line--;
+      return new Position(line, lineTxt.length);
+    }
+    return this.getClauseEnd(doc, line);
   }
 
   private isClauseEndDot(
@@ -131,19 +111,15 @@ export default class PrologDocumentFormatter
     char: number
   ): boolean {
     const token: Token = this._si.getScopeAt(doc, new Position(line, char));
-    return token.scopes.indexOf("keyword.control.clause.bodyend.prolog") > -1;
+    return (
+      token.scopes.indexOf("keyword.control.clause.bodyend.prolog") > -1 ||
+      token.scopes.indexOf("keyword.control.dcg.bodyend.prolog") > -1 ||
+      token.scopes.indexOf("keyword.control.fact.end.prolog") > -1
+    );
   }
   private validRange(doc: TextDocument, initRange: Range): Range {
-    let startPos: Position = this.getClauseHeadStart(
-      doc,
-      initRange.start.line,
-      initRange.start.character
-    );
-    let endPos: Position = this.getClauseEnd(
-      doc,
-      initRange.end.line,
-      initRange.end.character
-    );
+    let startPos: Position = this.getClauseHeadStart(doc, initRange.start.line);
+    let endPos: Position = this.getClauseEnd(doc, initRange.end.line);
 
     return startPos && endPos ? new Range(startPos, endPos) : null;
   }

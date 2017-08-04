@@ -112,7 +112,9 @@ vscode_swipl_snippets_from_source(FileSpec) :-
     write_objects(Module, Exports, NewObjects), !.
 vscode_swipl_snippets_from_source(_).
 
-add_nocomment_predicate(Module,Pred,doc(Module:Pred, null, Comm)) :-
+add_nocomment_predicate(Module,
+                                    Pred,
+                                    doc(Module:Pred, null, Comm)) :-
     Pred=Fac/Arity,
     gen_params(Arity, 1, Params),
     Predicate=..[Fac|Params],
