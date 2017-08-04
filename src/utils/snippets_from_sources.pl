@@ -1,5 +1,4 @@
 %% snippets_from_sources.pl
-
 :- use_module(library(pldoc)).
 :- use_module(library(pldoc/doc_html)).
 :- use_module(library(pldoc/doc_process)).
@@ -30,12 +29,9 @@ generate_vscode_swipl_snippets(Options) :-
     option(doc_dirs(DirSpecs), Options, [swi(doc)]),
     vscode_swipl_snippets_from_html_under_dirs(DirSpecs),
     nb_getval(snippet_dict, ResltDict),
-    write_to_json_file(SnippetsFile,ResltDict).
+    write_to_json_file(SnippetsFile, ResltDict).
 
 %% ----------------------------------------------------
-
-
-
 traverse_dirs :-
     file_search_path(library, Dir0),
     forall(absolute_file_name(Dir0,
@@ -116,7 +112,7 @@ vscode_swipl_snippets_from_source(FileSpec) :-
     write_objects(Module, Exports, NewObjects), !.
 vscode_swipl_snippets_from_source(_).
 
-add_nocomment_predicate(Module, Pred, doc(Module:Pred, null, Comm)) :-
+add_nocomment_predicate(Module,Pred,doc(Module:Pred, null, Comm)) :-
     Pred=Fac/Arity,
     gen_params(Arity, 1, Params),
     Predicate=..[Fac|Params],
@@ -141,12 +137,16 @@ isExportedPredicate(Exports, PI) :-
     PI=_:PI1,
     memberchk(PI1, Exports).
 
-write_objects(Module, Exports, [doc(PI, Pos, Comment)|T]) :-
+write_objects(Module,
+                          Exports,
+                          [doc(PI, Pos, Comment)|T]) :-
     is_list(PI), !,
     forall(member(PIMember, PI),
            write_objects1(Module, Exports, PIMember, Pos, Comment)),
     write_objects(Module, Exports, T).
-write_objects(Module, Exports, [doc(PI, Pos, Comment)|T]) :-
+write_objects(Module,
+                          Exports,
+                          [doc(PI, Pos, Comment)|T]) :-
     write_objects1(Module, Exports, PI, Pos, Comment),
     write_objects(Module, Exports, T).
 write_objects(Module, Exports, [_|T]) :-
