@@ -1,7 +1,5 @@
 ("use strict");
 import { spawn } from "process-promises";
-import * as cp from "child_process";
-import * as fs from "fs";
 import {
   CancellationToken,
   DocumentFormattingEditProvider,
@@ -18,7 +16,7 @@ import {
   Position,
   extensions
 } from "vscode";
-import { ScopeInfoAPI, Token } from "scope-info";
+// import { ScopeInfoAPI, Token } from "scope-info";
 import * as jsesc from "jsesc";
 
 interface IComment {
@@ -50,7 +48,7 @@ export default class PrologDocumentFormatter
   private _outputChannel: OutputChannel;
   private _textEdits: TextEdit[] = [];
   private _currentTermInfo: ITermInfo = null;
-  private _si: ScopeInfoAPI;
+  // private _si: ScopeInfoAPI;
   private _startChars: number;
 
   constructor() {
@@ -61,14 +59,10 @@ export default class PrologDocumentFormatter
     this._executable = this._section.get("executablePath", "swipl");
     this._args = ["--nodebug", "-q"];
     this._outputChannel = window.createOutputChannel("PrologFormatter");
-    this.initScopeInfo();
-  }
-  private async initScopeInfo() {
-    const siExt = extensions.getExtension<ScopeInfoAPI>("siegebell.scope-info");
-    this._si = await siExt.activate();
   }
 
   private getClauseHeadStart(doc: TextDocument, line: number): Position {
+<<<<<<< HEAD
     let firstNonSpc = doc.lineAt(line).text.match(/[^\s]/);
     if (firstNonSpc) {
       let firstNonSpcIndex = firstNonSpc.index;
@@ -80,6 +74,14 @@ export default class PrologDocumentFormatter
       if (token && token.scopes.indexOf("meta.clause.head.prolog") > -1) {
         return new Position(line, firstNonSpcIndex);
       }
+=======
+    const headReg = /^\s*[\s\S]+?(?=:-|-->)/;
+    const lineTxt = doc.lineAt(line).text;
+    let match = lineTxt.match(headReg);
+    if (match) {
+      let firstNonSpcIndex = lineTxt.match(/[^\s]/).index;
+      return new Position(line, firstNonSpcIndex);
+>>>>>>> formatter
     }
     line--;
     if (line < 0) {
@@ -93,7 +95,7 @@ export default class PrologDocumentFormatter
     let lineTxt = doc.lineAt(line).text;
     let dotIndex = lineTxt.indexOf(".");
     while (dotIndex > -1) {
-      if (this.isClauseEndDot(doc, line, dotIndex)) {
+      if (this.isClauseEndDot(doc, new Position(line, dotIndex))) {
         return new Position(line, dotIndex + 1);
       }
       dotIndex = lineTxt.indexOf(".", dotIndex + 1);
@@ -106,21 +108,64 @@ export default class PrologDocumentFormatter
     return this.getClauseEnd(doc, line);
   }
 
-  private isClauseEndDot(
-    doc: TextDocument,
-    line: number,
-    char: number
-  ): boolean {
-    const token: Token = this._si.getScopeAt(doc, new Position(line, char));
+  private isClauseEndDot(doc: TextDocument, pos: Position): boolean {
+    const txt = doc.getText();
+    const offset = doc.offsetAt(pos);
+    const subtxt = txt
+      .slice(0, offset + 1)
+      .replace(/\\'/g, "")
+      .replace(/\\"/, "")
+      .replace(/"[^\\"]*"/g, "")
+      .replace(/\'[^\']*\'/g, "");
+    const open = subtxt.lastIndexOf("/*");
+    const close = subtxt.lastIndexOf("*/");
     return (
-      token.scopes.indexOf("keyword.control.clause.bodyend.prolog") > -1 ||
-      token.scopes.indexOf("keyword.control.dcg.bodyend.prolog") > -1 ||
-      token.scopes.indexOf("keyword.control.fact.end.prolog") > -1
+      txt.charAt(offset - 1) !== "." &&
+      txt.charAt(offset + 1) !== "." &&
+      subtxt.indexOf("'") === -1 &&
+      subtxt.indexOf('"') === -1 &&
+      !/%[^\n]*$/.test(subtxt) &&
+      (open === -1 || open < close)
     );
   }
+
   private validRange(doc: TextDocument, initRange: Range): Range {
-    let startPos: Position = this.getClauseHeadStart(doc, initRange.start.line);
-    let endPos: Position = this.getClauseEnd(doc, initRange.end.line);
+    const docTxt = doc.getText();
+    let end = docTxt.indexOf(".", doc.offsetAt(initRange.end) - 1);
+    while (end > -1) {
+      if (this.isClauseEndDot(doc, doc.positionAt(end))) {
+        break;
+      }
+      end = docTxt.indexOf(".", end + 1);
+    }
+    if (end === -1) {
+      end = docTxt.length - 1;
+    }
+    let endPos = doc.positionAt(end + 1);
+
+    let start = docTxt.slice(0, doc.offsetAt(initRange.start)).lastIndexOf(".");
+    while (start > -1) {
+      if (this.isClauseEndDot(doc, doc.positionAt(start))) {
+        break;
+      }
+      start = docTxt.slice(0, start - 1).lastIndexOf(".");
+    }
+
+    if (start === -1) {
+      start = 0;
+    }
+
+    let nonTermStart = 0;
+    let re: RegExp = /^\s+|^%.*\n|^\/\*.*?\*\//;
+    let txt = docTxt.slice(start + 1);
+    let match = txt.match(re);
+    while (match) {
+      nonTermStart += match[0].length;
+      match = txt.slice(nonTermStart).match(re);
+    }
+
+    start += nonTermStart;
+    let startPos = doc.positionAt(start === 0 ? 0 : start + 1);
 
     return startPos && endPos ? new Range(startPos, endPos) : null;
   }
@@ -130,15 +175,21 @@ export default class PrologDocumentFormatter
     options: FormattingOptions,
     token: CancellationToken
   ): TextEdit[] | Thenable<TextEdit[]> {
-    return this.getTextEdits(doc, range);
+    return this.getTextEdits(doc, this.validRange(doc, range));
   }
 
   public provideDocumentFormattingEdits(
     doc: TextDocument
   ): TextEdit[] | Thenable<TextEdit[]> {
-    let charZ = doc.lineAt(doc.lineCount - 1).text.length;
-    let range = new Range(0, 0, doc.lineCount - 1, charZ);
-    return this.getTextEdits(doc, range);
+    return this.getTextEdits(
+      doc,
+      new Range(
+        0,
+        0,
+        doc.lineCount - 1,
+        doc.lineAt(doc.lineCount - 1).text.length
+      )
+    );
   }
 
   public provideOnTypeFormattingEdits(
@@ -150,7 +201,10 @@ export default class PrologDocumentFormatter
   ): TextEdit[] | Thenable<TextEdit[]> {
     if (
       ch === "." &&
-      this.isClauseEndDot(doc, position.line, position.character - 1)
+      this.isClauseEndDot(
+        doc,
+        new Position(position.line, position.character - 1)
+      )
     ) {
       let range = new Range(
         position.line,
@@ -158,7 +212,7 @@ export default class PrologDocumentFormatter
         position.line,
         position.character - 1
       );
-      return this.getTextEdits(doc, range);
+      return this.getTextEdits(doc, this.validRange(doc, range));
     } else {
       return [];
     }
@@ -177,12 +231,11 @@ export default class PrologDocumentFormatter
   private async getFormattedCode(doc: TextDocument, range: Range) {
     this._textEdits = [];
     this._currentTermInfo = null;
-    let validRange = this.validRange(doc, range);
-    if (!validRange) {
+    if (!doc.validateRange(range)) {
       return [];
     }
     let docText = jsesc(doc.getText(), { quotes: "double" });
-    let rangeTxt = jsesc(doc.getText(validRange), { quotes: "double" });
+    let rangeTxt = jsesc(doc.getText(range), { quotes: "double" });
     let goals = `
       use_module('${__dirname}/formatter.pl').
       open_string("${docText}", S),
@@ -202,7 +255,7 @@ export default class PrologDocumentFormatter
     let prologProc = null;
 
     try {
-      await spawn(this._executable, this._args, {})
+      let prologChild = await spawn(this._executable, this._args, {})
         .on("process", proc => {
           if (proc.pid) {
             prologProc = proc;
@@ -212,10 +265,10 @@ export default class PrologDocumentFormatter
         })
         .on("stdout", data => {
           if (/::::::ALLOVER/.test(data)) {
-            this.resolve_terms(doc, termStr, validRange, true);
+            this.resolve_terms(doc, termStr, range, true);
           }
           if (/TERMSEGMENTBEGIN:::/.test(data)) {
-            this.resolve_terms(doc, termStr, validRange);
+            this.resolve_terms(doc, termStr, range);
             termStr = data + "\n";
           } else {
             termStr += data + "\n";
@@ -227,6 +280,7 @@ export default class PrologDocumentFormatter
         .on("close", _ => {
           console.log("closed");
         });
+      console.log("exit code:" + prologChild.exitCode);
     } catch (error) {
       let message: string = null;
       if ((<any>error).code === "ENOENT") {
@@ -240,12 +294,6 @@ export default class PrologDocumentFormatter
     }
   }
 
-  private getPositionFromChars(doc: TextDocument, chars: number): Position {
-    let txtLines = doc.getText().slice(0, chars).split("\n");
-    let lines = txtLines.length;
-    let char = txtLines[lines - 1].length;
-    return new Position(lines - 1, char);
-  }
 
   private resolve_terms(
     doc: TextDocument,
@@ -289,7 +337,7 @@ export default class PrologDocumentFormatter
         comments: commsArr
       });
     } else {
-      let endPos = this.getPositionFromChars(doc, termCharA + this._startChars);
+      let endPos = doc.positionAt(termCharA + this._startChars);
       this._currentTermInfo.endLine = endPos.line;
       this._currentTermInfo.endChar = endPos.character;
       if (this._currentTermInfo.isValid) {

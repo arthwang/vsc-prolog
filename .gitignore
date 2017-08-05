@@ -1,5 +1,9 @@
-out
-!out/**/*.pl
+out/*
+!out/src
+out/src/*
+!out/src/features
+out/src/features/*
+!out/src/features/*.pl
 node_modules
 node_trace.1.log
 vsc-extension-quickstart.md
