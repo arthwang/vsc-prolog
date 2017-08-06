@@ -42,6 +42,7 @@ export default class PrologLinter implements CodeActionProvider {
 
   private diagnosticCollection: DiagnosticCollection;
   private diagnostics: { [docName: string]: Diagnostic[] } = {};
+  private filePathIds: { [id: string]: string } = {};
   private sortedDiagIndex: { [docName: string]: number[] } = {};
   private swiRegex = /([^:]+):\s*([^:]+):(\d+):((\d+):)?((\d+):)?\s*(.*)/;
   private executable: string;
@@ -223,24 +224,23 @@ export default class PrologLinter implements CodeActionProvider {
               ]
             });
           });
-        } else {
-          let match = document.getText().match(/:-\s*module\((\w+),/);
-          let module: string = "";
-          if (match) {
-            module = match[1];
-          }
-          if (pred.indexOf(":") > -1) {
-            let [mod, pred1] = pred.split(":");
-            if (mod === module) {
-              pred = pred1;
-            }
-          }
-          codeActions.push({
-            title: "Add ':- dynamic " + pred + ".'",
-            command: this.commandAddDynamicId,
-            arguments: [document, pred, document.uri, diagnostic.range]
-          });
         }
+        match = document.getText().match(/:-\s*module\((\w+),/);
+        let module: string = "";
+        if (match) {
+          module = match[1];
+        }
+        if (pred.indexOf(":") > -1) {
+          let [mod, pred1] = pred.split(":");
+          if (mod === module) {
+            pred = pred1;
+          }
+        }
+        codeActions.push({
+          title: "Add ':- dynamic " + pred + ".'",
+          command: this.commandAddDynamicId,
+          arguments: [document, pred, document.uri, diagnostic.range]
+        });
       }
     });
     return codeActions;
@@ -248,7 +248,7 @@ export default class PrologLinter implements CodeActionProvider {
   private parseIssue(issue: string) {
     let match = issue.match(this.swiRegex);
     if (match == null) return null;
-    let fileName = match[2];
+    let fileName = this.filePathIds[match[2]];
     let severity: DiagnosticSeverity;
     if (match[1] == "ERROR") severity = DiagnosticSeverity.Error;
     else if (match[1] == "Warning") severity = DiagnosticSeverity.Warning;
@@ -262,8 +262,14 @@ export default class PrologLinter implements CodeActionProvider {
     let toPos = new Position(line, toCol);
     let range = new Range(fromPos, toPos);
     let showMsg =
-      match[1] + ":\t" + fileName + ": Line " + line + ": " + match[8];
-    this.outputChannel.append(showMsg + "\n");
+      match[1] +
+      ":\t" +
+      basename(fileName) +
+      ": Line " +
+      (line + 1) +
+      ": " +
+      match[8];
+    this.outputMsg(showMsg + "\n");
     let diag = new Diagnostic(range, match[8], severity);
     if (diag) {
       if (!this.diagnostics[fileName]) {
@@ -278,12 +284,8 @@ export default class PrologLinter implements CodeActionProvider {
     if (textDocument.languageId != "prolog") {
       return;
     }
-
-    // if (this.diagnosticCollection.get(textDocument.uri)) {
-    //   return;
-    // }
-    // let diagnostics: Diagnostic[] = [];
     this.diagnostics[textDocument.uri.fsPath] = [];
+    this.diagnosticCollection.delete(textDocument.uri);
     let options = workspace.rootPath ? { cwd: workspace.rootPath } : undefined;
 
     let args: string[];
@@ -295,30 +297,24 @@ export default class PrologLinter implements CodeActionProvider {
     }
 
     let lineErr: string = "";
+    let docTxt = jsesc(textDocument.getText(), { quotes: "double" });
+    let fileId = textDocument.fileName.replace(/\//g, "");
+    this.filePathIds[fileId] = textDocument.fileName;
     spawn(this.executable, args, options)
       .on("process", process => {
         if (process.pid && this.trigger === RunTrigger.onType) {
-          let goals =
-            'open_string("' +
-            jsesc(textDocument.getText(), { quotes: "double" }) +
-            "\", S),load_files('" +
-            textDocument.fileName +
-            "', [stream(S)]), list_undefined, halt.\n";
+          let goals = `
+            open_string("${docTxt}", S),
+            load_files('${fileId}', [stream(S)]).
+            list_undefined.
+          `;
           process.stdin.write(goals);
           process.stdin.end();
         }
         this.outputChannel.clear();
       })
-      // .on('stdout', (out: string) => {
-      //   console.log('output: ' + out);
-      // })
       .on("stderr", (errStr: string) => {
-        if (
-          /Warning:\s*$|The predicates below are not defined|at runtime using assert/.test(
-            errStr
-          )
-        ) {
-        } else if (/which is referenced by/.test(errStr)) {
+        if (/which is referenced by/.test(errStr)) {
           let regex = /Warning:\s*(.+),/;
           let match = errStr.match(regex);
           lineErr = " Predicate " + match[1] + " not defined";
@@ -326,26 +322,11 @@ export default class PrologLinter implements CodeActionProvider {
           let regex = /^(Warning:\s*([^:]+):)(\d+):(\d+)?/;
           let match = errStr.match(regex);
           let fileName = match[2];
-          // if (textDocument.uri.fsPath === fileName) {
           let line = parseInt(match[3]);
           let char = match[4] ? parseInt(match[4]) : 0;
-          // while (!/:-|-->/.test(textDocument.lineAt(line).text)) line--;
-          let range = textDocument.getWordRangeAtPosition(
-            new Position(line, char)
-          );
-          // line++;
           let rangeStr = line + ":" + char + ":200: ";
           let lineMsg = match[1] + rangeStr + lineErr;
           this.parseIssue(lineMsg + "\n");
-          // let diagnostic: Diagnostic = this.parseIssue(
-          //   textDocument,
-          //   lineMsg + "\n"
-          // );
-          // if (diagnostic) {
-          //   diagnostics.push(diagnostic);
-          // }
-          // this.outputChannel.append(lineMsg + "\n");
-          // }
         } else if (/:\s*$/.test(errStr)) {
           lineErr = errStr;
         } else {
@@ -355,11 +336,6 @@ export default class PrologLinter implements CodeActionProvider {
             lineErr = lineErr.concat(errStr);
           }
           this.parseIssue(lineErr + "\n");
-          // let diag = this.parseIssue(textDocument, lineErr);
-          // if (diag) {
-          //   diagnostics.push(diag);
-          // }
-          // this.outputChannel.append(lineErr + "\n");
         }
       })
       .then(result => {
@@ -524,7 +500,6 @@ export default class PrologLinter implements CodeActionProvider {
     }
 
     input = `
-
     rewrite_module_declaration(Module, PI) :-
         setup_call_cleanup(
             open('${doc.fileName}', read, S),
@@ -594,19 +569,6 @@ export default class PrologLinter implements CodeActionProvider {
         }
         // add comments
         let comm = "%!\t" + pred + "\n%\n%\n";
-        // if (arity > 0) {
-        //   let params = pred.match(/\(.*\)/)[1].split(",");
-        //   if (params.length === arity) {
-        //     params = params.map(param => {
-        //       return "%\t@" + param;
-        //     });
-        //     comm += params.join("\n") + "\n";
-        //   } else {
-        //     this.outputMsg(
-        //       "Can't generate parameters of the predicate. Edit manually please."
-        //     );
-        //   }
-        // }
         edit = new WorkspaceEdit();
         edit.insert(
           Uri.file(doc.fileName),
