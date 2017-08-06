@@ -62,26 +62,12 @@ export default class PrologDocumentFormatter
   }
 
   private getClauseHeadStart(doc: TextDocument, line: number): Position {
-<<<<<<< HEAD
-    let firstNonSpc = doc.lineAt(line).text.match(/[^\s]/);
-    if (firstNonSpc) {
-      let firstNonSpcIndex = firstNonSpc.index;
-      const token: Token = this._si.getScopeAt(
-        doc,
-        new Position(line, firstNonSpcIndex)
-      );
-
-      if (token && token.scopes.indexOf("meta.clause.head.prolog") > -1) {
-        return new Position(line, firstNonSpcIndex);
-      }
-=======
     const headReg = /^\s*[\s\S]+?(?=:-|-->)/;
     const lineTxt = doc.lineAt(line).text;
     let match = lineTxt.match(headReg);
     if (match) {
       let firstNonSpcIndex = lineTxt.match(/[^\s]/).index;
       return new Position(line, firstNonSpcIndex);
->>>>>>> formatter
     }
     line--;
     if (line < 0) {
@@ -293,7 +279,6 @@ export default class PrologDocumentFormatter
       }
     }
   }
-
 
   private resolve_terms(
     doc: TextDocument,
