@@ -1,6 +1,11 @@
-# vsc-prolog README
-VSC-Prolog is VS Code extension which supports for Prolog in VS Code. But I'd better to remind you of the the environments this extension is published:
-OS: Debian 9.0,
+# VSC-Prolog
+
+A VS Code extension which supports for Prolog (just SWI-Prolog now) in VS Code.
+
+## Note before installation
+
+This extension can be installed via extensions viewer of VS Code. But it is developed and tested in the environments: 
+OS: Debian 9.0
 Prolog: SWI-Prolog 7.4.2.
 Other environments are not yet tested.
 
@@ -14,7 +19,7 @@ Other environments are not yet tested.
 ### Infomation Hovers, showing document information about the predicate under the mouse cursor.
 ![hover](images/hover.gif)
 
-### Grammar linter, marking grammar errors, warning and undefined predicates of current source file and imported files with squiggles while you type or save the file (configurable). 
+### Grammar linter, marking grammar errors, warning and undefined predicates of current source file and imported files with squiggles while you type or save the file (configurable). The messages are presented in OUTPUT and PROBLEMS chennels. Clicking a line in PROBLEM chennel brings to the corresponding line in the editor. Stroking F7/F8 in editor traverses lines where errors or warnings locate and the corresponding errors/warnings display in OUTPUT chennel.
 ![linter](images/linter.gif)
 
 ### Import/Dynamic predicate helper, clicking on the squiggle indicating 'undefined predicate' would light the yellow bulb on left of the line. A suggesition list is presented when you click the bulb. The suggestion includes 'add dynamic ' for the undefined predicate or 'import' it if VSC-Prolog finds it's exported from some module(s).
