@@ -610,7 +610,7 @@ export default class PrologLinter implements CodeActionProvider {
 
     if (direction === 0) {
       i = 0;
-      if (activeLine >= diagnostics[si.length - 1].range.start.line) {
+      if (activeLine >= diagnostics[si[si.length - 1]].range.start.line) {
         position = diagnostics[si[0]].range.start;
       } else {
         while (diagnostics[si[i]].range.start.line <= activeLine) {
