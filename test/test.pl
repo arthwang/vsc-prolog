@@ -1,17 +1,6 @@
-%%
-/*second line comment*/
-:- use_module(library(regex)).
-    % spaces before comment 
-
-% about predicate
-start1 :-
-/* block comment
- */
- 
-    % Str1=~'\\d+',
-    Str1=hello, %middle comments.
-    writeln(str:Str1).% comments at end.
-
-    /* footer comments
-
-    */
+% demo in README.md
+say_hi :-
+    prompt(_, 'What\'s your name?'),
+    read_line_to_string(current_input, Name),
+    format('Hello, ~s!~n', Name).
+    

@@ -4,40 +4,88 @@ A VS Code extension which supports for Prolog (just SWI-Prolog now) in VS Code.
 
 ## Note before installation
 
-This extension can be installed via extensions viewer of VS Code or 'extension install' command from the command palette. But it is developed and tested in SWI-Prolog 7.4.2. on Debian 9.0. Other environments are not yet tested.
+This extension can be installed via extensions viewer of VS Code or 'extension install' command from the command palette. But it is developed and tested in SWI-Prolog 7.4.2 and VS Code 1.14 on Debian 9.0(stretch). Other environments are not yet tested.
 
 ## Features
+  * Syntax highlighting
+  * Snippets
+  * Information Hovers
+  * Linter
+  * Edit helpers
+    * Import/Dynamic helper
+    * Export helper
+    * Recursion helper
+    * Anonymous variable helper
+  * Load and run active source file
+  * Goto definition
+  * Code formatter
+  * Debugger
+    * Leep
+    * Stepinto
+    * Stepover
+    * Up
+    * Stop
+    * Restart
+    * Breakpoints, including conditional breakpoints and hit count breakpoints
+    * Spy(function breakpoints)
+    * Variable watcher
+    * Evaluation
+
+## Feature descriptions and usages
 
 ### Syntax highlighting
-The syntax highlighting is based on sublimeprolog. I add builtin pattern to differiate builtins from other predicates. 
-![syntax](images/syntax.gif)
+  * Based on sublimeprolog
+  * Builtin pattern support
+  ![syntax](images/syntax.gif)
 
 ### Predicate Snippets
- Snippets are programmatically produced from installed SWI-Prolog's source files with structured comments and html documents. Predicate templates would display in a auto-completetion suggestion lists with modes and document information in the right panel. 
-![snippet](images/snippets.gif)
+  * Predicate templates auto-completion
+  * Produced from source files with structured comments and html document of swipl system
+  ![snippet](images/snippets.gif)
 
 ### Infomation Hovers
 Hovers show Document information about the predicate under the mouse cursor.
 ![hover](images/hover.gif)
 
 ### Grammar linter
-Linter marks grammar errors, warning and undefined predicates of current source file and imported files with squiggles while you type or save the file (configurable). The messages are presented in OUTPUT and PROBLEMS chennels. Clicking a line in PROBLEM chennel brings to the corresponding line in the editor. Stroking F8/shift-F8 in editor traverses lines where errors or warnings locate and the corresponding errors/warnings display in OUTPUT chennel.
-![linter](images/linter.gif)
+  * Lint for errors, warning and undefined predicates of the source file in active editor window and its imported file
+  * Mesage shown in OUTPUT and PROBLEMS channels
+  * Clicking lines in PROBLEMS channels brings cursor to the respective lines in the editor
+  * Traverse error lines in the editor by commands, the error/warning message responding to the line is presented in OUTPUT channel.
+    * Prolog: Goto next error line (default mapped to f8) 
+    * Prolog: Goto previous error line (default mapped to shift-f8)
+  ![linter](images/linter.gif)
 
-### Import/Dynamic predicate helper
- Clicking on the squiggle indicating 'undefined predicate' lights the yellow bulb on left of the line. A suggesition list is presented when you click the bulb. The suggestion includes 'add dynamic ' for the undefined predicate or 'import' it if VSC-Prolog finds it's exported from some module(s).
+### Edit helpers
+
+* Import/Dynamic predicate helper
+
+  Clicking on the squiggle indicating 'undefined predicate' lights the yellow bulb in left of the line. A suggesition list is presented when you click the bulb. The suggestion includes 'add dynamic ' for the undefined predicate or 'import' it if VSC-Prolog finds it's exported from some module(s).
 ![import](images/import.gif)
 
-### Export helper
+* Export helper
 
+  Move cursor to the line to be exported and right click it to pop up the Editor/context menu. Click the command: "Prolog: export predicate under cursor" to insert :- module/2 if module is not defined or add to the exporting list otherwise. After that a message box displays to ask for if adding structured comment for the predicate and comment lines are inserted above the head of the clause.
+ ![export](images/export.gif)
 
-### Recursion helper
+* Recursion helper
 
-### Runner in prolog process
+  Leading dot (only spaces before it) of a line repeat the above nearest predicate or the head of current clause if last line ends with comma, in which case the recursive variable change accordingly as intelligent as possible.
+![recursion](images/recursion.gif)
+
+* Anonymous variables helper
+
+  Typing underscore in front of any parameters makes the parameter an anonymous variable.
+  ![anonyvar](images/anonymous.gif)
+
+### Load and run program in prolog process
+
+Command 'Prolog: load document' (default mapped to alt-x l) loads the source file in active editor into prolog process, opening a prolog process if it has not been opened. The prolog process provides a real prolog REPL console.
+
 
 ### Go to definition
 
-### 
+
 
 Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
 

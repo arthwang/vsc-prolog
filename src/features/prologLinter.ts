@@ -343,7 +343,7 @@ export default class PrologLinter implements CodeActionProvider {
           });
           this.diagnosticCollection.set(Uri.file(doc), this.diagnostics[doc]);
         }
-
+        this.outputChannel.clear();
         for (let doc in this.sortedDiagIndex) {
           let si = this.sortedDiagIndex[doc];
           for (let i = 0; i < si.length; i++) {
@@ -354,7 +354,7 @@ export default class PrologLinter implements CodeActionProvider {
               1}:\t${severity}:\t${diag.message}\n`;
             this.outputChannel.append(msg);
           }
-          this.outputChannel.show();
+          this.outputChannel.show(false);
         }
       })
       .catch(error => {
