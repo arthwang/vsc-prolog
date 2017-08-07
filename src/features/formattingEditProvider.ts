@@ -141,16 +141,17 @@ export default class PrologDocumentFormatter
       start = 0;
     }
 
-    let nonTermStart = 0;
-    let re: RegExp = /^\s+|^%.*\n|^\/\*.*?\*\//;
-    let txt = docTxt.slice(start + 1);
-    let match = txt.match(re);
-    while (match) {
-      nonTermStart += match[0].length;
-      match = txt.slice(nonTermStart).match(re);
+    if (start > 0) {
+      let nonTermStart = 0;
+      let re: RegExp = /^\s+|^%.*\n|^\/\*.*?\*\//;
+      let txt = docTxt.slice(start + 1);
+      let match = txt.match(re);
+      while (match) {
+        nonTermStart += match[0].length;
+        match = txt.slice(nonTermStart).match(re);
+      }
+      start += nonTermStart;
     }
-
-    start += nonTermStart;
     let startPos = doc.positionAt(start === 0 ? 0 : start + 1);
 
     return startPos && endPos ? new Range(startPos, endPos) : null;
