@@ -19,7 +19,7 @@ Other environments are not yet tested.
 ### Infomation Hovers, showing document information about the predicate under the mouse cursor.
 ![hover](images/hover.gif)
 
-### Grammar linter, marking grammar errors, warning and undefined predicates of current source file and imported files with squiggles while you type or save the file (configurable). The messages are presented in OUTPUT and PROBLEMS chennels. Clicking a line in PROBLEM chennel brings to the corresponding line in the editor. Stroking F7/F8 in editor traverses lines where errors or warnings locate and the corresponding errors/warnings display in OUTPUT chennel.
+### Grammar linter, marking grammar errors, warning and undefined predicates of current source file and imported files with squiggles while you type or save the file (configurable). The messages are presented in OUTPUT and PROBLEMS chennels. Clicking a line in PROBLEM chennel brings to the corresponding line in the editor. Stroking F8/shift-F8 in editor traverses lines where errors or warnings locate and the corresponding errors/warnings display in OUTPUT chennel.
 ![linter](images/linter.gif)
 
 ### Import/Dynamic predicate helper, clicking on the squiggle indicating 'undefined predicate' would light the yellow bulb on left of the line. A suggesition list is presented when you click the bulb. The suggestion includes 'add dynamic ' for the undefined predicate or 'import' it if VSC-Prolog finds it's exported from some module(s).
