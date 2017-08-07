@@ -261,15 +261,6 @@ export default class PrologLinter implements CodeActionProvider {
     let fromPos = new Position(line, fromCol);
     let toPos = new Position(line, toCol);
     let range = new Range(fromPos, toPos);
-    let showMsg =
-      match[1] +
-      ":\t" +
-      basename(fileName) +
-      ": Line " +
-      (line + 1) +
-      ": " +
-      match[8];
-    this.outputMsg(showMsg + "\n");
     let diag = new Diagnostic(range, match[8], severity);
     if (diag) {
       if (!this.diagnostics[fileName]) {
@@ -351,6 +342,19 @@ export default class PrologLinter implements CodeActionProvider {
             return item[1];
           });
           this.diagnosticCollection.set(Uri.file(doc), this.diagnostics[doc]);
+        }
+
+        for (let doc in this.sortedDiagIndex) {
+          let si = this.sortedDiagIndex[doc];
+          for (let i = 0; i < si.length; i++) {
+            let diag = this.diagnostics[doc][si[i]];
+            let severity =
+              diag.severity === DiagnosticSeverity.Error ? "ERROR" : "Warning";
+            let msg = `${basename(doc)}:line:${diag.range.start.line +
+              1}:\t${severity}:\t${diag.message}\n`;
+            this.outputChannel.append(msg);
+          }
+          this.outputChannel.show();
         }
       })
       .catch(error => {
