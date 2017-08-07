@@ -4,33 +4,40 @@ A VS Code extension which supports for Prolog (just SWI-Prolog now) in VS Code.
 
 ## Note before installation
 
-This extension can be installed via extensions viewer of VS Code. But it is developed and tested in the environments: 
-OS: Debian 9.0
-Prolog: SWI-Prolog 7.4.2.
-Other environments are not yet tested.
+This extension can be installed via extensions viewer of VS Code or 'extension install' command from the command palette. But it is developed and tested in SWI-Prolog 7.4.2. on Debian 9.0. Other environments are not yet tested.
 
 ## Features
 
-### Syntax highlighting, based on sublimeprolog. I add builtin pattern to differiate builtins from other predicates. 
+### Syntax highlighting
+The syntax highlighting is based on sublimeprolog. I add builtin pattern to differiate builtins from other predicates. 
+![syntax](images/syntax.gif)
 
-### Predicate Snippets, programmatically produced from installed SWI-Prolog's source files with structured comments and html documents. Predicate templates would display in a auto-completetion suggestion lists with modes and document information in the right panel. 
+### Predicate Snippets
+ Snippets are programmatically produced from installed SWI-Prolog's source files with structured comments and html documents. Predicate templates would display in a auto-completetion suggestion lists with modes and document information in the right panel. 
 ![snippet](images/snippets.gif)
 
-### Infomation Hovers, showing document information about the predicate under the mouse cursor.
+### Infomation Hovers
+Hovers show Document information about the predicate under the mouse cursor.
 ![hover](images/hover.gif)
 
-### Grammar linter, marking grammar errors, warning and undefined predicates of current source file and imported files with squiggles while you type or save the file (configurable). The messages are presented in OUTPUT and PROBLEMS chennels. Clicking a line in PROBLEM chennel brings to the corresponding line in the editor. Stroking F8/shift-F8 in editor traverses lines where errors or warnings locate and the corresponding errors/warnings display in OUTPUT chennel.
+### Grammar linter
+Linter marks grammar errors, warning and undefined predicates of current source file and imported files with squiggles while you type or save the file (configurable). The messages are presented in OUTPUT and PROBLEMS chennels. Clicking a line in PROBLEM chennel brings to the corresponding line in the editor. Stroking F8/shift-F8 in editor traverses lines where errors or warnings locate and the corresponding errors/warnings display in OUTPUT chennel.
 ![linter](images/linter.gif)
 
-### Import/Dynamic predicate helper, clicking on the squiggle indicating 'undefined predicate' would light the yellow bulb on left of the line. A suggesition list is presented when you click the bulb. The suggestion includes 'add dynamic ' for the undefined predicate or 'import' it if VSC-Prolog finds it's exported from some module(s).
-
+### Import/Dynamic predicate helper
+ Clicking on the squiggle indicating 'undefined predicate' lights the yellow bulb on left of the line. A suggesition list is presented when you click the bulb. The suggestion includes 'add dynamic ' for the undefined predicate or 'import' it if VSC-Prolog finds it's exported from some module(s).
+![import](images/import.gif)
 
 ### Export helper
 
 
 ### Recursion helper
 
+### Runner in prolog process
 
+### Go to definition
+
+### 
 
 Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
 

@@ -459,24 +459,25 @@ export default class PrologLinter implements CodeActionProvider {
   public exportPredicateUnderCursor() {
     let editor = window.activeTextEditor;
     let doc = editor.document;
-    if (doc.isDirty) {
-      doc.save().then(_ => {
-        this.exportPredicateUnderCursor();
-      });
-    }
+    let docTxt = jsesc(doc.getText(), { quotes: "double" });
+    let fileId = doc.fileName.replace("///g", "");
+
     let pos = editor.selection.active;
     let pred = Utils.getPredicateUnderCursor(doc, pos);
     let arity = Utils.getPredicateArity(pred);
     let wordRange: Range = doc.getWordRangeAtPosition(pos);
     let predName: string = doc.getText(wordRange);
     let pi = predName + "/" + arity;
+
     if (arity < 0) {
       this.outputMsg(`${pred} is not a valid predicate to export.`);
       return;
     }
     let input = `
     clause_location(Pred) :-
-      load_files('${doc.fileName}', [module(user)]),
+      open_string("${docTxt}", S),
+      load_files('${fileId}', [module(user), stream(S)]),
+      close(S),
       (   functor(Pred, :, 2)
       ->  Pred1 = pred
       ;   context_module(Mod),
@@ -498,7 +499,7 @@ export default class PrologLinter implements CodeActionProvider {
       this.outputMsg(`${pred} is not a valid predicate to export.`);
       return;
     }
-    if (clause_info[1] !== doc.fileName) {
+    if (clause_info[1] !== fileId) {
       this.outputMsg(`${pred} is not defined in active source file.`);
       return;
     }
@@ -506,7 +507,7 @@ export default class PrologLinter implements CodeActionProvider {
     input = `
     rewrite_module_declaration(Module, PI) :-
         setup_call_cleanup(
-            open('${doc.fileName}', read, S),
+            open_string("${docTxt}", S),
             (   read_term(S, Term, [term_position(Pos)]),
                 stream_position_data(line_count, Pos, Line),
                 stream_position_data(line_position, Pos, Start),
