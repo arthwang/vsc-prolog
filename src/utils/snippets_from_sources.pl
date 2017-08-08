@@ -11,8 +11,8 @@
 
 :- (volatile dir_handled/1).
 
-start :-
-    generate_vscode_swipl_snippets([]).
+% start :-
+%     generate_vscode_swipl_snippets([]).
 
 generate_vscode_swipl_snippets(Options) :-
     option(detailed_description(TrueOrFalse), Options, true),

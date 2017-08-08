@@ -25,9 +25,6 @@ import * as Net from "net";
 export class PrologDebugSession extends DebugSession {
   private static SCOPEREF = 1;
   public static THREAD_ID = 100;
-  // private _args: LaunchRequestArguments;
-  // private _supportsRunInTerminal: boolean;
-  // private _console: string;
   private _prologDebugger: PrologDebugger;
   private _runtimeExecutable: string;
   private _runtimeArgs: string[];
@@ -45,15 +42,10 @@ export class PrologDebugSession extends DebugSession {
     this.setDebuggerPathFormat("native");
   }
 
-  // public isInTerminal(): boolean {
-  //   return this._supportsRunInTerminal && this._console !== "internalConsole";
-  // }
   protected initializeRequest(
     response: DebugProtocol.InitializeResponse,
     args: DebugProtocol.InitializeRequestArguments
   ): void {
-    // this._supportsRunInTerminal = args.supportsRunInTerminalRequest;
-    // this.sendEvent(new InitializedEvent());
     response.body = {
       supportsConfigurationDoneRequest: true,
       supportTerminateDebuggee: true,
@@ -63,8 +55,6 @@ export class PrologDebugSession extends DebugSession {
       supportsEvaluateForHovers: true,
       supportsExceptionOptions: true,
       supportsExceptionInfoRequest: true,
-      // supportsStepBack: false,
-      // supportsStepInTargetsRequest: true,
       exceptionBreakpointFilters: [
         {
           filter: "Notice",
@@ -187,6 +177,7 @@ export class PrologDebugSession extends DebugSession {
     args: DebugProtocol.ConfigurationDoneArguments
   ): void {
     this.sendResponse(response);
+    this._prologDebugger.startup(`${this._startupQuery}`);
   }
 
   private evaluateExpression(exp: string) {

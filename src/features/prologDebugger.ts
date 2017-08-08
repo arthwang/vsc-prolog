@@ -184,7 +184,6 @@ export class PrologDebugger extends EventEmitter {
           use_module('${__dirname}/debugger').\n
           prolog_debugger:load_source_file('${this._launchRequestArguments
             .program}').
-          prolog_debugger:startup(${this._launchRequestArguments.startupQuery}).
             `);
   }
   private async createPrologProc() {
@@ -201,7 +200,7 @@ export class PrologDebugger extends EventEmitter {
         }
       })
       .on("stdout", data => {
-        this._debugSession.debugOutput("\n" + data);
+        // this._debugSession.debugOutput("\n" + data);
         if (/"response":/.test(data)) {
           this.handleOutput(data);
         } else if (!this.filterOffOutput(data)) {

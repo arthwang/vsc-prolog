@@ -1,7 +1,10 @@
 /**
 *   debugger.pl
 */
-:- module(prolog_debugger,[load_source_file/1, startup/1]).
+:- module(prolog_debugger,
+          [ load_source_file/1,
+            startup/1
+          ]).
 
 :- (dynamic subterm_pos/4, clause_handled/2, file_chars/2, file_chars_computed/1, user:prolog_trace_interception/4, file_lines/2, file_line_start_end/4, file_lines_computed/1).
 
@@ -53,7 +56,15 @@ clear_breakpoints(File) :-
     fail.
 clear_breakpoints(_).
 
-set_breakpoints(File, [BPDict|T], [_{line:BPDict.line, source:File, verified:Verified}|VT]) :-
+set_breakpoints(File,
+                            [BPDict|T],
+                            
+                            [ _{ line:BPDict.line,
+                                 source:File,
+                                 verified:Verified
+                               }
+                            | VT
+                            ]) :-
     dict_keys(BPDict, BpKeys),
     (   memberchk(column, BpKeys)
     ->  Col is BPDict.column
@@ -85,7 +96,11 @@ spy_predicates(Preds) :-
     dict_json(Response, ResStr),
     format('~n~w~n', ResStr).
 
-spy_predicates([Pred|T], [_{message:Pred, verified:Verified}|VT]) :-
+spy_predicates([Pred|T],
+                           
+                           [ _{message:Pred, verified:Verified}
+                           | VT
+                           ]) :-
     catch((   spy(Pred)
           ->  Verified=true
           ;   Verified=false
@@ -197,7 +212,12 @@ dict_json(Dict, Json) :-
 dict_json(Dict, Json) :-
     atom_json_dict(Json, Dict, []).
 
-output_stack_frame(FrameId, Level, FrameName, File, Line, Column) :-
+output_stack_frame(FrameId,
+                               Level,
+                               FrameName,
+                               File,
+                               Line,
+                               Column) :-
     Response=_{response:_{frame:_{column:Column, file:File, id:FrameId, level:Level, line:Line, name:FrameName}}},
     nb_setval(frame, Response.response.frame),
     dict_json(Response, NoSpc),
@@ -230,9 +250,9 @@ trace_parent(Level, Start, Start, Parent, ClauseRef, PC) :-
     catch(prolog_frame_attribute(Parent, clause, ClauseRef), _, fail),
     prolog_frame_attribute(Start, pc, PC), !.
 trace_parent(Level, Start, Child, GParent, ClauseRef, PC) :-
-    Level > 0,
+    Level>0,
     prolog_frame_attribute(Start, parent, Parent),
-    Next is Level - 1,
+    Next is Level-1,
     trace_parent(Next, Parent, Child, GParent, ClauseRef, PC).
     
 
@@ -287,28 +307,60 @@ strip_subterm(File, ClauseRef, SubTerms) :-
     assert_subterm(File, ClauseRef, SubTerms),
     assert(clause_handled(File, ClauseRef)).
      
-assert_subterm(File, ClauseRef, parentheses_term_position(_, _, Subs)) :-
+assert_subterm(File,
+                           ClauseRef,
+                           parentheses_term_position(_, _, Subs)) :-
     assert_subterm(File, ClauseRef, Subs), !.
-assert_subterm(File, ClauseRef, term_position(_, _, FFrom, FTo, [L, R])) :-
+assert_subterm(File,
+                           ClauseRef,
+                           term_position(_,
+                                         _,
+                                         FFrom,
+                                         FTo,
+                                         [L, R])) :-
     chars_string(File, FFrom, FTo, ","),
     assert_subterm(File, ClauseRef, L),
     assert_subterm(File, ClauseRef, R), !.
-assert_subterm(File, ClauseRef, term_position(_, _, FFrom, FTo, [L, R])) :-
+assert_subterm(File,
+                           ClauseRef,
+                           term_position(_,
+                                         _,
+                                         FFrom,
+                                         FTo,
+                                         [L, R])) :-
     chars_string(File, FFrom, FTo, ";"),
     assert_subterm(File, ClauseRef, L),
     assert_subterm(File, ClauseRef, R), !.
-assert_subterm(File, ClauseRef, term_position(_, _, FFrom, FTo, [H|T])) :-
+assert_subterm(File,
+                           ClauseRef,
+                           term_position(_,
+                                         _,
+                                         FFrom,
+                                         FTo,
+                                         [H|T])) :-
     chars_string(File, FFrom, FTo, "->"),
     assert_subterm(File, ClauseRef, H),
     assert_subterm(File, ClauseRef, T), !.
-assert_subterm(File, ClauseRef, term_position(_, _, FFrom, FTo, [H, B])) :-
+assert_subterm(File,
+                           ClauseRef,
+                           term_position(_,
+                                         _,
+                                         FFrom,
+                                         FTo,
+                                         [H, B])) :-
     chars_string(File, FFrom, FTo, ":-"),
     assert_subterm(File, ClauseRef, H),
     assert_subterm(File, ClauseRef, B), !.
 assert_subterm(File, ClauseRef, [H|T]) :-
-    assert_subterm(File, ClauseRef, H),    
+    assert_subterm(File, ClauseRef, H),
     assert_subterm(File, ClauseRef, T), !.    
-assert_subterm(File, ClauseRef, term_position(From, To, _, _, Subs)) :-
+assert_subterm(File,
+                           ClauseRef,
+                           term_position(From,
+                                         To,
+                                         _,
+                                         _,
+                                         Subs)) :-
     assert_subterm(File, ClauseRef, From, To),
     assert_subterm(File, ClauseRef, Subs), !.
 assert_subterm(_, _, _).
@@ -330,19 +382,25 @@ locate_from_term_position(PFrame, PCRef, Goal, CharA) :-
     goal_var_names(GVarList, VarList, Args, VarNames),
     find_file_chars(File),
     strip_subterm(File, PCRef, SubTermPos),
-    subterm_pos(File, PCRef, GoalStr, CharA), 
+    subterm_pos(File, PCRef, GoalStr, CharA),
     term_string(Goal, GoalStr, [variable_names(Vars1)]),
     exclude(nonvar_var, Vars1, VarNames), !.
 
 nonvar_var(_=V) :-
     nonvar(V).
-goal_var_names([H|T], Vars, Args, [NVar|VT]) :-
+goal_var_names([H|T],
+                           Vars,
+                           Args,
+                           [NVar|VT]) :-
     goal_var_name(H, Vars, Args, NVar),
     goal_var_names(T, Vars, Args, VT).
 goal_var_names([], _, _, []).
 
-goal_var_name(Var, [VH|_], [AH|_], VH=AH) :-
-    Var == AH, !.
+goal_var_name(Var,
+                          [VH|_],
+                          [AH|_],
+                          VH=AH) :-
+    Var==AH, !.
 goal_var_name(Var, [_|VT], [_|AT], NVar) :-
     goal_var_name(Var, VT, AT, NVar).
      
@@ -378,7 +436,9 @@ output_bindings(ParentFrame, ParentClauseRef) :-
 frame_bindings([_|AT], [Var|VT], Bound) :-
     Var=='_', !,
     frame_bindings(AT, VT, Bound).
-frame_bindings([Arg|AT], [Var|VT], [Var=Bound|BT]) :-
+frame_bindings([Arg|AT],
+                           [Var|VT],
+                           [Var=Bound|BT]) :-
     Var\=='_',
     (   var(Arg)
     ->  Bound='_'
@@ -395,10 +455,14 @@ output_bound_vars(Bound) :-
     dict_json(Response, ResStr),
     format('~n~w~n', ResStr).
 
-convert_bound([Name=Val|NT], [_{name:Name, value:'_'}|CT], GivenVars) :-
+convert_bound([Name=Val|NT],
+                          [_{name:Name, value:'_'}|CT],
+                          GivenVars) :-
     Val=='_', !,
     convert_bound(NT, CT, GivenVars).
-convert_bound([Name=Val|NT], [_{name:Name, value:Val1}|CT], GivenVars) :-
+convert_bound([Name=Val|NT],
+                          [_{name:Name, value:Val1}|CT],
+                          GivenVars) :-
     term_to_atom(Val, Val1),
     (   number(Val)
     ->  atomic_list_concat([Name, ' is ', Val], Given1)
@@ -459,16 +523,32 @@ clause_end(ClauseRef, File, CharA, CharZ) :-
 head_pos(Ref, Pos, HPos) :-
     clause_property(Ref, fact), !,
     HPos=Pos.
-head_pos(_, term_position(_, _, _, _, [HPos, _]), HPos).
+head_pos(_,
+                     term_position(_,
+                                   _,
+                                   _,
+                                   _,
+                                   [HPos, _]),
+                     HPos).
 
 find_subgoal(_, Pos, Pos) :-
     var(Pos), !.
-find_subgoal([A|T], term_position(_, _, _, _, PosL), SPos) :-
+find_subgoal([A|T],
+                         term_position(_,
+                                       _,
+                                       _,
+                                       _,
+                                       PosL),
+                         SPos) :-
     nth1(A, PosL, Pos), !,
     find_subgoal(T, Pos, SPos).
-find_subgoal([1|T], brace_term_position(_, _, Pos), SPos) :- !,
+find_subgoal([1|T],
+                         brace_term_position(_, _, Pos),
+                         SPos) :- !,
     find_subgoal(T, Pos, SPos).
-find_subgoal(List, parentheses_term_position(_, _, Pos), SPos) :- !,
+find_subgoal(List,
+                         parentheses_term_position(_, _, Pos),
+                         SPos) :- !,
     find_subgoal(List, Pos, SPos).
 find_subgoal(_, Pos, Pos).
 
@@ -542,4 +622,4 @@ merge_lines(Lines, Line, LineZ, CharZ, SubStr, Text) :-
     split_string(String1, "", " \t\n", [String]),
     string_concat(SubStr, String, NewStr),
     NextLine is Line+1,
-    merge_lines(Lines, NextLine, LineZ, CharZ, NewStr,Text).
+    merge_lines(Lines, NextLine, LineZ, CharZ, NewStr, Text).
