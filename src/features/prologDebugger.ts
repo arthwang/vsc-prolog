@@ -201,7 +201,7 @@ export class PrologDebugger extends EventEmitter {
         }
       })
       .on("stdout", data => {
-        // this._debugSession.debugOutput("\n" + data);
+        this._debugSession.debugOutput("\n" + data);
         if (/"response":/.test(data)) {
           this.handleOutput(data);
         } else if (!this.filterOffOutput(data)) {
