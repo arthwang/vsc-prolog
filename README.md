@@ -135,6 +135,13 @@ This extension can be installed via extensions viewer of VS Code or 'extension i
 
   ![breakpoints](images/breakpoints.gif)
 
+  * Conditional breakpoints
+
+  ![condbkp](images/condbkp.gif
+  )
+
+  * Hit count breakpoints
+
 * Variables watch
 
 * Evaluation
