@@ -122,8 +122,6 @@ startup(StartGoal) :-
     notrace.
 
 user:prolog_trace_interception(_, Frame, _, Action) :-
-    % thread_self(TID),
-    % writeln(interceptiontid:TID),
     prolog_frame_attribute(Frame, goal, Goal),
     (   locate_source(Frame)
     ;   output_clause_location(Goal, Frame)
@@ -142,20 +140,17 @@ check_breakpoint(continue) :-
     ;   memberchk(hitCondition, BpKeys),
         \+ meet_hit_condition(BpDict, Id)
     ),
-    notrace.
+    notrace, !.
 check_breakpoint(_).
 
 meet_hit_condition(BpDict, Id) :-
-    writeln(hit:bpdict:BpDict),
     HitCond is BpDict.Id.hitCondition,
-    (   BpDict.Id.hits>=HitCond
-    ->  true
-    ;   NHits is BpDict.Id.hits+1,
-        BpIdDict1=BpDict.Id.put(hits, NHits),
-        BpDict1=BpDict.put(Id, BpIdDict1),
-        nb_setval(breakpoints, BpDict1),
-        fail
-    ).
+    CurrHits is BpDict.Id.hits,
+    NHits is CurrHits+1,
+    BpIdDict1=BpDict.Id.put(hits, NHits),
+    BpDict1=BpDict.put(Id, BpIdDict1),
+    nb_setval(breakpoints, BpDict1),
+    CurrHits>=HitCond.
 
 meet_condition(BdDict, BpIdDict) :-
     Cond=BpIdDict.condition,

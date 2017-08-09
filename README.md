@@ -117,7 +117,7 @@ This extension can be installed via extensions viewer of VS Code or 'extension i
     ![format](images/format.gif)
 ### Debugger
 
-  The experimental debugger of VSC-Prolog tries to visualize the command line tracer of SWI-Prolog in VS Code.   
+  The experimental debugger of VSC-Prolog tries to visualize the command line tracer of SWI-Prolog in VS Code. Read [VS Code handbook about debugging](https://code.visualstudio.com/docs/editor/debugging) for how VS Code debugging works generally.
   
   For the first time to debug in VS Code it is necessary to setup a launch.json file under .vscode in a project root directory. VS Code pops down a list of debug environments when you first click 'start debugging' button (f5) or the gear icon. The list contains 'Prolog' if VSC-Prolog extension is installed. A default launch.json file would be generated. Among the all settings, two must be set firstly: 'runtime executable' and 'startup query' according to your environment. 'runtime executable' points to your swipl executable path and 'startup query' refers to the goal you want to start debugging. ___There is only one file containing the 'startup goal' in a project.___ Refer to next section for detailed explanations about other settings.
 
@@ -137,8 +137,9 @@ This extension can be installed via extensions viewer of VS Code or 'extension i
 
   * Conditional breakpoints
 
-  ![condbkp](images/condbkp.gif
-  )
+    Conditional breakpoints or expression breakpoints will be hit whenever the expression evaluates to true. In VSC-Prolog, the expressions must be legal prolog predicates. Usually when the variables bind to some values the predicates success and the execution pauses at the breakpoint, as shown in the gif animation below where 'length(T, 1)' is the condition to break.
+
+    ![condbkp](images/condbkp.gif)
 
   * Hit count breakpoints
 

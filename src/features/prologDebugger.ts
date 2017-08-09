@@ -251,7 +251,7 @@ export class PrologDebugger extends EventEmitter {
         line: bp.line,
         column: bp.column,
         condition: bp.condition,
-        hitCondition: bp.hitCondition
+        hitCondition: parseInt(bp.hitCondition)
       });
     });
     let cmd = `cmd:prolog_debugger:set_breakpoints('${path}', ${JSON.stringify(
