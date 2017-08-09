@@ -31,6 +31,7 @@ export class PrologDebugSession extends DebugSession {
   private _startupQuery: string;
   private _startFile: string;
   private _cwd: string;
+  private _stopOnEntry: boolean;
   private _traceCmds: ITraceCmds;
   private _currentVariables: DebugProtocol.Variable[] = [];
   private _stackFrames: DebugProtocol.StackFrame[] = [];
@@ -129,6 +130,7 @@ export class PrologDebugSession extends DebugSession {
     this._cwd = args.cwd;
     this._runtimeExecutable = args.runtimeExecutable || "swipl";
     this._runtimeArgs = args.runtimeArgs || null;
+    this._stopOnEntry = typeof args.stopOnEntry ? args.stopOnEntry : true;
     this._traceCmds = args.traceCmds;
     this._prologDebugger = await new PrologDebugger(args, this);
     this._prologDebugger.addListener(
@@ -178,6 +180,9 @@ export class PrologDebugSession extends DebugSession {
   ): void {
     this.sendResponse(response);
     this._prologDebugger.startup(`${this._startupQuery}`);
+    if (!this._stopOnEntry) {
+      this._prologDebugger.query(`cmd:${this._traceCmds.continue[1]}\n`);
+    }
   }
 
   private evaluateExpression(exp: string) {

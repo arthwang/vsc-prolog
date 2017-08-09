@@ -30,6 +30,7 @@ export interface LaunchRequestArguments
   runtimeArgs?: string[];
   env?: { [key: string]: string };
   startupQuery?: string;
+  stopOnEntry?: boolean;
   terminalDebuggerPort?: number;
   console?: string;
   traceCmds?: ITraceCmds;

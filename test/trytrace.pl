@@ -9,12 +9,12 @@ min_numlist([H|T], Min0, Min) :-
     Min1 is min(H, Min0),
     min_numlist(T, Min1, Min).
 
-start1 :-
+start :-
     data(D),
     min_numlist(D, Min),
     format('Min=~d~n', [Min]),
     fail.
-start1.  
+start.  
 
 data(D) :-
     D=[3, 6, 9, 1].
