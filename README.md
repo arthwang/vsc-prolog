@@ -130,6 +130,11 @@ This extension can be installed via extensions viewer of VS Code or 'extension i
 
 * Breakpoints
 
+  Before starting debugging, left click the editor margin on left of line number to toggle breakpoints. On debugging, the prolog process verifies the breakpoints and marks unverified ones with grey color.
+  > Note the limit of VSC-Prolog: Breakpoints must be set before starting debugging. Any breakpoints set during debugging are unavailable until next debugging process.
+
+  ![breakpoints](images/breakpoints.gif)
+
 * Variables watch
 
 * Evaluation
