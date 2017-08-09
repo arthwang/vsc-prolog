@@ -108,6 +108,8 @@ export default class PrologDocumentFormatter
     return (
       txt.charAt(offset - 1) !== "." &&
       txt.charAt(offset + 1) !== "." &&
+      (txt.charAt(offset + 1) === "" ||
+        /^\W/.test(txt.slice(offset + 1, offset + 2))) &&
       subtxt.indexOf("'") === -1 &&
       subtxt.indexOf('"') === -1 &&
       !/%[^\n]*$/.test(subtxt) &&
@@ -267,7 +269,6 @@ export default class PrologDocumentFormatter
         .on("close", _ => {
           console.log("closed");
         });
-      console.log("exit code:" + prologChild.exitCode);
     } catch (error) {
       let message: string = null;
       if ((<any>error).code === "ENOENT") {

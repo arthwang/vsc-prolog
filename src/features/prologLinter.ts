@@ -354,7 +354,9 @@ export default class PrologLinter implements CodeActionProvider {
               1}:\t${severity}:\t${diag.message}\n`;
             this.outputChannel.append(msg);
           }
-          this.outputChannel.show(true);
+          if (si.length > 0) {
+            this.outputChannel.show(true);
+          }
         }
       })
       .catch(error => {

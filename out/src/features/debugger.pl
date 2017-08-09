@@ -98,9 +98,10 @@ spy_predicates(Preds) :-
 
 spy_predicates([Pred|T],
                            
-                           [ _{message:Pred, verified:Verified}
+                           [ _{message:PredA, verified:Verified}
                            | VT
                            ]) :-
+    term_to_atom(Pred, PredA),
     catch((   spy(Pred)
           ->  Verified=true
           ;   Verified=false

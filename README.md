@@ -119,7 +119,7 @@ This extension can be installed via extensions viewer of VS Code or 'extension i
 
   The experimental debugger of VSC-Prolog tries to visualize the command line tracer of SWI-Prolog in VS Code.   
   
-  For the first time to debug in VS Code it is necessary to setup a launch.json file under .vscode in a project. VS Code pops down a list of debug environments when you first click 'start debugging' button (f5). The list contains 'Prolog' if VSC-Prolog extension is installed. A default launch.json file would be generated. Among the all settings, two must be set firstly: 'runtime executable' and 'startup query' according to your environment. 'runtime executable' points to your swipl executable path and 'startup query' refers to the goal you want to start debugging. Other default settings should work well.
+  For the first time to debug in VS Code it is necessary to setup a launch.json file under .vscode in a project root directory. VS Code pops down a list of debug environments when you first click 'start debugging' button (f5) or the gear icon. The list contains 'Prolog' if VSC-Prolog extension is installed. A default launch.json file would be generated. Among the all settings, two must be set firstly: 'runtime executable' and 'startup query' according to your environment. 'runtime executable' points to your swipl executable path and 'startup query' refers to the goal you want to start debugging. ___There is only one file containing the 'startup goal' in a project.___ Refer to next section for detailed explanations about other settings.
 
   ![launch](images/launch.gif)
 * Trace options
