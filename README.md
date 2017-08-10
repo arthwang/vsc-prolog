@@ -236,3 +236,6 @@ Initial release
 
     I would like to thank the VS Code team of Microsoft for providing this powerful platform. I've read over many source files of extensions shipped with VS Code and other language support extensions such as php, java, etc. I thank Professor Jan Wielemaker who is known as the original author of SWI-Prolog for his many professional and patient helps about SWI-Prolog system when I consults on SWI-Prolog forum. Some segments of codes of this extension are borrowed from other resources such as Sublimeprolog tmlanguage syntax yaml file, SWI-Prolog source files, etc.
 
+## License
+
+  [MIT](http://www.opensource.org/licenses/mit-license.php)
