@@ -137,22 +137,22 @@ This extension can be installed via extensions viewer of VS Code or 'extension i
 
   * Conditional breakpoints
 
-    Conditional breakpoints or expression breakpoints will be hit whenever the expression evaluates to true. In VSC-Prolog, the expressions must be legal prolog predicates. Usually when the variables bind to some values the predicates success and the execution pauses at the breakpoint, as shown in the gif animation below where 'length(T, 1)' is the condition to break.
+    Conditional breakpoints or expression breakpoints will be hit whenever the expression evaluates to true. Right click the red dot of the breakpoint to open the menu list which contains 'Edit Breakpoint' item that is a option list including 'Expression' and 'Hit Count'. Select 'Expression' to enter the condition for execution to stop. In VSC-Prolog, the expressions must be legal prolog predicates. Usually when the variables bind to some values the predicates success and the execution pauses at the breakpoint, as shown in the gif animation below where 'length(T, 1)' is the condition to break when the length of T is 1.
 
     ![condbkp](images/condbkp.gif)
 
   * Hit count breakpoints
 
-    The 'hit count' controls how many times a breakpoint needs to be hit before it will 'break' execution. That is, how many times execution passes the breakpoint before it pauses.
+    The 'hit count' controls how many times a breakpoint needs to be hit before it will 'break' execution. That is, how many times execution passes the breakpoint before it pauses. Right click the red dot of the breakpoint to open the menu list which contains 'Edit Breakpoint' item that is a option list including 'Expression' and 'Hit Count'. Select 'Hit Count' to enter the number of the least hits to pass before stop.
 
     ![hitbkp](images/hitbkp.gif)
 
   * Spy predicates
 
-    VSC-Prolog implements spy predicates via function breakpoints in VS Code.
-    > Note: Spy predicates are not shown as breakpoints in editor.
+    VSC-Prolog implements spy predicates via function breakpoints in VS Code. 
+    > Note: Spy predicates are not shown as breakpoints in editor. A 'spy breakpoint' is created by pressing the + button in the BREAKPOINTS section header and entering the predicate indicator.
 
-
+    ![spy](images/spy.gif)
 
 * Variables watch
 
