@@ -23,7 +23,7 @@ This extension can be installed via extensions viewer of VS Code or 'extension i
     * Leep, creep, skip, Up, Stop, Restart
     * Breakpoints, including conditional breakpoints and hit count breakpoints
     * Spy(function breakpoints)
-    * Variable watcher
+    * Data inspection
     * Evaluation
 
 ## Feature descriptions and usages
@@ -85,7 +85,7 @@ This extension can be installed via extensions viewer of VS Code or 'extension i
     (default map to alt-x l) loads the source file in active editor into prolog process in the integrated terminal, opening it if not beeing opened. The prolog process provides a real prolog REPL console. 
 
   * Command 'Prolog: query goal under cursor'
-    (default map to alt-x q) loads the source file and querys the goal under the cursor.
+    (default map to alt-x q) loads the source file and querys the goal under the cursor. You can call this command from editor context menu.
   ![loaddocument](images/loaddoc.gif)
 
 ### Go to definition
@@ -154,11 +154,21 @@ This extension can be installed via extensions viewer of VS Code or 'extension i
 
     ![spy](images/spy.gif)
 
-* Variables watch
+* Data inspection
 
-* Evaluation
+    Variables with their binding states whithin current clause can be inspected in the VARIABLES section of the Debug view or by hovering over their source in the editor or in the WATCH section.
 
+    ![binding](images/binding.gif)
+
+    Debug Console is consist of output area and an input box. The output area displays all outputs from debugging and the input box can be used to evaluate prolog terms which you can use variables with current bound values.
+
+    ![eval](images/eval.gif)
   
+    > Note about input from stdin during debugging:
+    > 
+    > The input box is also used to accept user input during debugging. While  a program is waiting for input from user, the yellow arrow indicating trace location would disappear. At this time you ___type firstly a semicolon___ followed by your real input contents. Another important point to know is that the prompt would not show anywhere.
+
+    ![input](images/input.gif)
 
 ## Requirements
 
@@ -166,20 +176,47 @@ Latest versions of VS code and SWI-Prolog installed.
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+  * There are seven configurable settings with default values in VSC-Prolog:
 
-For example:
+    * "prolog.executablePath": "/opt/swipl/bin/swipl"
 
-This extension contributes the following settings:
+      Points to the Prolog executable.
 
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
+    * "prolog.linter.run": "onType"
+
+      How to trigger the linter: onType or onSave. 'onType' means linting is in nearly real time manner (controlled by next setting: prolog.linter.delay) whileas 'onSave' linter is called when saving the document.
+
+    * "prolog.linter.delay": 500
+
+      The milliseconds to delay when using onType trigger, that is, when pausing over this milliseconds between two types the linter would be triggered.
+
+    * "prolog.terminal.runtimeArgs": []
+
+      Arguments of Prolog executable run in terminal. This prolog process is used to load and execute the program in active editor, including 'query goal under cursor' command.
+
+    * "prolog.format.tabSize": 4
+    
+      The size of a tab in spaces, this and next setting affect the layout of formatted codes.
+
+    * "prolog.format.insertSpaces": true,
+
+      Prefer spaces over tabs
+
+    * "prolog.debug.runtimeArgs": ["-q"]
+
+      Arguments of Prolog executable run as debugger. This prolog process is used to debug programs.
+
+  * Keybindings
+
+   ![keybindings](images/keybindings.png)
 
 ## Known Issues
 
-### Formatting doesn't work when there are singleton variables including named underscore-starting singleton variables in the scopes to be formatted.
-### During debug tracing, prompt for stdin input doesn't display in debug console. When the yellow location arrow in editor disappears and the curren goal is a read from stdin, then the tracer is waiting for your input. Then in the input box at the bottom of the debug console TYPE a COLON (:) followed by the content of input, that is used to defferiate input with the other function of the input box: expressions for evaluation. In the later case, just input valid prolog terms.
-### Syntax highlighting does not support multiline regular expression match, that's choosen by design of Sublime tmlanguage.
+  * Formatting doesn't work when there are singleton variables including named underscore-starting singleton variables in the scopes to be formatted.
+
+  * During debug tracing, prompt for stdin input doesn't display in debug console. 
+
+  * Syntax highlighting does not support multiline regular expression match, that's choosen by design of Sublime tmlanguage.
 
 ## Release Notes
 
@@ -187,19 +224,11 @@ This extension contributes the following settings:
 
 Initial release 
 
----------------------------------------
+## Bug reporting
 
-## Working with Markdown
+## Contributions
 
-**Note:** You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
+## Acknowledgements
 
-* Split the editor (`Cmd+\` on OSX or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+CMD+V` on OSX or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (OSX) to see a list of Markdown snippets
+    I would like to thank the VS Code team of Microsoft for providing this powerful platform. I've read over many source files of extensions shipped with VS Code and other ones such as php, java, etc. I thank Professor Jan Wielemaker who is known as the original author of SWI-Prolog for his many professional and patient helps about SWI-Prolog system when I consults on SWI-Prolog forum.
 
-### For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**

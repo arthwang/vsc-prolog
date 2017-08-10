@@ -88,6 +88,10 @@
     "menus": {
       "editor/context": [
         {
+          "command": "prolog.query.goal",
+          "when": "resourceLangId == prolog"
+        },
+        {
           "command": "prolog.exportPredicate",
           "when": "resourceLangId == prolog"
         }
