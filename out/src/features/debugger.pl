@@ -126,8 +126,7 @@ user:prolog_trace_interception(_, Frame, _, Action) :-
     (   locate_source(Frame)
     ;   output_clause_location(Goal, Frame)
     ),
-    check_breakpoint(Action).
-
+    check_breakpoint(Action). 
 check_breakpoint(continue) :-
     nb_getval(frame, FrDict),
     nb_getval(breakpoints, BpDict),
@@ -144,7 +143,7 @@ check_breakpoint(continue) :-
 check_breakpoint(_).
 
 meet_hit_condition(BpDict, Id) :-
-    HitCond is BpDict.Id.hitCondition,
+    number_string(HitCond, BpDict.Id.hitCondition),
     CurrHits is BpDict.Id.hits,
     NHits is CurrHits+1,
     BpIdDict1=BpDict.Id.put(hits, NHits),
