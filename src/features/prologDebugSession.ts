@@ -294,6 +294,8 @@ export class PrologDebugSession extends DebugSession {
     response: DebugProtocol.DisconnectResponse,
     args: DebugProtocol.DisconnectArguments
   ): void {
+    this._prologDebugger.dispose();
+    this.shutdown();
     this.sendResponse(response);
   }
   protected restartRequest(
