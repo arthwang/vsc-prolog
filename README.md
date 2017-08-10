@@ -143,6 +143,17 @@ This extension can be installed via extensions viewer of VS Code or 'extension i
 
   * Hit count breakpoints
 
+    The 'hit count' controls how many times a breakpoint needs to be hit before it will 'break' execution. That is, how many times execution passes the breakpoint before it pauses.
+
+    ![hitbkp](images/hitbkp.gif)
+
+  * Spy predicates
+
+    VSC-Prolog implements spy predicates via function breakpoints in VS Code.
+    > Note: Spy predicates are not shown as breakpoints in editor.
+
+
+
 * Variables watch
 
 * Evaluation

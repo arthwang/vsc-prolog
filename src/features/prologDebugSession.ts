@@ -35,6 +35,7 @@ export class PrologDebugSession extends DebugSession {
   private _traceCmds: ITraceCmds;
   private _currentVariables: DebugProtocol.Variable[] = [];
   private _stackFrames: DebugProtocol.StackFrame[] = [];
+  private _debugging: boolean;
 
   public constructor() {
     super();
@@ -159,6 +160,12 @@ export class PrologDebugSession extends DebugSession {
     response: DebugProtocol.SetBreakpointsResponse,
     args: DebugProtocol.SetBreakpointsArguments
   ) {
+    if (this._debugging) {
+      this.debugOutput(
+        "Breakpoints set during debugging would take effect in next debugging process."
+      );
+      return;
+    }
     this._prologDebugger.setBreakpoints(args, response);
   }
 
@@ -183,6 +190,7 @@ export class PrologDebugSession extends DebugSession {
     if (!this._stopOnEntry) {
       this._prologDebugger.query(`cmd:${this._traceCmds.continue[1]}\n`);
     }
+    this._debugging = true;
   }
 
   private evaluateExpression(exp: string) {
@@ -294,6 +302,7 @@ export class PrologDebugSession extends DebugSession {
     response: DebugProtocol.DisconnectResponse,
     args: DebugProtocol.DisconnectArguments
   ): void {
+    this._debugging = false;
     this._prologDebugger.dispose();
     this.shutdown();
     this.sendResponse(response);
@@ -302,6 +311,7 @@ export class PrologDebugSession extends DebugSession {
     response: DebugProtocol.RestartResponse,
     args: DebugProtocol.RestartArguments
   ): void {
+    this._debugging = false;
     this._prologDebugger.dispose();
     this.shutdown();
     this.sendResponse(response);
