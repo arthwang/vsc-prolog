@@ -208,7 +208,7 @@ Latest versions of VS code and SWI-Prolog installed.
 
   * Keybindings
 
-   ![keybindings](images/keybindings.png)
+    ![keybindings](images/keybindings.png)
 
 ## Known Issues
 
@@ -226,9 +226,13 @@ Initial release
 
 ## Bug reporting
 
+  Feel free to open [issues](https://github.com/arthwang/vsc-prolog/issues) to report bugs or require features.
+
 ## Contributions
+
+  [Pull requests](https://github.com/arthwang/vsc-prolog/pulls) are welcome too!
 
 ## Acknowledgements
 
-    I would like to thank the VS Code team of Microsoft for providing this powerful platform. I've read over many source files of extensions shipped with VS Code and other ones such as php, java, etc. I thank Professor Jan Wielemaker who is known as the original author of SWI-Prolog for his many professional and patient helps about SWI-Prolog system when I consults on SWI-Prolog forum.
+    I would like to thank the VS Code team of Microsoft for providing this powerful platform. I've read over many source files of extensions shipped with VS Code and other language support extensions such as php, java, etc. I thank Professor Jan Wielemaker who is known as the original author of SWI-Prolog for his many professional and patient helps about SWI-Prolog system when I consults on SWI-Prolog forum. Some segments of codes of this extension are borrowed from other resources such as Sublimeprolog tmlanguage syntax yaml file, SWI-Prolog source files, etc.
 
