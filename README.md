@@ -2,9 +2,12 @@
 
 A VS Code extension which provides language support for Prolog (just SWI-Prolog now).
 
+___
+  [Features](#features) | [Settings](#extension-settings) | [Keybindings](#keybinds) | [Donation](#donation)
+
 ## Note before installation
 
-This extension can be installed via extensions viewer of VS Code or 'extension install' command from the command palette. The author notices that it is developed and tested in ***SWI-Prolog 7.4.2*** and ***VS Code 1.14*** on ***Debian 9.0*** (stretch). Other environments are yet not tested.
+This extension can be installed via extensions viewer of VS Code or 'Extensions: install extension' command from the command palette. The author notices that it is developed and tested in ***SWI-Prolog 7.4.2*** and ***VS Code 1.14*** on ***Debian 9.0*** (stretch). Other environments are not yet tested.
 
 ## Features
   * [Syntax highlighting](#syntax-highlighting)
@@ -226,16 +229,22 @@ Initial release
 
 ## Bug reporting
 
-  Feel free to open [issues](https://github.com/arthwang/vsc-prolog/issues) to report bugs or require features.
+  Feel free to report bugs via [issues](https://github.com/arthwang/vsc-prolog/issues)
 
 ## Contributions
 
-  [Pull requests](https://github.com/arthwang/vsc-prolog/pulls) are welcome too!
+  [Pull requests](https://github.com/arthwang/vsc-prolog/pulls) are welcome.
 
 ## Acknowledgements
 
-    I would like to thank the VS Code team of Microsoft for providing this powerful platform. I've read over many source files of extensions shipped with VS Code and other language support extensions such as php, java, etc. I thank Professor Jan Wielemaker who is known as the original author of SWI-Prolog for his many professional and patient helps about SWI-Prolog system when I consults on SWI-Prolog forum. Some segments of codes of this extension are borrowed from other resources such as Sublimeprolog tmlanguage syntax yaml file, SWI-Prolog source files, etc.
+    I would like to thank the VS Code team of Microsoft for providing this powerful platform. I've read over many source files of extensions shipped with VS Code and other language support extensions such as php, java, etc. I thank Professor Jan Wielemaker who is known as the original author of SWI-Prolog for his many professional and patient helps about SWI-Prolog system when I consulted on SWI-Prolog forum. Some segments of codes of this extension are gratefully borrowed from other resources such as Sublimeprolog tmlanguage syntax yaml file, SWI-Prolog source files, etc.
 
 ## License
 
   [MIT](http://www.opensource.org/licenses/mit-license.php)
+
+## Donation
+
+  >If this extension works well for you, would you please donate a loaf of bread to encourage me, as a freelance programmer, to spend more time to improve it. Any amount is greatly appreciated.
+
+   [PayPal](https://paypal.me/ArthurWang9)
