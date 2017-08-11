@@ -7,4 +7,6 @@
 !syntaxes/*.json
 !snippets
 !README.md
-
+!package.json
+!CHANGELOG.md
+!prolog.configuration.json

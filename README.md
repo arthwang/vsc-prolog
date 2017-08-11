@@ -1,9 +1,9 @@
 # VSC-Prolog
 
-A VS Code extension which provides language support for Prolog (just SWI-Prolog now).
+A VS Code extension which provides language support for Prolog (only SWI-Prolog now).
 
 ___________________
-  [Features](#features) | [Settings](#extension-settings) | [Keybindings](#keybindings) | [Bug reporting](https://github.com/authwang/vsc-prolog/issues) | [Donation](#donation)
+  [Features](#features) | [Settings](#extension-settings) | [Debugger Settings](#debugger-settings) | [Keybindings](#keybindings) | [Bug Reporting](https://github.com/authwang/vsc-prolog/issues) | [Donation](#donation)
 
 __________________
 
@@ -211,9 +211,82 @@ Latest versions of VS code and SWI-Prolog installed.
 
       Arguments of Prolog executable run as debugger. This prolog process is used to debug programs.
 
+## Debugger settings
+
+  Every project must have a launch.json configuration file under .vscode directory before starting debugging. VSC-Prolog's launch.json schema is excerpted as follows from the package.json of VSC-Prolog project. This file can be edited directly after generated for the first time to debug. Further explanations are inserted into the descriptions.
+  
+  * program
+
+    type: string
+
+    default: "${file}"
+    
+    > DESCRIPTION:
+    > Absolute path to the program. This parameter refers to the source file to start debugging. The default value '${file}' means the  active document file in editor when debugger is triggered.
+
+  * startupQuery
+
+    type: string
+
+    default: "start"
+
+    > DESCRIPTIO: The goal to query for starting debugging. VSC-Prolog debugger needs a point to start execution, this parameter is set for that purpose. The default value 'start' means that a start/0 predicate exists in active document. Any predicates can be used as entry point, as long as it can be queried and matched with this parameter setting.
+
+  * stopOnEntry
+
+    type: boolean
+
+    default: true
+
+    > DESCRIPTION: Automatically stop program after launch at entry point if this parameter set to 'true'. The program would execute until a breakpoint, satisfied conditional breakpoint or hit count breakpoint or a spy predicate if set to 'false'. If there is not any such breakpoint the program would go to the end.
+
+  * cwd
+
+    type: string
+
+    default: "${workspaceRoot}"
+
+    > DESCRIPTION: Absolute path to the working directory of the source file being debugged. ${workspaceRoot} points to the root of user project.
+
+  * env
+
+    type: object
+
+    default: {}
+
+    additionalProperties: {type: string}
+
+    > DESCRIPTION: Environment variables passed to the source file.
+
+  * runtimeExecutable
+
+    type: string
+
+    default: "/opt/swipl/bin/swipl"
+
+    > DESCRIPTION: Debug process executable. You can lookup it via 'which' command in unix-like operating system.
+
+  * runtimeArgs
+
+    type: array
+
+    items: {type: string}
+
+    default: []
+
+    > DESCRIPTION: Command line arguments passed to the debug executable. It's an array of strings, i.e. ['-q', '-g', 'writeln(hello)'].
+
+  * traceCmds
+
+    type: object
+    
+    default: {"continue": ["leap", "l"], "stepover": ["skip", "s"],            "stepinto": ["creep", "c"], "stepout": ["up", "u"]}
+
+    >  DESCRIPTION: Mapping between vscode debug commands and prolog trace options. They are command line tracer options VSC-Prolog supports. Reserved for multiple prolog systems supports in future. Don't modify them now.
+
 ##  Keybindings
 
-    ![keybindings](images/keybindings.png)
+   ![keybindings](images/keybindings.png)
 
 ## Known Issues
 
@@ -231,7 +304,7 @@ Initial release
 
 ## Bug reporting
 
-  Feel free to report bugs via [issues](https://github.com/arthwang/vsc-prolog/issues)
+  Feel free to report bugs or suggestions via [issues](https://github.com/arthwang/vsc-prolog/issues)
 
 ## Contributions
 
@@ -247,6 +320,6 @@ Initial release
 
 ## Donation
 
-  >If this extension works well for you, would you please donate a loaf of bread to encourage me, as a freelance programmer, to spend more time to improve it. Any amount is greatly appreciated.
+  >If this extension works well for you, would you please donate a loaf of bread to encourage me, a freelance programmer, to spend more time to improve it. Any amount is greatly appreciated.
 
    [PayPal](https://paypal.me/ArthurWang9)
