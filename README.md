@@ -2,8 +2,10 @@
 
 A VS Code extension which provides language support for Prolog (just SWI-Prolog now).
 
-___
-  [Features](#features) | [Settings](#extension-settings) | [Keybindings](#keybinds) | [Donation](#donation)
+___________________
+  [Features](#features) | [Settings](#extension-settings) | [Keybindings](#keybindings) | [Bug reporting](https://github.com/authwang/vsc-prolog/issues) | [Donation](#donation)
+
+__________________
 
 ## Note before installation
 
@@ -209,7 +211,7 @@ Latest versions of VS code and SWI-Prolog installed.
 
       Arguments of Prolog executable run as debugger. This prolog process is used to debug programs.
 
-  * Keybindings
+##  Keybindings
 
     ![keybindings](images/keybindings.png)
 
