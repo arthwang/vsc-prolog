@@ -2,7 +2,6 @@
 */**
 !out/src/**/*.js
 !out/src/**/*.pl
-!node_modules/vscode-nls/**/*
 !node_modules/vscode-debugprotocol/**/*
 !syntaxes/*.json
 !snippets
@@ -10,3 +9,4 @@
 !package.json
 !CHANGELOG.md
 !prolog.configuration.json
+!LICENSE.txt
