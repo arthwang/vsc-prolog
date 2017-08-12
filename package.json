@@ -232,11 +232,6 @@
           "type": "boolean",
           "default": true,
           "description": "Prefer spaces over tabs"
-        },
-        "prolog.debug.runtimeArgs": {
-          "type": "array",
-          "description": "Arguments of Prolog executable run as debugger.",
-          "default": ["-q"]
         }
       }
     }
