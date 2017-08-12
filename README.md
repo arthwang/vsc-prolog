@@ -8,7 +8,7 @@ __________________
 
 ## Note before installation
 
-This extension can be installed via extensions viewer of VS Code or 'Extensions: install extension' command from the command palette. The author notices that it is developed and tested in ***SWI-Prolog 7.4.2*** and ***VS Code 1.14*** on ***Debian 9.0*** (stretch). Other environments are not yet tested.
+This extension can be installed via extensions viewlet of VS Code or 'Extensions: install extension' command from the command palette. The author notices that it is developed and tested in ***SWI-Prolog 7.4.2*** and ***VS Code 1.14*** on ***Debian 9.0*** (stretch). Other environments are not yet tested.
 
 ## Features
   * [Syntax highlighting](#syntax-highlighting)

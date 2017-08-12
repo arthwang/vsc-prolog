@@ -9,3 +9,15 @@
 !CHANGELOG.md
 !prolog.configuration.json
 !LICENSE.txt
+!node_modules/vscode-debugprotocol/**/*
+!node_modules/vscode-debugadapter/**/*
+!node_modules/yamljs/**/*
+!node_modules/bluebird/**/*
+!node_modules/split/**/*
+!node_modules/jsesc/**/*
+!node_modules/process-promises/**/*
+!node_modules/readline-promise/**/*
+!node_modules/resolve/**/*
+!node_modules/stack-trace/**/*
+!node_modules/through/**/*
+!node_modules/path-parse/**/*
