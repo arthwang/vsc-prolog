@@ -298,7 +298,7 @@ Latest versions of VS code and SWI-Prolog installed.
 
 ## Release Notes
 
-### 0.1.0
+### 0.0.1
 
 Initial release 
 
