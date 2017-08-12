@@ -2,12 +2,6 @@
 */**
 !out/src/**/*.js
 !out/src/**/*.pl
-!node_modules/vscode-debugprotocol/**/*
-!node_modules/vscode-debugadapter/**/*
-!node_modules/jsesc/**/*
-!node_modules/process-promises/**/*
-!node_modules/readline-promise/**/*
-!node_modules/split/**/*
 !snippets/*.json
 !syntaxes/*.json
 !README.md
