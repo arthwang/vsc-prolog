@@ -4,7 +4,7 @@
 !out/src/**/*.pl
 !node_modules/vscode-debugprotocol/**/*
 !syntaxes/*.json
-!snippets/prolog.json
+!snippets/*.json
 !README.md
 !package.json
 !CHANGELOG.md
