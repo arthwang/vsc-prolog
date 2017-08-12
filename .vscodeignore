@@ -3,8 +3,8 @@
 !out/src/**/*.js
 !out/src/**/*.pl
 !node_modules/vscode-debugprotocol/**/*
-!syntaxes/*.json
 !snippets/*.json
+!syntaxes/*.json
 !README.md
 !package.json
 !CHANGELOG.md

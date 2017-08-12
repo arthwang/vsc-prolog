@@ -1,5 +1,8 @@
 # Changelog
 
+#3 [0.0.8]
+- added some modules in dependencies in package.json
+
 ## [0.0.6]
 - some files not published
 
