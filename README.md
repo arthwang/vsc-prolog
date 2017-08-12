@@ -3,8 +3,7 @@
 A VS Code extension which provides language support for Prolog (only SWI-Prolog now).
 
 ___________________
-  [Features](#features) | [Settings](#extension-settings) | [Debugger Settings](#debugger-settings) | [Keybindings](#keybindings) | [Bug Reporting](https://github.com/authwang/vsc-prolog/issues) | [Donation](#donation)
-
+  [Features](#features) | [Configurations](#configurations) | [Debugger Settings](#debugger-settings) | [Commands & Keybindings](#keybindings) | [Bug Reporting](https://github.com/authwang/vsc-prolog/issues) | [Donation](#donation)
 __________________
 
 ## Note before installation
@@ -53,6 +52,7 @@ This extension can be installed via extensions viewer of VS Code or 'Extensions:
 
 ### Grammar linter
   * Lint for errors, warning and undefined predicates of the source file in active editor window and its imported file
+  * Errors are marked with red squiggles, Warnings green ones.
   * Mesage shown in OUTPUT and PROBLEMS channels
   * Clicking lines in PROBLEMS channels brings cursor to the respective lines in the editor
   * Traverse error lines in the editor by commands, the error/warning message responding to the line is presented in OUTPUT channel.
@@ -65,18 +65,19 @@ This extension can be installed via extensions viewer of VS Code or 'Extensions:
 
 #### Import or Dynamic predicate helper
 
-  Clicking on the squiggle indicating 'undefined predicate' lights the yellow bulb in left of the line. A suggesition list is presented when you click the bulb. The suggestion includes 'add dynamic ' for the undefined predicate or 'import' it if VSC-Prolog finds it's exported from some module(s).
+  Clicking on the squiggle indicating 'undefined predicate' lights the yellow bulb in the left margin besides the line number. A suggesition list is presented when you click the bulb that includes 'add dynamic ' for the undefined predicate or 'import' it if VSC-Prolog finds it could be exported from some module(s). Triggering 'Add dynamic' inserts the predicate indicator into dynamic directive, or creates such a directive if no one exists. 'Add use_module' inserts ':- use_module' directive with the predicate indicator whithin the import list.
+
   ![import](images/import.gif)
 
 #### Export helper
 
-  Move cursor to the head of a clause or a fact to be exported and trigger the command 'Prolog: export predicate under cursor' via command palette or right click the predicate to pop up the Editor/context menu which contains the command. Then VSC-Prolog inserts :- module/2 if module is not defined or adds the predicate indicator to the exporting list otherwise. After that a message box displays that asks for if adding structured comment for the predicate and comment lines are inserted above the head of the clause if 'yes' chosen.
+  Move cursor to the head of a clause or a fact to be exported and trigger the command 'Prolog: export predicate under cursor' via command palette or right click the predicate to pop up the Editor/context menu which contains the command. Then VSC-Prolog inserts :- module/2 if module is not defined or adds the predicate indicator to the export list otherwise. After that a message box displays that asks for if adding structured comment for the predicate and comment lines are inserted above the head of the clause if 'yes' chosen, you should edit the comments of course.
 
  ![export](images/export.gif)
 
 #### Recursion helper
 
-  Leading dot (only spaces before it) of a line repeat the above nearest predicate or the head of current clause if last line ends with comma, in which case the recursive variable change accordingly as intelligent as possible.
+  Leading dot (only spaces before it) of a line repeat the above nearest predicate or the head of current clause being edited if last line ends with comma, in which case the recursive variable change accordingly as intelligent as possible.
  ![recursion](images/recursion.gif)
 
 #### Anonymous variables helper
@@ -87,7 +88,7 @@ This extension can be installed via extensions viewer of VS Code or 'Extensions:
 ### Load active source file and query goals
 
   * Command 'Prolog: load document' 
-    (default map to alt-x l) loads the source file in active editor into prolog process in the integrated terminal, opening it if not beeing opened. The prolog process provides a real prolog REPL console. 
+    (default map to alt-x l) loads the source file in active editor into prolog process in the integrated terminal, spawning the prolog process it if not opened. The prolog process provides a real prolog REPL console. 
 
   * Command 'Prolog: query goal under cursor'
     (default map to alt-x q) loads the source file and querys the goal under the cursor. You can call this command from editor context menu.
@@ -95,16 +96,19 @@ This extension can be installed via extensions viewer of VS Code or 'Extensions:
 
 ### Go to definition
   * Go to definition
-    Editor/context menu command 'Go to Definition' (default map to f12) brings the cursor to from the predicate to where it is defined.
+
+    Editor/context menu command 'Go to Definition' (default map to f12) brings the cursor to the line where where the predicate is defined.
   * Peek definition
+
     Editor/context menu command 'Peek Definition' (default ctrl-shift-f10) pops up a panel to display the definition.
+
    ![gotodef](images/gotodef.gif)
 
 ### Code formatter
 
-  Code formatting is implemented via calling portray_clause/1, so the beautification style is depended on portray_clause. Thus two limits should be reminded.
-  * Terms with any grammar grammar errors are not formatted
-  * Terms with singleton variables, including named anonymous variables are not formatted, since portray_clause outputs singletons as anonymous variables resulting in user's intention alteration.
+  Code formatting is implemented by calling portray_clause, so the beautification style is depended on portray_clause. Thus two limits should be mentioned.
+  * Terms with any grammar errors are not formatted
+  * Terms with singleton variables, including named anonymous variables are not formatted, since portray_clause outputs all singletons as anonymous variables resulting in user's intention alteration.
 
   VSC-Prolog formats codes for three scopes of active document in editor:
   * document scope
@@ -115,16 +119,16 @@ This extension can be installed via extensions viewer of VS Code or 'Extensions:
 
     Select an range and right click on the selection to pop up editor context menu, then trigger the command 'Format Selection' (default map to ctrl+k ctrl+f). VSC-Prolog would enlarge the selection to include complete terms if necessary and format the selection.
 
-    * clause scope
+  * clause scope
 
-    VSC-Prolog formats the current clause or fact when the user types the end dot symbol.
+    VSC-Prolog formats the current clause or fact when the user types the end dot charater.
 
     ![format](images/format.gif)
 ### Debugger
 
   The experimental debugger of VSC-Prolog tries to visualize the command line tracer of SWI-Prolog in VS Code. Read [VS Code handbook about debugging](https://code.visualstudio.com/docs/editor/debugging) for how VS Code debugging works generally.
   
-  For the first time to debug in VS Code it is necessary to setup a launch.json file under .vscode in a project root directory. VS Code pops down a list of debug environments when you first click 'start debugging' button (f5) or the gear icon. The list contains 'Prolog' if VSC-Prolog extension is installed. A default launch.json file would be generated. Among the all settings, two must be set firstly: 'runtime executable' and 'startup query' according to your environment. 'runtime executable' points to your swipl executable path and 'startup query' refers to the goal you want to start debugging. ___There is only one file containing the 'startup goal' in a project.___ Refer to next section for detailed explanations about other settings.
+  For the first time to debug in VS Code it is necessary to setup a launch.json file under .vscode directory in a project root. VS Code pops down a list of debug environments when you first click 'start debugging' button (f5) or the gear icon. The list contains 'Prolog' if VSC-Prolog extension is installed. A default launch.json file would be generated. Among the all settings, two must be set firstly: 'runtime executable' and 'startup query' according to your environment. 'runtime executable' points to your swipl executable path and 'startup query' refers to the goal you want to start debugging. ___There is only one file containing the 'startup goal' in a project.___ Refer to next section for detailed explanations about other settings.
 
   ![launch](images/launch.gif)
 * Trace options
@@ -161,17 +165,17 @@ This extension can be installed via extensions viewer of VS Code or 'Extensions:
 
 * Data inspection
 
-    Variables with their binding states whithin current clause can be inspected in the VARIABLES section of the Debug view or by hovering over their source in the editor or in the WATCH section.
+    Variables with their bound values whithin current clause can be inspected in the VARIABLES section of the Debug view or by hovering over their source in the editor or in the WATCH section.
 
     ![binding](images/binding.gif)
 
-    Debug Console is consist of output area and an input box. The output area displays all outputs from debugging and the input box can be used to evaluate prolog terms which you can use variables with current bound values.
+    Debug Console is consist of output area and an input box. The output area displays all outputs from debugging and the input box can be used to input goals to evaluate in which you can use variables with current bound values.
 
     ![eval](images/eval.gif)
   
     > Note about input from stdin during debugging:
     > 
-    > The input box is also used to accept user input during debugging. While  a program is waiting for input from user, the yellow arrow indicating trace location would disappear. At this time you ___type firstly a semicolon___ followed by your real input contents. Another important point to know is that the prompt would not show anywhere.
+    > The input box is also used to accept user input during debugging. While  a program is waiting for input from user, the yellow arrow indicating trace location would disappear. At this time you ___type firstly a semicolon___ followed by your real input contents. Another important point is that the prolog system prompt (default |:) would not show off anywhere, unless outputting prompts by stdout or stderr which piped to debug output area.
 
     ![input](images/input.gif)
 
@@ -179,7 +183,7 @@ This extension can be installed via extensions viewer of VS Code or 'Extensions:
 
 Latest versions of VS code and SWI-Prolog installed.
 
-## Extension Settings
+## Configurations
 
   * There are seven configurable settings with default values in VSC-Prolog:
 
@@ -193,11 +197,11 @@ Latest versions of VS code and SWI-Prolog installed.
 
     * "prolog.linter.delay": 500
 
-      The milliseconds to delay when using onType trigger, that is, when pausing over this milliseconds between two types the linter would be triggered.
+      The milliseconds to delay when using onType trigger, that is, when pausing over this milliseconds between two key strokes the linter would be triggered.
 
-    * "prolog.terminal.runtimeArgs": []
+    * "prolog.terminal.runtimeArgs": [ ]
 
-      Arguments of Prolog executable run in terminal. This prolog process is used to load and execute the program in active editor, including 'query goal under cursor' command.
+      Arguments of Prolog executable run in terminal. This prolog process is used to load and execute the program in active editor, including 'query goal under cursor' command. This is a array of strings, i.e. ['-q', '-f', 'none'].
 
     * "prolog.format.tabSize": 4
     
@@ -207,13 +211,9 @@ Latest versions of VS code and SWI-Prolog installed.
 
       Prefer spaces over tabs
 
-    * "prolog.debug.runtimeArgs": ["-q"]
-
-      Arguments of Prolog executable run as debugger. This prolog process is used to debug programs.
-
 ## Debugger settings
 
-  Every project must have a launch.json configuration file under .vscode directory before starting debugging. VSC-Prolog's launch.json schema is excerpted as follows from the package.json of VSC-Prolog project. This file can be edited directly after generated for the first time to debug. Further explanations are inserted into the descriptions.
+  Every project must have a launch.json configuration file under .vscode directory before starting debugging. VSC-Prolog's launch.json schema is excerpted as follows from the package.json of VSC-Prolog project. This file can be edited directly after generated for the first time to debug. 
   
   * program
 
@@ -238,7 +238,7 @@ Latest versions of VS code and SWI-Prolog installed.
 
     default: true
 
-    > DESCRIPTION: Automatically stop program after launch at entry point if this parameter set to 'true'. The program would execute until a breakpoint, satisfied conditional breakpoint or hit count breakpoint or a spy predicate if set to 'false'. If there is not any such breakpoint the program would go to the end.
+    > DESCRIPTION: Automatically stop program after launch at entry point if this parameter set to 'true'. If set to 'false', the program would execute until a breakpoint, satisfied conditional breakpoint or hit count breakpoint or a spy predicate, otherwise go to the end if there are no such breakpoints. 
 
   * cwd
 
