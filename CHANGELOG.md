@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.0.8]
+## [0.0.13]
 - added some modules in dependencies in package.json
 
 ## [0.0.6]

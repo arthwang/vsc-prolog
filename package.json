@@ -2,7 +2,7 @@
     "name": "vsc-prolog",
     "displayName": "VSC-Prolog",
     "description": "Support for Prolog language",
-    "version": "0.0.8",
+    "version": "0.0.13",
     "publisher": "arthurwang",
     "license": "MIT",
     "engines": {
@@ -308,6 +308,9 @@
     "dependencies": {
         "jsesc": "^2.5.1",
         "process-promises": "^1.0.0",
-        "split": "^1.0.1"
+        "readline-promise": "0.0.1",
+        "split": "^1.0.1",
+        "vscode-debugadapter": "^1.22.0",
+        "vscode-debugprotocol": "^1.22.0"
     }
 }
