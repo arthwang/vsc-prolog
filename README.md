@@ -3,7 +3,7 @@
 A VS Code extension which provides language support for Prolog (only SWI-Prolog now).
 
 ___________________
-  [Features](#features) | [Configurations](#configurations) | [Debugger Settings](#debugger-settings) | [Commands & Keybindings](#keybindings) | [Bug Reporting](https://github.com/authwang/vsc-prolog/issues) | [Donation](#donation)
+  [Features](#features) | [Configurations](#configurations) | [Debugger Settings](#debugger-settings) | [Commands & Keybindings](#commands-keybindings) | [Bug Reporting](https://github.com/authwang/vsc-prolog/issues) | [Donation](#donation)
 __________________
 
 ## Note before installation
@@ -284,7 +284,7 @@ Latest versions of VS code and SWI-Prolog installed.
 
     >  DESCRIPTION: Mapping between vscode debug commands and prolog trace options. They are command line tracer options VSC-Prolog supports. Reserved for multiple prolog systems supports in future. Don't modify them now.
 
-##  Keybindings
+##  Commands keybindings
 
    ![keybindings](images/keybindings.png)
 
@@ -294,7 +294,7 @@ Latest versions of VS code and SWI-Prolog installed.
 
   * During debug tracing, prompt for stdin input doesn't display in debug console. 
 
-  * Syntax highlighting does not support multiline regular expression match, that's choosen by design of Sublime tmlanguage.
+  * Syntax highlighting does not support multiline regular expression match, that's choosen by design of Sublime tmlanguage. Thus syntax highlighting maybe is wrong some times.
 
 ## Release Notes
 
