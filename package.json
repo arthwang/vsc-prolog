@@ -1,11 +1,11 @@
 {
   "name": "vsc-prolog",
-  "displayName": "vsc-prolog",
+  "displayName": "VSC-Prolog",
   "description": "Support for Prolog language",
   "version": "0.0.1",
   "publisher": "arthurwang",
   "license": "MIT",
-  "icon": "images/swipl.png",
+  "icon": "images/vscprolog.png",
   "engines": {
     "vscode": "^1.5.0"
   },
