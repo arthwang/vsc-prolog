@@ -5,12 +5,11 @@
   "version": "0.0.1",
   "publisher": "arthurwang",
   "license": "MIT",
-  "icon": "images/vscprolog.png",
   "engines": {
     "vscode": "^1.5.0"
   },
   "categories": ["Languages", "Formatters", "Snippets", "Linters", "Debuggers"],
-  "keywords": ["prolog", "swi-prolog", "debug", "linter", "snippet", "format"],
+  "keywords": ["prolog", "debug", "linter", "snippet", "format"],
   "author": {
     "name": "Arthur Wang",
     "email": "rthrwang@gmail.com"
