@@ -2,7 +2,7 @@
   "name": "vsc-prolog",
   "displayName": "VSC-Prolog",
   "description": "Support for Prolog language",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "publisher": "arthurwang",
   "license": "MIT",
   "engines": {
@@ -43,7 +43,7 @@
     "snippets": [
       {
         "language": "prolog",
-        "path": "./snippets/prolog.tmLanguage.json"
+        "path": "./snippets/prolog.json"
       }
     ],
     "commands": [

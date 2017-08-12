@@ -43,8 +43,7 @@ export default class Utils {
     if (Utils.snippets) {
       return;
     }
-    let snippetsPath =
-      context.extensionPath + "/snippets/prolog.tmLanguage.json";
+    let snippetsPath = context.extensionPath + "/snippets/prolog.json";
     let snippets = fs.readFileSync(snippetsPath, "utf8").toString();
     Utils.snippets = JSON.parse(snippets);
   }
