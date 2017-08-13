@@ -3,7 +3,7 @@
 A VS Code extension which provides language support for Prolog (only SWI-Prolog now).
 
 ___________________
-  [Features](#features) | [Configurations](#configurations) | [Debugger Settings](#debugger-settings) | [Commands & Keybindings](#commands-keybindings) | [Bug Reporting](https://github.com/authwang/vsc-prolog/issues) | [Donation](#donation)
+  [Features](#features) | [Configurations](#configurations) | [Debugger Settings](#debugger-settings) | [Commands & Keybindings](#commands-keybindings) | [Bug Reporting](https://github.com/arthwang/vsc-prolog/issues) | [Donation](#donation)
 __________________
 
 ## Note before installation
