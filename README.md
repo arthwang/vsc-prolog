@@ -8,7 +8,7 @@ __________________
 
 ## Note before installation
 
-This extension can be installed via extensions viewlet of VS Code or 'Extensions: install extension' command from the command palette. The author notices that it is developed and tested in ***SWI-Prolog 7.4.2*** and ***VS Code 1.14*** on ***Debian 9.0*** (stretch). Other environments are not yet tested.
+This extension can be installed via extensions viewlet of VS Code or 'Extensions: install extension' command from the command palette. The author notices that it is developed and tested in ***SWI-Prolog 7.4.2*** and ***VS Code 1.14*** on ***Debian 9.0*** (stretch). It's not yet tested under other environments.
 
 ## Features
   * [Syntax highlighting](#syntax-highlighting)
@@ -290,6 +290,8 @@ Latest versions of VS code and SWI-Prolog installed.
 
 ## Known Issues
 
+  * The debugger doesn't support clp(fd).
+
   * Formatting doesn't work when there are singleton variables including named underscore-starting singleton variables in the scopes to be formatted.
 
   * During debug tracing, prompt for stdin input doesn't display in debug console. 
@@ -312,7 +314,7 @@ Initial release
 
 ## Acknowledgements
 
-    I would like to thank the VS Code team of Microsoft for providing this powerful platform. I've read over many source files of extensions shipped with VS Code and other language support extensions such as php, java, etc. I thank Professor Jan Wielemaker who is known as the original author of SWI-Prolog for his many professional and patient helps about SWI-Prolog system when I consulted on SWI-Prolog forum. Some segments of codes of this extension are gratefully borrowed from other resources such as Sublimeprolog tmlanguage syntax yaml file, SWI-Prolog source files, etc.
+  >I would like to thank the VS Code team of Microsoft for providing this powerful platform. I've read over many source files of extensions shipped with VS Code and other language support extensions such as php, java, etc. I thank Professor Jan Wielemaker who is known as the original author of SWI-Prolog for his many professional and patient helps about SWI-Prolog system when I consulted on SWI-Prolog forum. Some segments of codes of this extension are gratefully borrowed from other resources such as Sublimeprolog tmlanguage syntax yaml file, SWI-Prolog source files, etc.
 
 ## License
 

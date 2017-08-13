@@ -9,4 +9,5 @@ random_score :-
     X is random(100),
     (   X>50
     ->  writeln(big)
-    ;   writeln(small)    ).
+    ;   writeln(small)
+    ).
