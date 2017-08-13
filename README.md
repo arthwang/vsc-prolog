@@ -290,7 +290,7 @@ Latest versions of VS code and SWI-Prolog installed.
 
 ## Known Issues
 
-  * The debugger doesn't support clp(fd).
+  * The debugger doesn't support clp(constraint logic programming).
 
   * Formatting doesn't work when there are singleton variables including named underscore-starting singleton variables in the scopes to be formatted.
 
