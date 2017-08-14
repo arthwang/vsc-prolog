@@ -298,7 +298,8 @@ Latest versions of VS code and SWI-Prolog installed.
 
   * Syntax highlighting does not support multiline regular expression match, that's choosen by design of Sublime tmlanguage. Thus syntax highlighting maybe is wrong some times.
 
-## ![Release Notes](CHANGELOG.md)
+## [Release Notes](CHANGELOG.md)
+
 
 ## Bug reporting
 
