@@ -4,6 +4,7 @@
 !out/src/**/*.pl
 !snippets/*.json
 !syntaxes/*.json
+!images/**/*
 !README.md
 !package.json
 !CHANGELOG.md
