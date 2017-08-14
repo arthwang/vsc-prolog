@@ -2,9 +2,9 @@
   "name": "vsc-prolog",
   "displayName": "VSC-Prolog",
   "description": "Support for Prolog language",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "publisher": "arthurwang",
-  "icon": "images/vsc-prolog.png",
+  "icon": "images/vscprolog.png",
   "license": "MIT",
   "engines": {
     "vscode": "^1.5.0"
@@ -17,7 +17,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/arthwang/vsc-prolog"
+    "url": "https://github.com/arthwang/vsc-prolog.git"
   },
   "bugs": {
     "url": "https://github.com/arthwang/vsc-prolog/issues",
