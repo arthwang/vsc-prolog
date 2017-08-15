@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.1.7]
+- fixed cwd bug
+
 ## [0.1.6]
 - added icon
 
