@@ -192,7 +192,7 @@ export class PrologDebugger extends EventEmitter {
     let pp = await spawn(
       this._launchRequestArguments.runtimeExecutable,
       this._launchRequestArguments.runtimeArgs.concat("-q"),
-      undefined
+      { cwd: this._launchRequestArguments.cwd }
     )
       .on("process", proc => {
         if (proc.pid) {
