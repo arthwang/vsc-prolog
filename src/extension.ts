@@ -20,6 +20,7 @@ import PrologHoverProvider from "./features/hoverProvider";
 import PrologDocumentHighlightProvider from "./features/documentHighlightProvider";
 import PrologDocumentFormatter from "./features/formattingEditProvider";
 import { PrologDefinitionProvider } from "./features/definitionProvider";
+import { PrologReferenceProvider } from "./features/referenceProvider";
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -113,6 +114,12 @@ export function activate(context: ExtensionContext) {
     languages.registerDefinitionProvider(
       PROLOG_MODE,
       new PrologDefinitionProvider()
+    )
+  );
+  context.subscriptions.push(
+    languages.registerReferenceProvider(
+      PROLOG_MODE,
+      new PrologReferenceProvider()
     )
   );
   // context.subscriptions.push(prologDebugger);

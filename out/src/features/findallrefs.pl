@@ -1,7 +1,11 @@
+%% findallrefs.pl
+:- module(findrefs,[]).
+
+
 :- use_module(library(http/json), [atom_json_dict/3]).
 :- use_module(library(prolog_codewalk)).
 
-:- meta_predicate findallrefs(:).
+:- meta_predicate findallrefs(:), findrefs(:).
 :- (thread_local hit/1).
 all_source_files_under_cwd(Files) :-
     working_directory(D, D),
@@ -9,13 +13,18 @@ all_source_files_under_cwd(Files) :-
     
 
 findallrefs(To) :-
-    nb_linkval(ref_locations, _{locs:[]}),
     all_source_files_under_cwd(Files),
     forall(member(File, Files),
-           setup_call_cleanup(load_files(File),
+           setup_call_cleanup(load_files(File, [if(changed), silent(true)]),
                               findrefs(To),
                               unload_file(File))).
 
+% safe_load(File) :-
+%     module_property(_, file(File)), !.
+% safe_load(File) :-
+%     source_file(File), !.
+% safe_load(File) :-
+%     consult(File).
 findrefs(To) :-
     resolve(To, Target),
     prolog_walk_code(
@@ -23,10 +32,7 @@ findrefs(To) :-
                        infer_meta_predicates(true),
                        trace_reference(Target),
                        on_trace(hit)
-                     ]),
-    nb_getval(ref_locations, RefLocs),
-    atom_json_dict(DictText, RefLocs, []),
-    format('referencs:~w~n', [DictText]).
+                     ]).
 resolve(M:Name/Arity, Target) :-
     atom(Name),
     integer(Arity), !,
@@ -44,7 +50,10 @@ resolve(To, _) :-
 hit(_Callee, _Caller, Location) :-
     phrase(prolog:message_location(Location), [_-Locs]),
     (length(Locs, 3)->Locs=[File,Line,Char];Locs=[File,Line],Char is 0),
-    Dict = _{file:File,line:Line,char:Char},
-    nb_getval(ref_locations, LocsDict),
-    NewLocs = [Dict|LocsDict.locs],
-    nb_link_dict(locs, LocsDict, NewLocs).
+    Line1 is Line - 1,
+    Dict = _{reference:_{file:File,line:Line1,char:Char}},
+    atom_json_dict(DictText1, Dict, []),
+    split_string(DictText1, '\n', ' \t', Subs),
+    atomic_list_concat(Subs, DictText),
+    format('~w~n', DictText).
+    

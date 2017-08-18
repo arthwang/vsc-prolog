@@ -9,6 +9,7 @@ __________________
 ## Note before installation
 
 This extension can be installed via extensions viewlet of VS Code or 'Extensions: install extension' command from the command palette. The author notices that it is developed and tested in ***SWI-Prolog 7.4.2*** and ***VS Code 1.14*** on ***Debian 9.0*** (stretch). It's not yet tested under other environments.
+  > Please update to 7.5.13 of swipl if you want to use 'Show all references' feature.
 
 ## Features
   * [Syntax highlighting](#syntax-highlighting)
@@ -21,7 +22,8 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
     * [Recursion helper](#recursion-helper)
     * [Anonymous variable helper](#anonymous-variable-helper)
   * [Load active source file and query goals](#load-active-source-file-and-query-goals)
-  * [Goto definition](#go-to-definition)
+  * [Goto definition of predicate under cursor](#go-to-definition)
+  * [Show all refences of predicate under cursor](#show-all-refences-of-predicate-under-cursor)
   * [Code formatter](#code-formatter)
   * [Debugger(experimental)](#debugger)
     * Leep, creep, skip, Up, Stop, Restart
@@ -94,7 +96,7 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
     (default map to alt-x q) loads the source file and querys the goal under the cursor. You can call this command from editor context menu.
   ![loaddocument](images/loaddoc.gif)
 
-### Go to definition
+### Go to definition of predicate under cursor
   * Go to definition
 
     Editor/context menu command 'Go to Definition' (default map to f12) brings the cursor to the line where where the predicate is defined.
@@ -103,6 +105,12 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
     Editor/context menu command 'Peek Definition' (default ctrl-shift-f10) pops up a panel to display the definition.
 
    ![gotodef](images/gotodef.gif)
+
+### Show all references of predicate under cursor
+
+  Right click a predicate in editor, then trigger the command 'Find all references' from the editor context menu. All references of the predicate will be displayed in a popup panel.
+
+  ![findrefs](images/findrefs.gif)
 
 ### Code formatter
 
@@ -311,7 +319,7 @@ Latest versions of VS code and SWI-Prolog installed.
 
 ## Acknowledgements
 
-  >I would like to thank the VS Code team of Microsoft for providing this powerful platform. I've read over many source files of extensions shipped with VS Code and other language support extensions such as php, java, etc. I thank Professor Jan Wielemaker who is known as the original author of SWI-Prolog for his many professional and patient helps about SWI-Prolog system when I consulted on SWI-Prolog forum. Some segments of codes of this extension are gratefully borrowed from other resources such as Sublimeprolog tmlanguage syntax yaml file, SWI-Prolog source files, etc.
+  >I would like to thank the VS Code team of Microsoft for providing this powerful platform. I've read over many source files of extensions shipped with VS Code and other language support extensions such as php, java, etc. I thank Professor Jan Wielemaker who is known as the original author of SWI-Prolog for his many professional and patient helps about SWI-Prolog system when I consulted on SWI-Prolog forum. Some segments of codes of this extension are gratefully borrowed from other resources such as Sublimeprolog tmlanguage syntax yaml file, SWI-Prolog source files, etc. The backend of 'find all references' mainly comes from gist code of github of Jan Wielemaker.
 
 ## License
 

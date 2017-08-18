@@ -9,8 +9,20 @@
   "engines": {
     "vscode": "^1.5.0"
   },
-  "categories": ["Languages", "Formatters", "Snippets", "Linters", "Debuggers"],
-  "keywords": ["prolog", "debug", "linter", "snippet", "format"],
+  "categories": [
+    "Languages",
+    "Formatters",
+    "Snippets",
+    "Linters",
+    "Debuggers"
+  ],
+  "keywords": [
+    "prolog",
+    "debug",
+    "linter",
+    "snippet",
+    "format"
+  ],
   "author": {
     "name": "Arthur Wang",
     "email": "rthrwang@gmail.com"
@@ -24,14 +36,23 @@
     "email": "rthrwang@gmail.com"
   },
   "main": "./out/src/extension",
-  "activationEvents": ["onLanguage:prolog"],
+  "activationEvents": [
+    "onLanguage:prolog"
+  ],
   "contributes": {
     "languages": [
       {
         "id": "prolog",
-        "aliases": ["Prolog", "swipl"],
+        "aliases": [
+          "Prolog",
+          "swipl"
+        ],
         "configuration": "./prolog.configuration.json",
-        "extensions": [".pl", ".pro", ".prolog"]
+        "extensions": [
+          ".pl",
+          ".pro",
+          ".prolog"
+        ]
       }
     ],
     "grammars": [
@@ -108,7 +129,9 @@
         "type": "prolog",
         "label": "Prolog",
         "enableBreakpointsFor": {
-          "languageIds": ["prolog"]
+          "languageIds": [
+            "prolog"
+          ]
         },
         "program": "./out/src/features/prologDebugSession.js",
         "runtime": "node",
@@ -168,10 +191,22 @@
                 "type": "object",
                 "description": "Mapping between vscode debug commands and prolog trace options.",
                 "default": {
-                  "continue": ["leap", "l"],
-                  "stepover": ["skip", "s"],
-                  "stepinto": ["creep", "c"],
-                  "stepout": ["up", "u"]
+                  "continue": [
+                    "leap",
+                    "l"
+                  ],
+                  "stepover": [
+                    "skip",
+                    "s"
+                  ],
+                  "stepinto": [
+                    "creep",
+                    "c"
+                  ],
+                  "stepout": [
+                    "up",
+                    "u"
+                  ]
                 }
               }
             }
@@ -190,10 +225,22 @@
             "startupQuery": "start",
             "stopOnEntry": true,
             "traceCmds": {
-              "continue": ["leap", "l"],
-              "stepover": ["skip", "s"],
-              "stepinto": ["creep", "c"],
-              "stepout": ["up", "u"]
+              "continue": [
+                "leap",
+                "l"
+              ],
+              "stepover": [
+                "skip",
+                "s"
+              ],
+              "stepinto": [
+                "creep",
+                "c"
+              ],
+              "stepout": [
+                "up",
+                "u"
+              ]
             }
           }
         ]
@@ -209,7 +256,10 @@
         },
         "prolog.linter.run": {
           "type": "string",
-          "enum": ["onSave", "onType"],
+          "enum": [
+            "onSave",
+            "onType"
+          ],
           "default": "onType",
           "description": "How to trigger the linter."
         },
@@ -253,6 +303,7 @@
     "vscode": "^1.0.0"
   },
   "dependencies": {
+    "find-in-files": "^0.4.0",
     "jsesc": "^2.5.1",
     "process-promises": "^1.0.0",
     "readline-promise": "0.0.1",
