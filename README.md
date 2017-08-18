@@ -23,7 +23,7 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
     * [Anonymous variable helper](#anonymous-variable-helper)
   * [Load active source file and query goals](#load-active-source-file-and-query-goals)
   * [Goto definition of predicate under cursor](#go-to-definition)
-  * [Show all refences of predicate under cursor](#show-all-refences-of-predicate-under-cursor)
+  * [Show all refences of predicate under cursor](#show-all-references-of-predicate-under-cursor)
   * [Code formatter](#code-formatter)
   * [Debugger(experimental)](#debugger)
     * Leep, creep, skip, Up, Stop, Restart
