@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.2.3]
+- added 'find-in-files' js module in .vscodeignore
+
 ## [0.2.2]
 - revised this file
 

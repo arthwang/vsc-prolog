@@ -22,3 +22,4 @@
 !node_modules/stack-trace/**/*
 !node_modules/through/**/*
 !node_modules/path-parse/**/*
+!node_modules/find-in-files/**/*
