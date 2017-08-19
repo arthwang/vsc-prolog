@@ -23,3 +23,4 @@
 !node_modules/through/**/*
 !node_modules/path-parse/**/*
 !node_modules/find-in-files/**/*
+!node_modules/find/**/*

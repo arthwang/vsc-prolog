@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.2.5]
+- installed find node module
+
 ## [0.2.4]
 - installed find-in-files node module
 
