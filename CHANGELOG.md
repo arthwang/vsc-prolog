@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.2.4]
+- installed find-in-files node module
+
 ## [0.2.3]
 - added 'find-in-files' js module in .vscodeignore
 
