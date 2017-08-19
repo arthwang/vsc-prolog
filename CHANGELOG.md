@@ -1,16 +1,8 @@
 # Changelog
 
-## [0.2.6]
-- installed traverse-chain node module
-
-## [0.2.5]
-- installed find node module
-
-## [0.2.4]
-- installed find-in-files node module
-
+## [0.2.7]
 ## [0.2.3]
-- added 'find-in-files' js module in .vscodeignore
+- added several modules in .vscodeignore
 
 ## [0.2.2]
 - revised this file

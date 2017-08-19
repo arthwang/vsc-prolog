@@ -25,3 +25,4 @@
 !node_modules/find-in-files/**/*
 !node_modules/find/**/*
 !node_modules/traverse-chain/**/*
+!node_modules/q/**/*
