@@ -1,8 +1,8 @@
 # Changelog
 
-## [0.2.7]
+## [0.2.8]
 ## [0.2.3]
-- added several modules in .vscodeignore
+- added several node modules in .vscodeignore
 
 ## [0.2.2]
 - revised this file
