@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.2.10]
+- enhanced predicate picking in direct name/arity literal
+
 ## [0.2.9]
 - fixed cyclic import issue of linter
 

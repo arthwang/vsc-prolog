@@ -80,6 +80,6 @@ export default class PrologTerminal {
     if (!pred) {
       return;
     }
-    this.sendString(pred);
+    this.sendString(pred.wholePred);
   }
 }

@@ -38,16 +38,8 @@ export class PrologReferenceProvider implements ReferenceProvider {
     this._locations = [];
     this._clauseRefs = {};
     let pred = Utils.getPredicateUnderCursor(doc, position);
-    let arity = Utils.getPredicateArity(pred);
-    let predName;
-    if (arity === 0) {
-      predName = pred;
-    } else {
-      predName = pred.slice(0, pred.indexOf("("));
-    }
     this.saveAllDirtyFiles();
-    let pi = `${predName}/${arity}`;
-    return this.findFilesAndRefs(predName, pi);
+    return this.findFilesAndRefs(pred.functor, pred.pi);
   }
 
   private async findFilesAndRefs(predName: string, pi: string) {

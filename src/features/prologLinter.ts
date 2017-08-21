@@ -478,13 +478,9 @@ export default class PrologLinter implements CodeActionProvider {
 
     let pos = editor.selection.active;
     let pred = Utils.getPredicateUnderCursor(doc, pos);
-    let arity = Utils.getPredicateArity(pred);
-    let wordRange: Range = doc.getWordRangeAtPosition(pos);
-    let predName: string = doc.getText(wordRange);
-    let pi = predName + "/" + arity;
 
-    if (arity < 0) {
-      this.outputMsg(`${pred} is not a valid predicate to export.`);
+    if (pred.arity < 0) {
+      this.outputMsg(`${pred.functor} is not a valid predicate to export.`);
       return;
     }
     let input = `
@@ -505,16 +501,16 @@ export default class PrologLinter implements CodeActionProvider {
     let clause_info = Utils.execPrologSync(
       ["-q"],
       input,
-      `clause_location(${pred})`,
+      `clause_location(${pred.wholePred})`,
       "true",
       /File=(.+);Line=(\d+)/
     );
     if (clause_info == null) {
-      this.outputMsg(`${pred} is not a valid predicate to export.`);
+      this.outputMsg(`${pred.wholePred} is not a valid predicate to export.`);
       return;
     }
     if (clause_info[1] !== fileId) {
-      this.outputMsg(`${pred} is not defined in active source file.`);
+      this.outputMsg(`${pred.wholePred} is not defined in active source file.`);
       return;
     }
 
@@ -546,7 +542,7 @@ export default class PrologLinter implements CodeActionProvider {
     let modDec = Utils.execPrologSync(
       ["-q"],
       input,
-      `rewrite_module_declaration('${modname}', ${pi})`,
+      `rewrite_module_declaration('${modname}', ${pred.pi})`,
       "true",
       /Action=(\w+);Mod=(.+);Line=(\d+);Start=(\d+)/
     );
@@ -578,7 +574,7 @@ export default class PrologLinter implements CodeActionProvider {
     }
     window
       .showInformationMessage(
-        `'${pi}' exported. Add structured comments to it?`,
+        `'${pred.pi}' exported. Add structured comments to it?`,
         "yes",
         "no"
       )
@@ -587,7 +583,7 @@ export default class PrologLinter implements CodeActionProvider {
           return;
         }
         // add comments
-        let comm = "%!\t" + pred + "\n%\n%\n";
+        let comm = "%!\t" + pred.functor + "\n%\n%\n";
         edit = new WorkspaceEdit();
         edit.insert(
           Uri.file(doc.fileName),

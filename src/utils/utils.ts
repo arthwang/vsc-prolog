@@ -85,13 +85,23 @@ export default class Utils {
   public static getPredicateUnderCursor(
     doc: TextDocument,
     position: Position
-  ): string {
+  ): {
+    wholePred: string;
+    pi: string;
+    functor: string;
+    arity: number;
+    params: string;
+  } {
     let wordRange: Range = doc.getWordRangeAtPosition(position);
     if (!wordRange) {
-      return "";
+      return null;
     }
     let predName: string = doc.getText(wordRange);
     let re = new RegExp("^" + predName + "\\s*\\(");
+    let re1 = new RegExp("^" + predName + "\\/(\\d+)");
+    let wholePred: string;
+    let arity: number;
+    let params: string;
     let text = doc
       .getText()
       .split("\n")
@@ -116,11 +126,26 @@ export default class Utils {
         }
         i++;
       }
-      text = text.slice(0, i);
+      wholePred = text.slice(0, i);
+      arity = Utils.getPredicateArity(wholePred);
+      params = wholePred.slice(predName.length);
+    } else if (re1.test(text)) {
+      arity = parseInt(text.match(re1)[1]);
+      params =
+        arity === 0 ? "" : "(" + new Array(arity).fill("_").join(",") + ")";
+      wholePred = predName + params;
     } else {
-      text = predName;
+      arity = 0;
+      params = "";
+      wholePred = predName;
     }
-    return text;
+    return {
+      wholePred: wholePred,
+      pi: predName + "/" + arity,
+      functor: predName,
+      arity: arity,
+      params: params
+    };
   }
 
   public static getPredicateArity(pred: string): number {

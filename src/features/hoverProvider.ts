@@ -25,25 +25,24 @@ export default class PrologHoverProvider implements HoverProvider {
       return;
     }
     let pred = Utils.getPredicateUnderCursor(doc, position);
-    if (pred === "") {
+    if (!pred) {
       return;
     }
-    let arity = Utils.getPredicateArity(pred);
-    if (arity < 0) {
+    if (pred.arity < 0) {
       return;
     }
-    let functor = arity > 0 ? pred.substring(0, pred.indexOf("(")) : pred;
-    let pi = functor + "/" + arity;
-    let modules: string[] = Utils.getPredModules(pi);
+    // let functor = arity > 0 ? pred.substring(0, pred.indexOf("(")) : pred;
+    // let pi = functor + "/" + arity;
+    let modules: string[] = Utils.getPredModules(pred.pi);
     let contents: MarkedString[] = [];
-    let desc = Utils.getPredDescriptions(pi);
+    let desc = Utils.getPredDescriptions(pred.pi);
     if (desc !== "") {
       contents.push({ language: "prolog", value: desc });
     }
     if (modules.length > 0) {
       modules.forEach(module => {
-        contents.push(module + ":" + pi + "\n");
-        let desc = Utils.getPredDescriptions(module + ":" + pi);
+        contents.push(module + ":" + pred.pi + "\n");
+        let desc = Utils.getPredDescriptions(module + ":" + pred.pi);
         contents.push({ language: "prolog", value: desc });
       });
     }

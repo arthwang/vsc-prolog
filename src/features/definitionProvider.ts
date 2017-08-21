@@ -20,7 +20,7 @@ export class PrologDefinitionProvider implements DefinitionProvider {
   ): Location | Thenable<Location> {
     let location: Location = null;
     let pred = Utils.getPredicateUnderCursor(doc, position);
-    if (pred === "") {
+    if (!pred) {
       return null;
     }
 
@@ -44,7 +44,7 @@ export class PrologDefinitionProvider implements DefinitionProvider {
           args,
           prologCode,
           "source_location",
-          pred,
+          pred.wholePred,
           /File:(.+);Line:(\d+)/
         );
       });
@@ -53,7 +53,7 @@ export class PrologDefinitionProvider implements DefinitionProvider {
         args,
         prologCode,
         "source_location",
-        pred,
+        pred.wholePred,
         /File:(.+);Line:(\d+)/
       );
     }
