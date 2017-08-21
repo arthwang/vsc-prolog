@@ -195,7 +195,7 @@ Latest versions of VS code and SWI-Prolog installed.
 
   * There are seven configurable settings with default values in VSC-Prolog:
 
-    * "prolog.executablePath": "/opt/swipl/bin/swipl"
+    * "prolog.executablePath": "/usr/bin/swipl"
 
       Points to the Prolog executable.
 
@@ -270,7 +270,7 @@ Latest versions of VS code and SWI-Prolog installed.
 
     type: string
 
-    default: "/opt/swipl/bin/swipl"
+    default: "/usr/bin/swipl"
 
     > DESCRIPTION: Debug process executable. You can lookup it via 'which' command in unix-like operating system.
 

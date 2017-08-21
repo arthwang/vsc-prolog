@@ -1,7 +1,13 @@
 # Changelog
 
+## [0.2.13]
+- updated readme
+
+## [0.2.12]
+- changed icon
+
 ## [0.2.11]
-- changed icon; changed default swipl path to /usr/bin/swipl
+- changed default swipl path to /usr/bin/swipl
 
 ## [0.2.10]
 - enhanced predicate picking in direct name/arity literal
