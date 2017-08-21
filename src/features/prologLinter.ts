@@ -248,7 +248,9 @@ export default class PrologLinter implements CodeActionProvider {
   private parseIssue(issue: string) {
     let match = issue.match(this.swiRegex);
     if (match == null) return null;
-    let fileName = this.filePathIds[match[2]];
+    let fileName = this.filePathIds[match[2]]
+      ? this.filePathIds[match[2]]
+      : match[2];
     let severity: DiagnosticSeverity;
     if (match[1] == "ERROR") severity = DiagnosticSeverity.Error;
     else if (match[1] == "Warning") severity = DiagnosticSeverity.Warning;
@@ -261,7 +263,12 @@ export default class PrologLinter implements CodeActionProvider {
     let fromPos = new Position(line, fromCol);
     let toPos = new Position(line, toCol);
     let range = new Range(fromPos, toPos);
-    let diag = new Diagnostic(range, match[8], severity);
+    let fileId = Object.keys(this.filePathIds)[0];
+    let errMsg = match[8];
+    if (fileId && this.filePathIds[fileId]) {
+      errMsg = errMsg.replace(fileId, this.filePathIds[fileId]);
+    }
+    let diag = new Diagnostic(range, errMsg, severity);
     if (diag) {
       if (!this.diagnostics[fileName]) {
         this.diagnostics[fileName] = [diag];
@@ -275,7 +282,8 @@ export default class PrologLinter implements CodeActionProvider {
     if (textDocument.languageId != "prolog") {
       return;
     }
-    this.diagnostics[textDocument.uri.fsPath] = [];
+    this.diagnostics = {};
+    this.sortedDiagIndex = {};
     this.diagnosticCollection.delete(textDocument.uri);
     let options = workspace.rootPath ? { cwd: workspace.rootPath } : undefined;
 
@@ -288,14 +296,18 @@ export default class PrologLinter implements CodeActionProvider {
     }
 
     let lineErr: string = "";
-    let docTxt = jsesc(textDocument.getText(), { quotes: "double" });
+    let docTxt = textDocument.getText();
+    let docTxtEsced = jsesc(docTxt, { quotes: "double" });
     let fileId = textDocument.fileName.replace(/\//g, "");
     this.filePathIds[fileId] = textDocument.fileName;
     spawn(this.executable, args, options)
       .on("process", process => {
         if (process.pid && this.trigger === RunTrigger.onType) {
           let goals = `
-            open_string("${docTxt}", S),
+            consult('${__dirname}/redefusemodule.pl').
+            retractall(active_file(_)),
+            assert((user:active_file('${fileId}', '${textDocument.fileName}'))).
+            open_string("${docTxtEsced}", S),
             load_files('${fileId}', [stream(S)]).
             list_undefined.
           `;
@@ -607,7 +619,8 @@ export default class PrologLinter implements CodeActionProvider {
     //direction: 0: next, 1: previous
     const editor = window.activeTextEditor;
     let diagnostics = this.diagnosticCollection.get(editor.document.uri);
-    if (diagnostics.length == 0) {
+    if (!diagnostics || diagnostics.length == 0) {
+      this.outputMsg("No errors or warnings :)");
       return;
     }
     this.outputChannel.clear();

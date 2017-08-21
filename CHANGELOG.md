@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.2.9]
+- fixed cyclic import issue of linter
+
 ## [0.2.8]
 ## [0.2.3]
 - added several node modules in .vscodeignore
