@@ -227,18 +227,8 @@ export default class PrologDocumentFormatter
     let rangeTxt = jsesc(doc.getText(range), { quotes: "double" });
     let goals = `
       use_module('${__dirname}/formatter.pl').
-      open_string("${docText}", S),
-      load_files(doctxt, [stream(S)]).
-      setup_call_cleanup(
-        (new_memory_file(MemFH), open_memory_file(MemFH, write, MemWStream)),
-        (split_string("${rangeTxt}", '\n', '', TxtLst),
-         forall(member(Line, TxtLst), writeln(MemWStream, Line)),
-         close(MemWStream),
-         open_memory_file(MemFH, read, MemRStream),
-         formatter:read_and_portray_term(${this._tabSize}, ${this
-      ._tabDistance}, MemRStream)),
-        (close(MemRStream), free_memory_file(MemFH))
-      ).\n
+      formatter:format_prolog_source(${this._tabSize}, ${this
+      ._tabDistance}, "${rangeTxt}").
     `;
     let termStr = "";
     let prologProc = null;

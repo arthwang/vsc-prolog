@@ -1,6 +1,18 @@
 %%
 :- module(formatter, []).
 :- use_module(library(http/json), [atom_json_dict/3]).
+:- use_module(library(memfile)).
+
+format_prolog_source(TabSize, TabDistance, RangeText):-
+		atom_string(RangeAtom, RangeText),
+		atom_to_memory_file(RangeAtom, MemFH),
+      setup_call_cleanup(
+         open_memory_file(MemFH, read, MemRStream),
+         read_and_portray_term(TabSize, TabDistance, MemRStream),
+        (close(MemRStream),free_memory_file(MemFH))
+      ), !.
+format_prolog_source(_,_,_) :-
+    halt.
 
 read_and_portray_term(TabSize, TabDistance, SourceStream) :-
     set_setting(listing:body_indentation, TabSize),
@@ -10,8 +22,6 @@ read_and_portray_term(TabSize, TabDistance, SourceStream) :-
         read_terms(SourceStream, MFH),
         free_memory_file(MFH)
     ).
-read_and_portray_term(_, _, _) :-
-    halt. 
     
 read_terms(ReadStream, MFH) :-
     repeat,
@@ -25,12 +35,16 @@ read_terms(ReadStream, MFH) :-
           ( print_message(error, E),
             halt(1)
           )),
+    (   (Term = (:-use_module(_)); Term = (:-use_module(_,_)))
+    ->  call(Term)
+    ;   true
+    ),
     setup_call_cleanup(open_memory_file(MFH, write, MFWS),
-                       portray_clause(MFWS, Term),
-                       close(MFWS)),
+                    portray_clause(MFWS, Term),
+                    close(MFWS)),
     setup_call_cleanup(open_memory_file(MFH, read, MFRS),
-                       read_term(MFRS, Term1, [variable_names(VarsNames2)]),
-                       close(MFRS)),
+                        read_term(MFRS, Term1, [variable_names(VarsNames2)]),
+                    close(MFRS)),
     writeln('TERMSEGMENTBEGIN:::'),
     (   maplist(var_name1, VarsNames1, VarsNames2, Varsa)
     ->  reverse(Varsa, Vars)

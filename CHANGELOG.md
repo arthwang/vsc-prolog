@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.2.14]
+- refined formatter
+
 ## [0.2.13]
 - updated readme
 
