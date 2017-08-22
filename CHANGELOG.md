@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.2.15]
+- fixed a bug
+
 ## [0.2.13]
 - updated readme
 
