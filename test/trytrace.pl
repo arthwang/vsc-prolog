@@ -23,5 +23,5 @@ data(D) :-
 data(D) :-
     D=[100, 36, 90, 81].
 
-test1 :-
-    "hello"=~"^\\w".
+% test1 :-
+%     "hello"=~"^\\w".

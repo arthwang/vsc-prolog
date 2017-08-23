@@ -1,15 +1,48 @@
 %%
-:- module(formatter, []).
+:- module(formatter,[]).
 :- use_module(library(http/json), [atom_json_dict/3]).
+
+format_prolog_source(TabSize, TabDistance, RangeTxt, DocTxt) :-
+    writeln(oka),
+    load_modules(DocTxt),
+    writeln(okb),
+    atom_string(RangeAtom, RangeTxt),
+    atom_to_memory_file(RangeAtom, MemFH),
+    setup_call_cleanup(open_memory_file(MemFH, read, MemRStream),
+                       read_and_portray_term(TabSize, TabDistance, MemRStream),
+                       close(MemRStream)), !.
+format_prolog_source(_, _, _) :-
+    halt. 
+
+load_modules(DocTxt) :-
+    atom_string(DocAtom, DocTxt),
+    atom_to_memory_file(DocAtom, DMFH),
+    setup_call_cleanup(open_memory_file(DMFH, read, RStream),
+                       load_modules1(RStream),
+                       close(RStream)).
+
+load_modules1(RStream) :-
+    read_term(RStream, Term, []),
+    handle_term(Term, RStream).
+        handle_term(end_of_file, _) :- !.
+        handle_term((:-use_module(MFile)), RStream) :-
+    user:use_module(MFile),
+    load_modules1(RStream), !.
+        handle_term((:-use_module(MFile, Imps)), RStream) :-
+    user:use_module(MFile, Imps),
+    load_modules1(RStream), !.
+        handle_term(_, RStream) :-
+    load_modules1(RStream).
+
+        
 
 read_and_portray_term(TabSize, TabDistance, SourceStream) :-
     set_setting(listing:body_indentation, TabSize),
     set_setting(listing:tab_distance, TabDistance),
-    setup_call_cleanup(
-        new_memory_file(MFH),
-        read_terms(SourceStream, MFH),
-        free_memory_file(MFH)
-    ).
+    setup_call_cleanup(new_memory_file(MFH),
+                       read_terms(SourceStream, MFH),
+                       free_memory_file(MFH)).
+
 read_and_portray_term(_, _, _) :-
     halt. 
     
@@ -39,7 +72,7 @@ read_terms(ReadStream, MFH) :-
     format('VARIABLESBEGIN:::~w:::VARIABLESEND~n', [Vars]),
     stream_position_data(char_count, TPos, TermCharA),
     format('TERMPOSBEGIN:::~d:::TERMPOSEND~n', [TermCharA]),
-    write('TERMBEGIN:::'),
+    writeln('TERMBEGIN:::'),
     portray_clause(Term1),
     writeln(':::TERMEND'),
     maplist(convert_comm_pos, TermComms, TermComms1),

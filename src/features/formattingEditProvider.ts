@@ -101,7 +101,7 @@ export default class PrologDocumentFormatter
       .slice(0, offset + 1)
       .replace(/\\'/g, "")
       .replace(/\\"/, "")
-      .replace(/"[^\\"]*"/g, "")
+      .replace(/"[^\"]*"/g, "")
       .replace(/\'[^\']*\'/g, "");
     const open = subtxt.lastIndexOf("/*");
     const close = subtxt.lastIndexOf("*/");
@@ -227,18 +227,8 @@ export default class PrologDocumentFormatter
     let rangeTxt = jsesc(doc.getText(range), { quotes: "double" });
     let goals = `
       use_module('${__dirname}/formatter.pl').
-      open_string("${docText}", S),
-      load_files(doctxt, [stream(S)]).
-      setup_call_cleanup(
-        (new_memory_file(MemFH), open_memory_file(MemFH, write, MemWStream)),
-        (split_string("${rangeTxt}", '\n', '', TxtLst),
-         forall(member(Line, TxtLst), writeln(MemWStream, Line)),
-         close(MemWStream),
-         open_memory_file(MemFH, read, MemRStream),
-         formatter:read_and_portray_term(${this._tabSize}, ${this
-      ._tabDistance}, MemRStream)),
-        (close(MemRStream), free_memory_file(MemFH))
-      ).\n
+      formatter:format_prolog_source(${this._tabSize}, ${this
+      ._tabDistance}, "${rangeTxt}", "${docText}").
     `;
     let termStr = "";
     let prologProc = null;
@@ -293,7 +283,7 @@ export default class PrologDocumentFormatter
     }
     let termPosRe = /TERMPOSBEGIN:::(\d+):::TERMPOSEND/;
     let varsRe = /VARIABLESBEGIN:::\[([\s\S]*?)\]:::VARIABLESEND/;
-    let termRe = /TERMBEGIN:::([\s\S]+?):::TERMEND/;
+    let termRe = /TERMBEGIN:::\n([\s\S]+?):::TERMEND/;
     let commsRe = /COMMENTSBIGIN:::([\s\S]*?):::COMMENTSEND/;
     let termPos = text.match(termPosRe),
       term = text.match(termRe),
@@ -304,6 +294,9 @@ export default class PrologDocumentFormatter
 
     let formattedTerm = this.restoreVariableNames(term[1], vars[1].split(","));
     let termCharA = parseInt(termPos[1]);
+    if (last) {
+      termCharA++; // end_of_file offset of memory file
+    }
     if (commsArr.length > 0) {
       termCharA =
         termCharA < commsArr[0].location ? termCharA : commsArr[0].location;
@@ -313,16 +306,17 @@ export default class PrologDocumentFormatter
     }
 
     if (!this._currentTermInfo) {
-      (this._startChars = doc.getText(
+      this._startChars = doc.getText(
         new Range(new Position(0, 0), range.start)
-      ).length), (this._currentTermInfo = {
+      ).length;
+      this._currentTermInfo = {
         charsSofar: 0,
         startLine: range.start.line,
         startChar: range.start.character,
         isValid: vars[1] === "givingup" ? false : true,
         termStr: formattedTerm,
         comments: commsArr
-      });
+      };
     } else {
       let endPos = doc.positionAt(termCharA + this._startChars);
       this._currentTermInfo.endLine = endPos.line;
@@ -331,7 +325,7 @@ export default class PrologDocumentFormatter
         // preserve original gaps between terms
         let lastAfterTerm = doc
           .getText()
-          .slice(this._currentTermInfo.charsSofar, termCharA)
+          .slice(this._currentTermInfo.charsSofar, termCharA + this._startChars)
           .match(/\s*$/)[0];
         this._currentTermInfo.termStr = this._currentTermInfo.termStr.replace(
           /\s*$/, // replace new line produced by portray_clause with original gaps
@@ -340,7 +334,7 @@ export default class PrologDocumentFormatter
         this.generateTextEdit(doc);
       }
 
-      this._currentTermInfo.charsSofar = termCharA;
+      this._currentTermInfo.charsSofar = termCharA + this._startChars;
       this._currentTermInfo.startLine = this._currentTermInfo.endLine;
       this._currentTermInfo.startChar = this._currentTermInfo.endChar;
       this._currentTermInfo.termStr = formattedTerm;

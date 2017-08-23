@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.2.16]
+- refined formatting
+
 ## [0.2.15]
 - fixed a bug
 
