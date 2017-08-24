@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.2.19]
+- fixed a version err
+
 ## [0.2.17]
 - fixed a code formatting bug
 
