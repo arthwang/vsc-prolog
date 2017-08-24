@@ -40,37 +40,30 @@
         "onLanguage:prolog"
     ],
     "contributes": {
-        "languages": [
-            {
-                "id": "prolog",
-                "aliases": [
-                    "Prolog",
-                    "swipl"
-                ],
-                "configuration": "./prolog.configuration.json",
-                "extensions": [
-                    ".pl",
-                    ".pro",
-                    ".prolog",
-                    ".plt"
-                ]
-            }
-        ],
-        "grammars": [
-            {
-                "language": "prolog",
-                "scopeName": "source.prolog",
-                "path": "./syntaxes/prolog.tmLanguage.json"
-            }
-        ],
-        "snippets": [
-            {
-                "language": "prolog",
-                "path": "./snippets/prolog.json"
-            }
-        ],
-        "commands": [
-            {
+        "languages": [{
+            "id": "prolog",
+            "aliases": [
+                "Prolog",
+                "swipl"
+            ],
+            "configuration": "./prolog.configuration.json",
+            "extensions": [
+                ".pl",
+                ".pro",
+                ".prolog",
+                ".plt"
+            ]
+        }],
+        "grammars": [{
+            "language": "prolog",
+            "scopeName": "source.prolog",
+            "path": "./syntaxes/prolog.tmLanguage.json"
+        }],
+        "snippets": [{
+            "language": "prolog",
+            "path": "./snippets/prolog.json"
+        }],
+        "commands": [{
                 "command": "prolog.linter.nextErrLine",
                 "title": "Prolog: Goto next error line"
             },
@@ -91,8 +84,7 @@
                 "title": "Prolog: query goal under cursor"
             }
         ],
-        "keybindings": [
-            {
+        "keybindings": [{
                 "command": "prolog.linter.nextErrLine",
                 "key": "f8"
             },
@@ -114,8 +106,7 @@
             }
         ],
         "menus": {
-            "editor/context": [
-                {
+            "editor/context": [{
                     "command": "prolog.query.goal",
                     "when": "resourceLangId == prolog"
                 },
@@ -125,128 +116,124 @@
                 }
             ]
         },
-        "debuggers": [
-            {
-                "type": "prolog",
-                "label": "Prolog",
-                "enableBreakpointsFor": {
-                    "languageIds": [
-                        "prolog"
-                    ]
-                },
-                "program": "./out/src/features/prologDebugSession.js",
-                "runtime": "node",
-                "configurationAttributes": {
-                    "launch": {
-                        "required": [
-                            "program",
-                            "startupQuery",
-                            "cwd",
-                            "runtimeExecutable",
-                            "runtimeArgs",
-                            "traceCmds"
-                        ],
-                        "properties": {
-                            "program": {
-                                "type": "string",
-                                "description": "Absolute path to the program.",
-                                "default": "${file}"
+        "debuggers": [{
+            "type": "prolog",
+            "label": "Prolog",
+            "enableBreakpointsFor": {
+                "languageIds": [
+                    "prolog"
+                ]
+            },
+            "program": "./out/src/features/prologDebugSession.js",
+            "runtime": "node",
+            "configurationAttributes": {
+                "launch": {
+                    "required": [
+                        "program",
+                        "startupQuery",
+                        "cwd",
+                        "runtimeExecutable",
+                        "runtimeArgs",
+                        "traceCmds"
+                    ],
+                    "properties": {
+                        "program": {
+                            "type": "string",
+                            "description": "Absolute path to the program.",
+                            "default": "${file}"
+                        },
+                        "startupQuery": {
+                            "type": "string",
+                            "description": "The goal to query for starting debugging.",
+                            "default": "start"
+                        },
+                        "stopOnEntry": {
+                            "type": "boolean",
+                            "description": "Automatically stop program after launch.",
+                            "default": true
+                        },
+                        "cwd": {
+                            "type": "string",
+                            "description": "Absolute path to the working directory of the program being debugged.",
+                            "default": "${workspaceRoot}"
+                        },
+                        "env": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
                             },
-                            "startupQuery": {
-                                "type": "string",
-                                "description": "The goal to query for starting debugging.",
-                                "default": "start"
+                            "description": "Environment variable passed to the program.",
+                            "default": {}
+                        },
+                        "runtimeExecutable": {
+                            "type": "string",
+                            "description": "Debug process executable.",
+                            "default": "/usr/bin/swipl"
+                        },
+                        "runtimeArgs": {
+                            "type": "array",
+                            "description": "Command line arguments passed to the debug executable.",
+                            "items": {
+                                "type": "string"
                             },
-                            "stopOnEntry": {
-                                "type": "boolean",
-                                "description": "Automatically stop program after launch.",
-                                "default": true
-                            },
-                            "cwd": {
-                                "type": "string",
-                                "description": "Absolute path to the working directory of the program being debugged.",
-                                "default": "${workspaceRoot}"
-                            },
-                            "env": {
-                                "type": "object",
-                                "additionalProperties": {
-                                    "type": "string"
-                                },
-                                "description": "Environment variable passed to the program.",
-                                "default": {}
-                            },
-                            "runtimeExecutable": {
-                                "type": "string",
-                                "description": "Debug process executable.",
-                                "default": "/usr/bin/swipl"
-                            },
-                            "runtimeArgs": {
-                                "type": "array",
-                                "description": "Command line arguments passed to the debug executable.",
-                                "items": {
-                                    "type": "string"
-                                },
-                                "default": []
-                            },
-                            "traceCmds": {
-                                "type": "object",
-                                "description": "Mapping between vscode debug commands and prolog trace options.",
-                                "default": {
-                                    "continue": [
-                                        "leap",
-                                        "l"
-                                    ],
-                                    "stepover": [
-                                        "skip",
-                                        "s"
-                                    ],
-                                    "stepinto": [
-                                        "creep",
-                                        "c"
-                                    ],
-                                    "stepout": [
-                                        "up",
-                                        "u"
-                                    ]
-                                }
+                            "default": []
+                        },
+                        "traceCmds": {
+                            "type": "object",
+                            "description": "Mapping between vscode debug commands and prolog trace options.",
+                            "default": {
+                                "continue": [
+                                    "leap",
+                                    "l"
+                                ],
+                                "stepover": [
+                                    "skip",
+                                    "s"
+                                ],
+                                "stepinto": [
+                                    "creep",
+                                    "c"
+                                ],
+                                "stepout": [
+                                    "up",
+                                    "u"
+                                ]
                             }
                         }
                     }
-                },
-                "initialConfigurations": [
-                    {
-                        "name": "Debug Prolog Files",
-                        "type": "prolog",
-                        "request": "launch",
-                        "runtimeExecutable": "/usr/bin/swipl",
-                        "runtimeArgs": [],
-                        "env": {},
-                        "program": "${file}",
-                        "cwd": "${fileDirname}",
-                        "startupQuery": "start",
-                        "stopOnEntry": true,
-                        "traceCmds": {
-                            "continue": [
-                                "leap",
-                                "l"
-                            ],
-                            "stepover": [
-                                "skip",
-                                "s"
-                            ],
-                            "stepinto": [
-                                "creep",
-                                "c"
-                            ],
-                            "stepout": [
-                                "up",
-                                "u"
-                            ]
-                        }
-                    }
-                ]
-            }
-        ],
+                }
+            },
+            "initialConfigurations": [{
+                "name": "Debug Prolog Files",
+                "type": "prolog",
+                "request": "launch",
+                "runtimeExecutable": "/usr/bin/swipl",
+                "runtimeArgs": [],
+                "env": {},
+                "program": "${file}",
+                "cwd": "${fileDirname}",
+                "startupQuery": "start",
+                "stopOnEntry": true,
+                "traceCmds": {
+                    "continue": [
+                        "leap",
+                        "l"
+                    ],
+                    "stepover": [
+                        "skip",
+                        "s"
+                    ],
+                    "stepinto": [
+                        "creep",
+                        "c"
+                    ],
+                    "stepout": [
+                        "up",
+                        "u"
+                    ]
+                }
+            }]
+        }],
         "configuration": {
             "title": "",
             "properties": {
