@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.2.16]
+## [0.2.17]
 - fixed a code formatting bug
 
 ## [0.2.16]
