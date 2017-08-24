@@ -3,9 +3,7 @@
 :- use_module(library(http/json), [atom_json_dict/3]).
 
 format_prolog_source(TabSize, TabDistance, RangeTxt, DocTxt) :-
-    writeln(oka),
     load_modules(DocTxt),
-    writeln(okb),
     atom_string(RangeAtom, RangeTxt),
     atom_to_memory_file(RangeAtom, MemFH),
     setup_call_cleanup(open_memory_file(MemFH, read, MemRStream),

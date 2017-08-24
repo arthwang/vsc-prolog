@@ -99,10 +99,12 @@ export default class PrologDocumentFormatter
     const offset = doc.offsetAt(pos);
     const subtxt = txt
       .slice(0, offset + 1)
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/%.*\n/g, "")
       .replace(/\\'/g, "")
-      .replace(/\\"/, "")
-      .replace(/"[^\"]*"/g, "")
-      .replace(/\'[^\']*\'/g, "");
+      .replace(/\\"/g, "")
+      .replace(/"[^\"]*?"/g, "")
+      .replace(/'[^\']*?'/g, "");
     const open = subtxt.lastIndexOf("/*");
     const close = subtxt.lastIndexOf("*/");
     return (
@@ -428,13 +430,15 @@ export default class PrologDocumentFormatter
             comment += "\n";
             lastOrigPos++;
           }
-          let tail = origSeg.match(/[()]*$/)[0].length;
-          let spaces = origSeg.match(/\s*$/)[0];
+          let tail = origSeg.match(/([()]*)(\s*)$/);
+          let spaces = tail[2];
           if (spaces.length > 0) {
             comment = spaces + comment;
           }
-          txtWithComm += formatedText.slice(0, j + tail) + comment;
-          formatedText = formatedText.slice(j + tail).replace(/^\n/, "");
+          txtWithComm += formatedText.slice(0, j) + tail[1] + comment;
+          formatedText = formatedText
+            .slice(j + tail[1].length)
+            .replace(/^\n/, "");
           break;
         }
 

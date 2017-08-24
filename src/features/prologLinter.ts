@@ -285,7 +285,9 @@ export default class PrologLinter implements CodeActionProvider {
     this.diagnostics = {};
     this.sortedDiagIndex = {};
     this.diagnosticCollection.delete(textDocument.uri);
-    let options = workspace.rootPath ? { cwd: workspace.rootPath } : undefined;
+    let options = workspace.rootPath
+      ? { cwd: workspace.rootPath, encoding: "utf8" }
+      : undefined;
 
     let args: string[];
     if (this.trigger === RunTrigger.onSave) {
