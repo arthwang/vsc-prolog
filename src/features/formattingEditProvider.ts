@@ -236,7 +236,9 @@ export default class PrologDocumentFormatter
     let prologProc = null;
 
     try {
-      let prologChild = await spawn(this._executable, this._args, {})
+      let prologChild = await spawn(this._executable, this._args, {
+        cwd: workspace.rootPath
+      })
         .on("process", proc => {
           if (proc.pid) {
             prologProc = proc;
@@ -245,6 +247,7 @@ export default class PrologDocumentFormatter
           }
         })
         .on("stdout", data => {
+          // console.log("data:" + data);
           if (/::::::ALLOVER/.test(data)) {
             this.resolve_terms(doc, termStr, range, true);
           }

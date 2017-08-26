@@ -263,11 +263,7 @@ export default class PrologLinter implements CodeActionProvider {
     let fromPos = new Position(line, fromCol);
     let toPos = new Position(line, toCol);
     let range = new Range(fromPos, toPos);
-    let fileId = Object.keys(this.filePathIds)[0];
     let errMsg = match[8];
-    if (fileId && this.filePathIds[fileId]) {
-      errMsg = errMsg.replace(fileId, this.filePathIds[fileId]);
-    }
     let diag = new Diagnostic(range, errMsg, severity);
     if (diag) {
       if (!this.diagnostics[fileName]) {
@@ -300,17 +296,12 @@ export default class PrologLinter implements CodeActionProvider {
     let lineErr: string = "";
     let docTxt = textDocument.getText();
     let docTxtEsced = jsesc(docTxt, { quotes: "double" });
-    let fileId = textDocument.fileName.replace(/\//g, "");
-    this.filePathIds[fileId] = textDocument.fileName;
     spawn(this.executable, args, options)
       .on("process", process => {
         if (process.pid && this.trigger === RunTrigger.onType) {
           let goals = `
-            consult('${__dirname}/redefusemodule.pl').
-            retractall(active_file(_)),
-            assert((user:active_file('${fileId}', '${textDocument.fileName}'))).
             open_string("${docTxtEsced}", S),
-            load_files('${fileId}', [stream(S)]).
+            load_files('${textDocument.fileName}', [stream(S),if(true)]).
             list_undefined.
           `;
           process.stdin.write(goals);
@@ -318,7 +309,11 @@ export default class PrologLinter implements CodeActionProvider {
         }
         this.outputChannel.clear();
       })
+      .on("stdout", out => {
+        // console.log("out:" + out + "\n");
+      })
       .on("stderr", (errStr: string) => {
+        // console.log("errStr" + errStr);
         if (/which is referenced by/.test(errStr)) {
           let regex = /Warning:\s*(.+),/;
           let match = errStr.match(regex);
@@ -476,7 +471,6 @@ export default class PrologLinter implements CodeActionProvider {
     let editor = window.activeTextEditor;
     let doc = editor.document;
     let docTxt = jsesc(doc.getText(), { quotes: "double" });
-    let fileId = doc.fileName.replace("///g", "");
 
     let pos = editor.selection.active;
     let pred = Utils.getPredicateUnderCursor(doc, pos);
@@ -488,7 +482,7 @@ export default class PrologLinter implements CodeActionProvider {
     let input = `
     clause_location(Pred) :-
       open_string("${docTxt}", S),
-      load_files('${fileId}', [module(user), stream(S)]),
+      load_files('${doc.fileName}', [module(user), stream(S), if(true)]),
       close(S),
       (   functor(Pred, :, 2)
       ->  Pred1 = pred
@@ -511,7 +505,7 @@ export default class PrologLinter implements CodeActionProvider {
       this.outputMsg(`${pred.wholePred} is not a valid predicate to export.`);
       return;
     }
-    if (clause_info[1] !== fileId) {
+    if (clause_info[1] !== doc.fileName) {
       this.outputMsg(`${pred.wholePred} is not defined in active source file.`);
       return;
     }

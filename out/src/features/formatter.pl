@@ -22,7 +22,7 @@ load_modules(DocTxt) :-
 
 load_modules1(RStream) :-
     read_term(RStream, Term, []),
-    handle_term(Term, RStream).
+    handle_term(Term, RStream), !.
 handle_term(end_of_file, _) :- !.
 handle_term((:-use_module(MFile)), RStream) :-
     user:use_module(MFile),
@@ -30,7 +30,15 @@ handle_term((:-use_module(MFile)), RStream) :-
 handle_term((:-use_module(MFile, Imps)), RStream) :-
     user:use_module(MFile, Imps),
     load_modules1(RStream), !.
-        handle_term(_, RStream) :-
+handle_term(_, RStream) :-
+    load_modules1(RStream).
+handle_term((:-reexport(MFile)), RStream) :-
+    user:reexport(MFile),
+    load_modules1(RStream), !.
+handle_term((:-reexport(MFile, Imps)), RStream) :-
+    user:reexport(MFile, Imps),
+    load_modules1(RStream), !.
+handle_term(_, RStream) :-
     load_modules1(RStream).
 
         

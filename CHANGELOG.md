@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.2.20]
+- fixed a bug in loading active document in linter
+
 ## [0.2.19]
 - fixed a version err
 
