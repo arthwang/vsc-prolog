@@ -1,265 +1,316 @@
 {
-  "name": "vsc-prolog",
-  "displayName": "VSC-Prolog",
-  "description": "Support for Prolog language",
-  "version": "0.2.19",
-  "publisher": "arthurwang",
-  "icon": "images/vsplogo.png",
-  "license": "MIT",
-  "engines": {
-    "vscode": "^1.5.0"
-  },
-  "categories": ["Languages", "Formatters", "Snippets", "Linters", "Debuggers"],
-  "keywords": ["prolog", "debug", "linter", "snippet", "format"],
-  "author": {
-    "name": "Arthur Wang",
-    "email": "rthrwang@gmail.com"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/arthwang/vsc-prolog.git"
-  },
-  "bugs": {
-    "url": "https://github.com/arthwang/vsc-prolog/issues",
-    "email": "rthrwang@gmail.com"
-  },
-  "main": "./out/src/extension",
-  "activationEvents": ["onLanguage:prolog"],
-  "contributes": {
-    "languages": [
-      {
-        "id": "prolog",
-        "aliases": ["Prolog", "swipl"],
-        "configuration": "./prolog.configuration.json",
-        "extensions": [".pl", ".pro", ".prolog", ".plt"]
-      }
-    ],
-    "grammars": [
-      {
-        "language": "prolog",
-        "scopeName": "source.prolog",
-        "path": "./syntaxes/prolog.tmLanguage.json"
-      }
-    ],
-    "snippets": [
-      {
-        "language": "prolog",
-        "path": "./snippets/prolog.json"
-      }
-    ],
-    "commands": [
-      {
-        "command": "prolog.linter.nextErrLine",
-        "title": "Prolog: Goto next error line"
-      },
-      {
-        "command": "prolog.linter.prevErrLine",
-        "title": "Prolog: Goto previous error line"
-      },
-      {
-        "command": "prolog.exportPredicate",
-        "title": "Prolog: export predicate under cursor"
-      },
-      {
-        "command": "prolog.load.document",
-        "title": "Prolog: load document"
-      },
-      {
-        "command": "prolog.query.goal",
-        "title": "Prolog: query goal under cursor"
-      }
-    ],
-    "keybindings": [
-      {
-        "command": "prolog.linter.nextErrLine",
-        "key": "f8"
-      },
-      {
-        "command": "prolog.linter.prevErrLine",
-        "key": "shift+f8"
-      },
-      {
-        "command": "prolog.exportPredicate",
-        "key": "alt+x x"
-      },
-      {
-        "command": "prolog.load.document",
-        "key": "alt+x l"
-      },
-      {
-        "command": "prolog.query.goal",
-        "key": "alt+x q"
-      }
-    ],
-    "menus": {
-      "editor/context": [
-        {
-          "command": "prolog.query.goal",
-          "when": "resourceLangId == prolog"
-        },
-        {
-          "command": "prolog.exportPredicate",
-          "when": "resourceLangId == prolog"
-        }
-      ]
+    "name": "vsc-prolog",
+    "displayName": "VSC-Prolog",
+    "description": "Support for Prolog language",
+    "version": "0.2.20",
+    "publisher": "arthurwang",
+    "icon": "images/vsplogo.png",
+    "license": "MIT",
+    "engines": {
+        "vscode": "^1.5.0"
     },
-    "debuggers": [
-      {
-        "type": "prolog",
-        "label": "Prolog",
-        "enableBreakpointsFor": {
-          "languageIds": ["prolog"]
-        },
-        "program": "./out/src/features/prologDebugSession.js",
-        "runtime": "node",
-        "configurationAttributes": {
-          "launch": {
-            "required": [
-              "program",
-              "startupQuery",
-              "cwd",
-              "runtimeExecutable",
-              "runtimeArgs",
-              "traceCmds"
-            ],
-            "properties": {
-              "program": {
-                "type": "string",
-                "description": "Absolute path to the program.",
-                "default": "${file}"
-              },
-              "startupQuery": {
-                "type": "string",
-                "description": "The goal to query for starting debugging.",
-                "default": "start"
-              },
-              "stopOnEntry": {
-                "type": "boolean",
-                "description": "Automatically stop program after launch.",
-                "default": true
-              },
-              "cwd": {
-                "type": "string",
-                "description": "Absolute path to the working directory of the program being debugged.",
-                "default": "${workspaceRoot}"
-              },
-              "env": {
-                "type": "object",
-                "additionalProperties": {
-                  "type": "string"
-                },
-                "description": "Environment variable passed to the program.",
-                "default": {}
-              },
-              "runtimeExecutable": {
-                "type": "string",
-                "description": "Debug process executable.",
-                "default": "/usr/bin/swipl"
-              },
-              "runtimeArgs": {
-                "type": "array",
-                "description": "Command line arguments passed to the debug executable.",
-                "items": {
-                  "type": "string"
-                },
-                "default": []
-              },
-              "traceCmds": {
-                "type": "object",
-                "description": "Mapping between vscode debug commands and prolog trace options.",
-                "default": {
-                  "continue": ["leap", "l"],
-                  "stepover": ["skip", "s"],
-                  "stepinto": ["creep", "c"],
-                  "stepout": ["up", "u"]
-                }
-              }
-            }
-          }
-        },
-        "initialConfigurations": [
-          {
-            "name": "Debug Prolog Files",
-            "type": "prolog",
-            "request": "launch",
-            "runtimeExecutable": "/usr/bin/swipl",
-            "runtimeArgs": [],
-            "env": {},
-            "program": "${file}",
-            "cwd": "${fileDirname}",
-            "startupQuery": "start",
-            "stopOnEntry": true,
-            "traceCmds": {
-              "continue": ["leap", "l"],
-              "stepover": ["skip", "s"],
-              "stepinto": ["creep", "c"],
-              "stepout": ["up", "u"]
-            }
-          }
-        ]
-      }
+    "categories": [
+        "Languages",
+        "Formatters",
+        "Snippets",
+        "Linters",
+        "Debuggers"
     ],
-    "configuration": {
-      "title": "",
-      "properties": {
-        "prolog.executablePath": {
-          "type": "string",
-          "default": "/usr/bin/swipl",
-          "description": "Points to the Prolog executable."
+    "keywords": [
+        "prolog",
+        "debug",
+        "linter",
+        "snippet",
+        "format"
+    ],
+    "author": {
+        "name": "Arthur Wang",
+        "email": "rthrwang@gmail.com"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/arthwang/vsc-prolog.git"
+    },
+    "bugs": {
+        "url": "https://github.com/arthwang/vsc-prolog/issues",
+        "email": "rthrwang@gmail.com"
+    },
+    "main": "./out/src/extension",
+    "activationEvents": [
+        "onLanguage:prolog"
+    ],
+    "contributes": {
+        "languages": [
+            {
+                "id": "prolog",
+                "aliases": [
+                    "Prolog",
+                    "swipl"
+                ],
+                "configuration": "./prolog.configuration.json",
+                "extensions": [
+                    ".pl",
+                    ".pro",
+                    ".prolog",
+                    ".plt"
+                ]
+            }
+        ],
+        "grammars": [
+            {
+                "language": "prolog",
+                "scopeName": "source.prolog",
+                "path": "./syntaxes/prolog.tmLanguage.json"
+            }
+        ],
+        "snippets": [
+            {
+                "language": "prolog",
+                "path": "./snippets/prolog.json"
+            }
+        ],
+        "commands": [
+            {
+                "command": "prolog.linter.nextErrLine",
+                "title": "Prolog: Goto next error line"
+            },
+            {
+                "command": "prolog.linter.prevErrLine",
+                "title": "Prolog: Goto previous error line"
+            },
+            {
+                "command": "prolog.exportPredicate",
+                "title": "Prolog: export predicate under cursor"
+            },
+            {
+                "command": "prolog.load.document",
+                "title": "Prolog: load document"
+            },
+            {
+                "command": "prolog.query.goal",
+                "title": "Prolog: query goal under cursor"
+            }
+        ],
+        "keybindings": [
+            {
+                "command": "prolog.linter.nextErrLine",
+                "key": "f8"
+            },
+            {
+                "command": "prolog.linter.prevErrLine",
+                "key": "shift+f8"
+            },
+            {
+                "command": "prolog.exportPredicate",
+                "key": "alt+x x"
+            },
+            {
+                "command": "prolog.load.document",
+                "key": "alt+x l"
+            },
+            {
+                "command": "prolog.query.goal",
+                "key": "alt+x q"
+            }
+        ],
+        "menus": {
+            "editor/context": [
+                {
+                    "command": "prolog.query.goal",
+                    "when": "resourceLangId == prolog"
+                },
+                {
+                    "command": "prolog.exportPredicate",
+                    "when": "resourceLangId == prolog"
+                }
+            ]
         },
-        "prolog.linter.run": {
-          "type": "string",
-          "enum": ["onSave", "onType"],
-          "default": "onType",
-          "description": "How to trigger the linter."
-        },
-        "prolog.linter.delay": {
-          "type": "number",
-          "default": 500,
-          "description": "The milliseconds to delay when using onType trigger."
-        },
-        "prolog.terminal.runtimeArgs": {
-          "type": "array",
-          "description": "Arguments of Prolog executable run in terminal.",
-          "default": []
-        },
-        "prolog.format.tabSize": {
-          "type": "number",
-          "default": 4,
-          "description": "The size of a tab in spaces"
-        },
-        "prolog.format.insertSpaces": {
-          "type": "boolean",
-          "default": true,
-          "description": "Prefer spaces over tabs"
+        "debuggers": [
+            {
+                "type": "prolog",
+                "label": "Prolog",
+                "enableBreakpointsFor": {
+                    "languageIds": [
+                        "prolog"
+                    ]
+                },
+                "program": "./out/src/features/prologDebugSession.js",
+                "runtime": "node",
+                "configurationAttributes": {
+                    "launch": {
+                        "required": [
+                            "program",
+                            "startupQuery",
+                            "cwd",
+                            "runtimeExecutable",
+                            "runtimeArgs",
+                            "traceCmds"
+                        ],
+                        "properties": {
+                            "program": {
+                                "type": "string",
+                                "description": "Absolute path to the program.",
+                                "default": "${file}"
+                            },
+                            "startupQuery": {
+                                "type": "string",
+                                "description": "The goal to query for starting debugging.",
+                                "default": "start"
+                            },
+                            "stopOnEntry": {
+                                "type": "boolean",
+                                "description": "Automatically stop program after launch.",
+                                "default": true
+                            },
+                            "cwd": {
+                                "type": "string",
+                                "description": "Absolute path to the working directory of the program being debugged.",
+                                "default": "${workspaceRoot}"
+                            },
+                            "env": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "type": "string"
+                                },
+                                "description": "Environment variable passed to the program.",
+                                "default": {}
+                            },
+                            "runtimeExecutable": {
+                                "type": "string",
+                                "description": "Debug process executable.",
+                                "default": "/usr/bin/swipl"
+                            },
+                            "runtimeArgs": {
+                                "type": "array",
+                                "description": "Command line arguments passed to the debug executable.",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "default": []
+                            },
+                            "traceCmds": {
+                                "type": "object",
+                                "description": "Mapping between vscode debug commands and prolog trace options.",
+                                "default": {
+                                    "continue": [
+                                        "leap",
+                                        "l"
+                                    ],
+                                    "stepover": [
+                                        "skip",
+                                        "s"
+                                    ],
+                                    "stepinto": [
+                                        "creep",
+                                        "c"
+                                    ],
+                                    "stepout": [
+                                        "up",
+                                        "u"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                "initialConfigurations": [
+                    {
+                        "name": "Debug Prolog Files",
+                        "type": "prolog",
+                        "request": "launch",
+                        "runtimeExecutable": "/usr/bin/swipl",
+                        "runtimeArgs": [],
+                        "env": {},
+                        "program": "${file}",
+                        "cwd": "${fileDirname}",
+                        "startupQuery": "start",
+                        "stopOnEntry": true,
+                        "traceCmds": {
+                            "continue": [
+                                "leap",
+                                "l"
+                            ],
+                            "stepover": [
+                                "skip",
+                                "s"
+                            ],
+                            "stepinto": [
+                                "creep",
+                                "c"
+                            ],
+                            "stepout": [
+                                "up",
+                                "u"
+                            ]
+                        }
+                    }
+                ]
+            }
+        ],
+        "configuration": {
+            "title": "",
+            "properties": {
+                "prolog.executablePath": {
+                    "type": "string",
+                    "default": "/usr/bin/swipl",
+                    "description": "Points to the Prolog executable."
+                },
+                "prolog.linter.run": {
+                    "type": "string",
+                    "enum": [
+                        "onSave",
+                        "onType"
+                    ],
+                    "default": "onType",
+                    "description": "How to trigger the linter."
+                },
+                "prolog.linter.delay": {
+                    "type": "number",
+                    "default": 500,
+                    "description": "The milliseconds to delay when using onType trigger."
+                },
+                "prolog.terminal.runtimeArgs": {
+                    "type": "array",
+                    "description": "Arguments of Prolog executable run in terminal.",
+                    "default": []
+                },
+                "prolog.format.tabSize": {
+                    "type": "number",
+                    "default": 4,
+                    "description": "The size of a tab in spaces"
+                },
+                "prolog.format.insertSpaces": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Prefer spaces over tabs"
+                }
+            }
         }
-      }
+    },
+    "scripts": {
+        "vscode:prepublish": "tsc -p ./",
+        "compile": "tsc -watch -p ./",
+        "postinstall": "node ./node_modules/vscode/bin/install",
+        "test": "node ./node_modules/vscode/bin/test",
+        "syntax": "yaml2json --pretty --watch --save ./syntaxes/prolog.tmLanguage.yaml",
+        "pkgvars": "node ./node_modules/vscode/bin/install"
+    },
+    "devDependencies": {
+        "@types/bluebird": "^3.5.8",
+        "@types/mocha": "^2.2.41",
+        "@types/node": "^8.0.20",
+        "cross-var": "^1.0.3",
+        "typescript": "^2.0.3",
+        "vscode": "^1.0.0"
+    },
+    "dependencies": {
+        "find-in-files": "^0.4.0",
+        "jsesc": "^2.5.1",
+        "process-promises": "^1.0.0",
+        "q": "^1.5.0",
+        "readline-promise": "0.0.1",
+        "split": "^1.0.1",
+        "vscode-debugadapter": "^1.22.0",
+        "yamljs": "^0.3.0"
     }
-  },
-  "scripts": {
-    "vscode:prepublish": "tsc -p ./",
-    "compile": "tsc -watch -p ./",
-    "postinstall": "node ./node_modules/vscode/bin/install",
-    "test": "node ./node_modules/vscode/bin/test",
-    "syntax": "yaml2json --pretty --watch --save ./syntaxes/prolog.tmLanguage.yaml",
-    "pkgvars": "node ./node_modules/vscode/bin/install"
-  },
-  "devDependencies": {
-    "@types/bluebird": "^3.5.8",
-    "@types/mocha": "^2.2.41",
-    "@types/node": "^8.0.20",
-    "cross-var": "^1.0.3",
-    "typescript": "^2.0.3",
-    "vscode": "^1.0.0"
-  },
-  "dependencies": {
-    "find-in-files": "^0.4.0",
-    "jsesc": "^2.5.1",
-    "process-promises": "^1.0.0",
-    "q": "^1.5.0",
-    "readline-promise": "0.0.1",
-    "split": "^1.0.1",
-    "vscode-debugadapter": "^1.22.0",
-    "yamljs": "^0.3.0"
-  }
 }
