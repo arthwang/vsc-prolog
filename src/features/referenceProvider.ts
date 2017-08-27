@@ -38,23 +38,21 @@ export class PrologReferenceProvider implements ReferenceProvider {
     this._locations = [];
     this._clauseRefs = {};
     let pred = Utils.getPredicateUnderCursor(doc, position);
-    this.saveAllDirtyFiles();
-    return this.findFilesAndRefs(pred.functor, pred.pi);
+    await this.findFilesAndRefs(pred.functor, pred.pi);
+    return this._locations;
   }
 
   private async findFilesAndRefs(predName: string, pi: string) {
+    await Promise.all(
+      workspace.textDocuments.map(async doc => {
+        return await doc.save();
+      })
+    );
+
     let files = await fif.find(predName, workspace.rootPath, ".pl$");
     for (let file in files) {
       await this.loadFileAndFindRefs(pi, file);
     }
-    return this._locations;
-  }
-  private async saveAllDirtyFiles() {
-    await workspace.textDocuments.forEach(doc => {
-      if (doc.isDirty) {
-        doc.save();
-      }
-    });
   }
 
   private async loadFileAndFindRefs(pi: string, file: string) {

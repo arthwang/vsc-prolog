@@ -19,12 +19,6 @@ findallrefs(To) :-
                               findrefs(To),
                               unload_file(File))).
 
-% safe_load(File) :-
-%     module_property(_, file(File)), !.
-% safe_load(File) :-
-%     source_file(File), !.
-% safe_load(File) :-
-%     consult(File).
 findrefs(To) :-
     resolve(To, Target),
     prolog_walk_code(
