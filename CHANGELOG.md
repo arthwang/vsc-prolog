@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.2.21]
+- fixed an async/await bug in referenceProvider.ts
+
 ## [0.2.20]
 - fixed a bug in loading active document in linter
 
