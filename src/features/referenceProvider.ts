@@ -86,7 +86,7 @@ export class PrologReferenceProvider implements ReferenceProvider {
             );
             //relocate if ref points to start of the clause
             let lines = fs.readFileSync(ref.file).toString().split("\n");
-            let predName = pi.split("/")[0];
+            let predName = pi.split("/")[0].split(":")[1];
             if (
               !new RegExp("^" + predName).test(lines[ref.line].slice(ref.char))
             ) {
@@ -116,7 +116,12 @@ export class PrologReferenceProvider implements ReferenceProvider {
             this._locations.push(
               new Location(
                 Uri.file(ref.file),
-                new Range(ref.line, ref.char, ref.line, ref.char + predLen)
+                new Range(
+                  ref.line,
+                  ref.char,
+                  ref.line,
+                  ref.char + predName.length
+                )
               )
             );
             match = refReg.exec(output);

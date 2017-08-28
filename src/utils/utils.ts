@@ -10,7 +10,8 @@ import {
   Position,
   Range,
   TextDocument,
-  workspace
+  workspace,
+  window
 } from "vscode";
 
 interface ISnippet {
@@ -91,11 +92,13 @@ export default class Utils {
     functor: string;
     arity: number;
     params: string;
+    module: string;
   } {
     let wordRange: Range = doc.getWordRangeAtPosition(position);
     if (!wordRange) {
       return null;
     }
+
     let predName: string = doc.getText(wordRange);
     let re = new RegExp("^" + predName + "\\s*\\(");
     let re1 = new RegExp("^" + predName + "\\/(\\d+)");
@@ -109,6 +112,8 @@ export default class Utils {
       .join("")
       .slice(wordRange.start.character)
       .replace(/\s+/g, " ");
+
+    let module = null;
 
     if (re.test(text)) {
       let i = text.indexOf("(") + 1;
@@ -133,18 +138,73 @@ export default class Utils {
       arity = parseInt(text.match(re1)[1]);
       params =
         arity === 0 ? "" : "(" + new Array(arity).fill("_").join(",") + ")";
+      let reg = new RegExp(
+        "module\\s*\\(\\s*([^,\\(]+)\\s*,\\s*\\[[^\\]]*?" +
+          predName +
+          "/" +
+          arity +
+          "\\b"
+      );
+      let mtch = doc.getText().replace(/\n/g, "").match(reg);
+      if (mtch) {
+        let mFile = mtch[1];
+        let mod = Utils.execPrologSync(
+          ["-q"],
+          `find_module :-
+            absolute_file_name(${mFile}, File, [file_type(prolog)]),
+            load_files(File),
+            source_file_property(File, module(Mod)),
+            writeln(module:Mod).`,
+          "find_module",
+          "true",
+          /module:(\w+)/
+        );
+        if (mod) {
+          module = mod[1];
+        }
+      }
       wholePred = predName + params;
     } else {
       arity = 0;
       params = "";
       wholePred = predName;
     }
+
+    if (!module) {
+      let modMatch = doc
+        .getText()
+        .slice(0, doc.offsetAt(wordRange.start))
+        .match(/([\S]+)\s*:\s*$/);
+      if (modMatch) {
+        module = modMatch[1];
+      } else {
+        let mod = Utils.execPrologSync(
+          ["-q", "-l", `${__dirname}/findmodule.pl`],
+          "",
+          `(find_module('${window.activeTextEditor.document.fileName}',
+         ${wholePred},
+          Module),
+          writeln(module:Module))`,
+          "true",
+          /module:(\w+)/
+        );
+        if (mod) {
+          module = mod[1];
+        } else {
+          module = null;
+        }
+      }
+    }
+
     return {
-      wholePred: wholePred,
-      pi: predName + "/" + arity,
+      wholePred: module ? module + ":" + wholePred : wholePred,
+      pi: module
+        ? module + ":" + predName + "/" + arity
+        : predName + "/" + arity,
       functor: predName,
       arity: arity,
-      params: params
+      params: params,
+      module: module
     };
   }
 
@@ -200,6 +260,9 @@ export default class Utils {
     if (prologProcess.status === 0) {
       let output = prologProcess.stdout.toString();
       let err = prologProcess.stderr.toString();
+      // console.log("out:" + output);
+      // console.log("err:" + err);
+
       let match = output.match(resultReg);
       return match ? match : null;
     } else {
