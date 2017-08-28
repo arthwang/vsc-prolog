@@ -1,9 +1,5 @@
-out/*
-!out/src
-out/src/*
-!out/src/features
-out/src/features/*
-!out/src/features/*.pl
+out/**/*.js
+out/**/*.map
 node_modules
 node_trace.1.log
 vsc-extension-quickstart.md

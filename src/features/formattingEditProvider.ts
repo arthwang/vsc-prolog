@@ -259,7 +259,7 @@ export default class PrologDocumentFormatter
           }
         })
         .on("stderr", err => {
-          console.log("err:" + err);
+          // console.log("err:" + err);
         })
         .on("close", _ => {
           console.log("closed");

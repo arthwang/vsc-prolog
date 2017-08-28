@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.2.22]
+- preciser moduling in finding all references
+
 ## [0.2.21]
 - fixed an async/await bug in referenceProvider.ts
 
