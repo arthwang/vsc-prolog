@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.3.0]
+- added refactoring feature
+- fixed several bugs
+
 ## [0.2.22]
 - preciser moduling in finding all references
 

@@ -112,6 +112,16 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
 
   ![findrefs](images/findrefs.gif)
 
+### Refactor predicate under cursor
+
+  Right click a predicate in editor, then trigger the command 'Refactor predicate under cursor' from the editor context menu. VSC-Prolog pops up a message box to ask for user confirmation and then an input box shows off to accept new predicate name that is used to replace the original one in all the references and its definition clause head(s). 
+  
+  If the user selects a builtin or foreign predicate and confirms in the warning box, all the predicate functor name of referencs would be replaced but the definition remains unchanged. This maybe is useful if you want to substitute a predicate with the same arity.
+
+  > You'd better to commit the current stage of the version control system in VS Code before refactoring action in order to rollback refactoring results easily with one command of 'discard all changes' when the results are not what you expected.
+  
+  ![refactoring](images/refactoring.gif)
+
 ### Code formatter
 
   Code formatting is implemented by calling portray_clause, so the beautification style is depended on portray_clause. Thus two limits should be mentioned.
@@ -319,7 +329,7 @@ Latest versions of VS code and SWI-Prolog installed.
 
 ## Acknowledgements
 
-  >I would like to thank the VS Code team of Microsoft for providing this powerful platform. I've read over many source files of extensions shipped with VS Code and other language support extensions such as php, java, etc. I thank Professor Jan Wielemaker who is known as the original author of SWI-Prolog for his many professional and patient helps about SWI-Prolog system when I consulted on SWI-Prolog forum. Some segments of codes of this extension are gratefully borrowed from other resources such as Sublimeprolog tmlanguage syntax yaml file, SWI-Prolog source files, etc. The backend of 'find all references' mainly comes from gist code of github of Jan Wielemaker.
+  >I would like to thank the VS Code team of Microsoft for providing this powerful platform. I've read over many source files of extensions shipped with VS Code and other language support extensions such as php, java, etc. I thank Professor Jan Wielemaker who is known as the original author of SWI-Prolog for his many professional and patient helps about SWI-Prolog system when I consulted on SWI-Prolog forum. Some segments of codes of this extension are gratefully borrowed from other resources such as Sublimeprolog tmlanguage syntax yaml file, SWI-Prolog source files, etc. The backend of 'find all references' and 'refactor predicate under cursor' mainly comes from gist code of github of Jan Wielemaker.
 
 ## License
 
