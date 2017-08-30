@@ -8,7 +8,7 @@ import {
   Hover,
   Range
 } from "vscode";
-import Utils from "../utils/utils";
+import { Utils } from "../utils/utils";
 
 export default class PrologHoverProvider implements HoverProvider {
   // escape markdown syntax tokens: http://daringfireball.net/projects/markdown/syntax#backslash

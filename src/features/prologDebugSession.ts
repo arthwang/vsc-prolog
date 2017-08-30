@@ -17,7 +17,7 @@ import {
   PrologDebugger
 } from "./prologDebugger";
 import { basename } from "path";
-import Utils from "../utils/utils";
+import { Utils } from "../utils/utils";
 import * as cp from "child_process";
 import { spawn, SpawnOptions } from "process-promises";
 import * as Net from "net";

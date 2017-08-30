@@ -192,6 +192,7 @@ export default class PrologDocumentFormatter
   ): TextEdit[] | Thenable<TextEdit[]> {
     if (
       ch === "." &&
+      doc.languageId === "prolog" &&
       this.isClauseEndDot(
         doc,
         new Position(position.line, position.character - 1)

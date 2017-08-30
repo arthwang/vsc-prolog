@@ -24,7 +24,16 @@ interface ISnippet {
 interface IPredModule {
   [predicate: string]: string[];
 }
-export default class Utils {
+export interface IPredicate {
+  wholePred: string;
+  pi: string;
+  functor: string;
+  arity: number;
+  params: string;
+  module: string;
+}
+
+export class Utils {
   private static snippets: ISnippet = null;
   private static predModules: IPredModule = null;
   constructor() {}
@@ -86,14 +95,7 @@ export default class Utils {
   public static getPredicateUnderCursor(
     doc: TextDocument,
     position: Position
-  ): {
-    wholePred: string;
-    pi: string;
-    functor: string;
-    arity: number;
-    params: string;
-    module: string;
-  } {
+  ): IPredicate {
     let wordRange: Range = doc.getWordRangeAtPosition(position);
     if (!wordRange) {
       return null;
@@ -134,6 +136,8 @@ export default class Utils {
       wholePred = text.slice(0, i);
       arity = Utils.getPredicateArity(wholePred);
       params = wholePred.slice(predName.length);
+
+      // find the module if a predicate is picked in :-module or :-use_module
     } else if (re1.test(text)) {
       arity = parseInt(text.match(re1)[1]);
       params =
