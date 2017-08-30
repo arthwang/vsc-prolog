@@ -1,6 +1,6 @@
 "use strict";
 
-import Utils from "../utils/utils";
+import { Utils } from "../utils/utils";
 import {
   Terminal,
   window,

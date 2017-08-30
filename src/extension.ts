@@ -1,7 +1,6 @@
 "use strict";
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
-import PrologLinter from "./features/prologLinter";
 import {
   commands,
   DocumentFilter,
@@ -10,17 +9,20 @@ import {
   TextDocument,
   window,
   languages,
-  DocumentHighlightProvider
+  DocumentHighlightProvider,
+  Location
 } from "vscode";
 import * as jsesc from "jsesc";
 import PrologTerminal from "./features/prologTerminal";
 import { loadEditHelpers } from "./features/editHelpers";
-import Utils from "./utils/utils";
+import { Utils } from "./utils/utils";
 import PrologHoverProvider from "./features/hoverProvider";
 import PrologDocumentHighlightProvider from "./features/documentHighlightProvider";
 import PrologDocumentFormatter from "./features/formattingEditProvider";
 import { PrologDefinitionProvider } from "./features/definitionProvider";
 import { PrologReferenceProvider } from "./features/referenceProvider";
+import PrologLinter from "./features/prologLinter";
+import { PrologRefactor } from "./features/prologRefactor";
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -69,6 +71,12 @@ export function activate(context: ExtensionContext) {
       command: "prolog.query.goal",
       callback: () => {
         PrologTerminal.getInstance().queryGoalUnderCursor();
+      }
+    },
+    {
+      command: "prolog.refactorPredicate",
+      callback: () => {
+        new PrologRefactor().refactorPredUnderCursor();
       }
     }
   ];

@@ -10,7 +10,7 @@ import {
 } from "vscode";
 import * as cp from "child_process";
 import * as jsesc from "jsesc";
-import Utils from "../utils/utils";
+import { Utils } from "../utils/utils";
 
 export class PrologDefinitionProvider implements DefinitionProvider {
   public provideDefinition(

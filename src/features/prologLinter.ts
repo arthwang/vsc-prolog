@@ -25,7 +25,7 @@ import {
   workspace,
   WorkspaceEdit
 } from "vscode";
-import Utils from "../utils/utils";
+import { Utils, IPredicate } from "../utils/utils";
 import { basename } from "path";
 
 export enum RunTrigger {
@@ -467,18 +467,11 @@ export default class PrologLinter implements CodeActionProvider {
     this.outputChannel.show();
   }
 
-  public exportPredicateUnderCursor() {
-    let editor = window.activeTextEditor;
-    let doc = editor.document;
+  private getClauseInfo(
+    doc: TextDocument,
+    pred: IPredicate
+  ): [string, number] | null {
     let docTxt = jsesc(doc.getText(), { quotes: "double" });
-
-    let pos = editor.selection.active;
-    let pred = Utils.getPredicateUnderCursor(doc, pos);
-
-    if (pred.arity < 0) {
-      this.outputMsg(`${pred.functor} is not a valid predicate to export.`);
-      return;
-    }
     let input = `
     clause_location(Pred) :-
       open_string("${docTxt}", S),
@@ -494,23 +487,39 @@ export default class PrologLinter implements CodeActionProvider {
       clause_property(R, line_count(Line)), !,
       format('File=~s;Line=~d~n', [File, Line]).
     `;
-    let clause_info = Utils.execPrologSync(
+    let clauseInfo = Utils.execPrologSync(
       ["-q"],
       input,
-      `clause_location(${pred.wholePred})`,
+      `clause_location(${pred.wholePred.split(":")[1]})`,
       "true",
       /File=(.+);Line=(\d+)/
     );
-    if (clause_info == null) {
+    return clauseInfo ? [clauseInfo[1], parseInt(clauseInfo[2])] : null;
+  }
+  public exportPredicateUnderCursor() {
+    let editor = window.activeTextEditor;
+    let doc = editor.document;
+    let docTxt = jsesc(doc.getText(), { quotes: "double" });
+
+    let pos = editor.selection.active;
+    let pred = Utils.getPredicateUnderCursor(doc, pos);
+
+    if (pred.arity < 0) {
+      this.outputMsg(`${pred.functor} is not a valid predicate to export.`);
+      return;
+    }
+
+    let clauseInfo = this.getClauseInfo(doc, pred);
+    if (clauseInfo == null) {
       this.outputMsg(`${pred.wholePred} is not a valid predicate to export.`);
       return;
     }
-    if (clause_info[1] !== doc.fileName) {
+    if (clauseInfo[0] !== doc.fileName) {
       this.outputMsg(`${pred.wholePred} is not defined in active source file.`);
       return;
     }
 
-    input = `
+    let input = `
     rewrite_module_declaration(Module, PI) :-
         setup_call_cleanup(
             open_string("${docTxt}", S),
@@ -538,7 +547,7 @@ export default class PrologLinter implements CodeActionProvider {
     let modDec = Utils.execPrologSync(
       ["-q"],
       input,
-      `rewrite_module_declaration('${modname}', ${pred.pi})`,
+      `rewrite_module_declaration('${modname}', ${pred.pi.split(":")[1]})`,
       "true",
       /Action=(\w+);Mod=(.+);Line=(\d+);Start=(\d+)/
     );
@@ -580,10 +589,11 @@ export default class PrologLinter implements CodeActionProvider {
         }
         // add comments
         let comm = "%!\t" + pred.functor + "\n%\n%\n";
+        let newClauseInfo = this.getClauseInfo(doc, pred);
         edit = new WorkspaceEdit();
         edit.insert(
           Uri.file(doc.fileName),
-          new Position(parseInt(clause_info[2]), 0),
+          new Position(newClauseInfo[1] - 1, 0),
           comm
         );
         workspace.applyEdit(edit);

@@ -2,7 +2,7 @@ import { LaunchRequestArguments } from "./prologDebugger";
 import { EventEmitter } from "events";
 import * as fs from "fs";
 import { spawn } from "process-promises";
-import Utils from "../utils/utils";
+import { Utils } from "../utils/utils";
 import { DebugProtocol } from "vscode-debugprotocol";
 import { PrologDebugSession } from "./prologDebugSession";
 import {
