@@ -24,6 +24,7 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
   * [Load active source file and query goals](#load-active-source-file-and-query-goals)
   * [Goto definition of predicate under cursor](#go-to-definition)
   * [Show all refences of predicate under cursor](#show-all-references-of-predicate-under-cursor)
+  * [Refactor predicae under cursor(experimental)](#refactor-predicate-under-cursor)
   * [Code formatter](#code-formatter)
   * [Debugger(experimental)](#debugger)
     * Leep, creep, skip, Up, Stop, Restart
@@ -116,7 +117,7 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
 
   Right click a predicate in editor, then trigger the command 'Refactor predicate under cursor' from the editor context menu. VSC-Prolog pops up a message box to ask for user confirmation and then an input box shows off to accept new predicate name that is used to replace the original one in all the references and its definition clause head(s). 
   
-  If the user selects a builtin or foreign predicate and confirms in the warning box, all the predicate functor name of referencs would be replaced but the definition remains unchanged. This maybe is useful if you want to substitute a predicate with the same arity.
+  If the user selects a builtin or foreign predicate and confirms in the warning box, all the predicate functor names of referencs would be replaced but the definition remains unchanged. This maybe is useful if you want to substitute a predicate with the same arity.
 
   > You'd better to commit the current stage of the version control system in VS Code before refactoring action in order to rollback refactoring results easily with one command of 'discard all changes' when the results are not what you expected.
   
