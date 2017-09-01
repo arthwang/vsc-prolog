@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.3.1]
+## [0.3.5]
 - fixed a bug in refactor
 
 ## [0.3.0]
