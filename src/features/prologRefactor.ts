@@ -78,14 +78,14 @@ export class PrologRefactor {
       placeHolder: pred.functor,
       ignoreFocusOut: true,
       validateInput: value => {
-        if (/\s/.test(value)) {
+        if (/\s/.test(value) && !/^'[^\']+'$/.test(value)) {
           return "Predicate name must not contain any spaces, tab and new line.";
         }
-        if (/^[A-Z_0-9]/.test(value)) {
-          return "Predicate name must not start with capital letters, digitals and underscore.";
-        }
-        if (/^$/.test(value)) {
-          return "$ is reserved as starting letter of predicate names.";
+        if (
+          /^[^a-z']/.test(value) ||
+          (/^'[^a-z]/.test(value) && !/'$/.test(value))
+        ) {
+          return "Illegal starting letter in predicate name.";
         }
         return null;
       }

@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.3.1]
+- fixed a bug in refactor
+
 ## [0.3.0]
 - added refactoring feature
 - fixed several bugs
