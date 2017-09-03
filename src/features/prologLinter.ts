@@ -81,7 +81,7 @@ export default class PrologLinter implements CodeActionProvider {
     range: Range
   ): number[] {
     let textlines: string[] = doc.getText().split("\n");
-    let re = new RegExp("^:-\\s+\\(?\\s*" + declarativePredicate + "\\b");
+    let re = new RegExp("^\\s*:-\\s+\\(?\\s*" + declarativePredicate + "\\b");
     let lines: number[] = [];
     let line = 0;
     while (line < textlines.length) {
@@ -97,7 +97,7 @@ export default class PrologLinter implements CodeActionProvider {
 
     line = -1;
     textlines.filter((item, index) => {
-      if (/^:-/.test(item)) {
+      if (/^\s*:-/.test(item)) {
         line = index;
         return true;
       }
@@ -141,7 +141,7 @@ export default class PrologLinter implements CodeActionProvider {
       pos = new Position(line, startChar);
       edit.insert(uri, pos, " " + predicate + ",");
     } else {
-      pos = new Position(line + 1, 0);
+      pos = new Position(line, 0);
       edit.insert(uri, pos, ":- dynamic " + predicate + ".\n");
     }
 

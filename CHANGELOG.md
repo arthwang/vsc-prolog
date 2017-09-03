@@ -1,7 +1,10 @@
 # Changelog
 
+## [0.3.6]
+- fixed a bug in 'add dynamic'
+
 ## [0.3.5]
-- fixed a bug in refactor
+- republished after failed times: fixed a bug in refactor
 
 ## [0.3.0]
 - added refactoring feature
