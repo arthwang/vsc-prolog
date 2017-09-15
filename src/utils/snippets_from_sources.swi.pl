@@ -18,7 +18,7 @@ generate_vscode_swipl_snippets(Options) :-
     option(detailed_description(TrueOrFalse), Options, true),
     nb_setval(detailed_description, TrueOrFalse),
     option(dict_in(DictIn), Options, _{}),
-    option(json_file(SnippetsFile1), Options, './snippets/prolog.json'),
+    option(json_file(SnippetsFile1), Options, './snippets/prolog.swi.json'),
     absolute_file_name(SnippetsFile1, SnippetsFile),
     nb_linkval(snippet_dict, DictIn),
     retractall(dir_handled(_)),

@@ -27,6 +27,7 @@ import {
 } from "vscode";
 import { Utils, IPredicate } from "../utils/utils";
 import { basename } from "path";
+import * as find from "find";
 
 export enum RunTrigger {
   onType,
@@ -44,7 +45,7 @@ export default class PrologLinter implements CodeActionProvider {
   private diagnostics: { [docName: string]: Diagnostic[] } = {};
   private filePathIds: { [id: string]: string } = {};
   private sortedDiagIndex: { [docName: string]: number[] } = {};
-  private swiRegex = /([^:]+):\s*([^:]+):(\d+):((\d+):)?((\d+):)?\s*(.*)/;
+  private swiRegex = /([^:]+):\s*([^:]+):(\d+):((\d+):)?((\d+):)?\s*([\s\S]*)/;
   private executable: string;
   private trigger: RunTrigger;
   private timer: NodeJS.Timer = null;
@@ -285,60 +286,142 @@ export default class PrologLinter implements CodeActionProvider {
       ? { cwd: workspace.rootPath, encoding: "utf8" }
       : undefined;
 
-    let args: string[];
-    if (this.trigger === RunTrigger.onSave) {
-      args = ["-g", "halt", "-l", textDocument.fileName];
-    }
-    if (this.trigger === RunTrigger.onType) {
-      args = ["-q"];
-    }
-
+    let args: string[] = [],
+      goals: string = "";
     let lineErr: string = "";
     let docTxt = textDocument.getText();
     let docTxtEsced = jsesc(docTxt, { quotes: "double" });
-    spawn(this.executable, args, options)
-      .on("process", process => {
-        if (process.pid && this.trigger === RunTrigger.onType) {
-          let goals = `
+    switch (Utils.DIALECT) {
+      case "swi":
+        if (this.trigger === RunTrigger.onSave) {
+          args = ["-g", "halt", "-l", textDocument.fileName];
+        }
+        if (this.trigger === RunTrigger.onType) {
+          args = ["-q"];
+          goals = `
             open_string("${docTxtEsced}", S),
             load_files('${textDocument.fileName}', [stream(S),if(true)]).
             list_undefined.
           `;
+        }
+        break;
+      case "ecl":
+        if (this.trigger === RunTrigger.onSave) {
+          // goals = `lib(lint),lint('${textDocument.fileName}')`;
+          goals = `compile('${textDocument.fileName}', [debug:off])`;
+          args = ["-e", goals];
+        }
+        if (this.trigger === RunTrigger.onType) {
+          goals = `
+            open(string("${docTxtEsced}"), read, S),
+            compile(stream(S), [debug:off]),
+            close(S).
+        `;
+        }
+
+      default:
+        break;
+    }
+    let child = spawn(this.executable, args, options)
+      .on("process", process => {
+        if (process.pid) {
           process.stdin.write(goals);
           process.stdin.end();
+          this.outputChannel.clear();
         }
-        this.outputChannel.clear();
       })
       .on("stdout", out => {
         // console.log("out:" + out + "\n");
+        if (Utils.DIALECT === "ecl" && !/checking completed/.test(out)) {
+          if (/^File\s*/.test(out)) {
+            if (lineErr) {
+              this.parseIssue(lineErr + "\n");
+            }
+            let match = out.match(/File\s*([^,]+),.*line\s*(\d+):\s*(.*)/);
+            let fullName: string;
+            if (match[1] === "string") {
+              fullName = textDocument.fileName;
+            } else {
+              fullName = find.fileSync(
+                new RegExp(match[1]),
+                workspace.rootPath
+              )[0];
+            }
+            lineErr = "Warning:" + fullName + ":" + match[2] + ":" + match[3];
+          } else if (/^\|/.test(out)) {
+            lineErr += out;
+          } else if (/WARNING/.test(out)) {
+            this.outputMsg(out);
+          }
+        }
       })
       .on("stderr", (errStr: string) => {
         // console.log("errStr" + errStr);
-        if (/which is referenced by/.test(errStr)) {
-          let regex = /Warning:\s*(.+),/;
-          let match = errStr.match(regex);
-          lineErr = " Predicate " + match[1] + " not defined";
-        } else if (/clause of /.test(errStr)) {
-          let regex = /^(Warning:\s*([^:]+):)(\d+):(\d+)?/;
-          let match = errStr.match(regex);
-          let fileName = match[2];
-          let line = parseInt(match[3]);
-          let char = match[4] ? parseInt(match[4]) : 0;
-          let rangeStr = line + ":" + char + ":200: ";
-          let lineMsg = match[1] + rangeStr + lineErr;
-          this.parseIssue(lineMsg + "\n");
-        } else if (/:\s*$/.test(errStr)) {
-          lineErr = errStr;
-        } else {
-          if (errStr.startsWith("ERROR") || errStr.startsWith("Warning")) {
-            lineErr = errStr;
-          } else {
-            lineErr = lineErr.concat(errStr);
-          }
-          this.parseIssue(lineErr + "\n");
+        switch (Utils.DIALECT) {
+          case "swi":
+            if (/which is referenced by/.test(errStr)) {
+              let regex = /Warning:\s*(.+),/;
+              let match = errStr.match(regex);
+              lineErr = " Predicate " + match[1] + " not defined";
+            } else if (/clause of /.test(errStr)) {
+              let regex = /^(Warning:\s*([^:]+):)(\d+):(\d+)?/;
+              let match = errStr.match(regex);
+              let fileName = match[2];
+              let line = parseInt(match[3]);
+              let char = match[4] ? parseInt(match[4]) : 0;
+              let rangeStr = line + ":" + char + ":200: ";
+              let lineMsg = match[1] + rangeStr + lineErr;
+              this.parseIssue(lineMsg + "\n");
+            } else if (/:\s*$/.test(errStr)) {
+              lineErr = errStr;
+            } else {
+              if (errStr.startsWith("ERROR") || errStr.startsWith("Warning")) {
+                lineErr = errStr;
+              } else {
+                lineErr = lineErr.concat(errStr);
+              }
+              this.parseIssue(lineErr + "\n");
+            }
+
+            break;
+          case "ecl":
+            if (/^file/.test(errStr) || /^string stream/.test(errStr)) {
+              if (lineErr) {
+                this.parseIssue(lineErr + "\n");
+              }
+              let fullName: string, line: string, msg: string;
+              let match = errStr.match(
+                /file\s*([^,]+),\s*line\s*(\d+):\s*(.*)/
+              );
+
+              if (match) {
+                fullName = find.fileSync(
+                  new RegExp(match[1]),
+                  workspace.rootPath
+                )[0];
+                line = match[2];
+                msg = match[3];
+              } else {
+                match = errStr.match(/line\s*(\d+):\s*(.*)/);
+                fullName = textDocument.fileName;
+                line = match[1];
+                msg = match[2];
+              }
+              lineErr = "ERROR:" + fullName + ":" + line + ":" + msg;
+            } else if (/^\|/.test(errStr)) {
+              lineErr += "\n" + errStr;
+            } else if (/WARNING/.test(errStr)) {
+              this.outputMsg(errStr);
+            }
+
+          default:
+            break;
         }
       })
       .then(result => {
+        if (lineErr) {
+          this.parseIssue(lineErr + "\n");
+        }
         for (let doc in this.diagnostics) {
           let index = this.diagnostics[doc]
             .map((diag, i) => {
@@ -352,7 +435,7 @@ export default class PrologLinter implements CodeActionProvider {
           });
           this.diagnosticCollection.set(Uri.file(doc), this.diagnostics[doc]);
         }
-        this.outputChannel.clear();
+        // this.outputChannel.clear();
         for (let doc in this.sortedDiagIndex) {
           let si = this.sortedDiagIndex[doc];
           for (let i = 0; i < si.length; i++) {
@@ -497,6 +580,10 @@ export default class PrologLinter implements CodeActionProvider {
     return clauseInfo ? [clauseInfo[1], parseInt(clauseInfo[2])] : null;
   }
   public exportPredicateUnderCursor() {
+    if (Utils.DIALECT === "ecl") {
+      this.outputMsg("export helper only works for SWI-Prolog now.");
+      return;
+    }
     let editor = window.activeTextEditor;
     let doc = editor.document;
     let docTxt = jsesc(doc.getText(), { quotes: "double" });

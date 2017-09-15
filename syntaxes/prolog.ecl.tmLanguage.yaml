@@ -1,0 +1,178 @@
+comment: "This Source Code Form is subject to the terms of the Mozilla Public License,\nv. 2.0. If a copy of the MPL was not distributed with this file, You can obtain\none at http://mozilla.org/MPL/2.0/."
+name: SWI-Prolog
+scopeName: source.prolog
+fileTypes:
+  - pl
+  - pro
+uuid: df89928b-6612-475a-b414-f319d9b98664
+patterns:
+  -
+    include: '#comments'
+  -
+    name: meta.clause.body.prolog
+    begin: '(?<=:-)\s*'
+    end: (\.)
+    endCaptures:
+      '1':
+        name: keyword.control.clause.bodyend.prolog
+    patterns:
+      -
+        include: '#comments'
+      -
+        include: '#builtin'
+      -
+        include: '#controlandkeywords'
+      -
+        include: '#atom'
+      -
+        include: '#variable'
+      -
+        include: '#constants'
+      -
+        name: meta.clause.body.prolog
+        match: .
+  -
+    name: meta.clause.head.prolog
+    begin: '^\s*([a-z][a-zA-Z0-9_]*)(\(?)(?=.*:-.*)'
+    beginCaptures:
+      '1':
+        name: entity.name.function.clause.prolog
+      '2':
+        name: punctuation.definition.parameters.begin
+    end: '((\)?))\s*(:-)'
+    endCaptures:
+      '1':
+        name: punctuation.definition.parameters.end
+      '3':
+        name: keyword.control.clause.bodybegin.prolog
+    patterns:
+      -
+        include: '#atom'
+      -
+        include: '#variable'
+      -
+        include: '#constants'
+  -
+    name: meta.dcg.head.prolog
+    begin: '^\s*([a-z][a-zA-Z0-9_]*)(\(?)(?=.*-->.*)'
+    beginCaptures:
+      '1':
+        name: entity.name.function.dcg.prolog
+      '2':
+        name: punctuation.definition.parameters.begin
+    end: '((\)?))\s*(-->)'
+    endCaptures:
+      '1':
+        name: punctuation.definition.parameters.end
+      '3':
+        name: keyword.control.dcg.bodybegin.prolog
+    patterns:
+      -
+        include: '#atom'
+      -
+        include: '#variable'
+      -
+        include: '#constants'
+  -
+    name: meta.dcg.body.prolog
+    begin: '(?<=-->)\s*'
+    end: (\.)
+    endCaptures:
+      '1':
+        name: keyword.control.dcg.bodyend.prolog
+    patterns:
+      -
+        include: '#comments'
+      -
+        include: '#controlandkeywords'
+      -
+        include: '#atom'
+      -
+        include: '#variable'
+      -
+        include: '#constants'
+      -
+        name: meta.dcg.body.prolog
+        match: .
+  -
+    name: meta.fact.prolog
+    begin: '^\s*([a-zA-Z][a-zA-Z0-9_]*)(\(?)(?!.*(:-|-->).*)'
+    beginCaptures:
+      '1':
+        name: entity.name.function.fact.prolog
+      '2':
+        name: punctuation.definition.parameters.begin
+    end: '((\)?))\s*(\.)(?!\d+)'
+    endCaptures:
+      '1':
+        name: punctuation.definition.parameters.end
+      '3':
+        name: keyword.control.fact.end.prolog
+    patterns:
+      -
+        include: '#atom'
+      -
+        include: '#variable'
+      -
+        include: '#constants'
+repository:
+  atom:
+    patterns:
+      -
+        name: constant.other.atom.simple.prolog
+        match: '(?<![a-zA-Z0-9_])[a-z][a-zA-Z0-9_]*(?!\s*\(|[a-zA-Z0-9_])'
+      -
+        name: constant.other.atom.quoted.prolog
+        match: '''.*?'''
+      -
+        name: constant.other.atom.emptylist.prolog
+        match: '\[\]'
+  builtin:
+    patterns:
+      -
+        name: keyword.other
+        match: \b(op|nl|fail|dynamic|discontiguous|initialization|meta_predicate|module_transparent|multifile|public|thread_local|thread_initialization|volatile)\b
+      -
+        name: support.function.builtin.prolog
+        match: \b(abolish|abolish_op|abolish_record|abort|abs|accept|acos|acyclic_term|add_attribute|alarm|als|append_strings|arg|argc|argv|arity|array|array_concat|array_flat|array_list|asin|assert|asserta|assertz|at|at_eof|atan|atom|atom_length|atom_string|atomic|attach_suspensions|attached_suspensions|autoload|autoload_tool|b_external|bag_abolish|bag_count|bag_create|bag_dissolve|bag_enter|bag_erase|bag_retrieve|bagof|begin_module|between|bind|block|breal|breal_bounds|breal_from_bounds|breal_max|breal_min|bytes_to_term|call|call-2|call_c|call_explicit|call_priority|callable|cancel_after_event|canonical_path_name|catch|cd|ceiling|char_code|char_int|clause|close|clrbit|comment|compare|compare_instances|compile|compile_stream|compile_term|compile_term_annotated|compiled_stream|compound|concat_atom|concat_atoms|concat_string|concat_strings|connect|copy_term|copy_term_vars|coroutine|cos|coverof|cputime|create_module|current_after_event|current_after_events|current_array|current_atom|current_built_in|current_compiled_file|current_domain|current_error|current_functor|current_interrupt|current_macro|current_module|current_module_predicate|current_op|current_pragma|current_predicate|current_record|current_store|current_stream|current_struct|current_suspension|current_trigger|date|dbgcomp|debug|debug_reset|debugging|decval|define_error|define_macro|delay|delayed_goals|delayed_goals_number|delete|demon|denominator|deprecated|dim|discontiguous|display|div|do|domain|domain_index|dynamic|elif|else|endif|ensure_loaded|enter_suspension_list|env|erase|erase_all|erase_array|erase_macro|erase_module|errno_id|error|error_id|eval|event|event_after|event_after_every|event_create|event_disable|event_enable|event_retrieve|events_after|events_defer|events_nodefer|exec|exec_group|existing_file|exists|exit|exit_block|exp|expand_clause|expand_goal|expand_macros|export|external|fail|fail_if|false|findall|fix|flatten_array|float|floor|flush|fork|frandom|free|functor|garbage_collect|gcd|get|get_char|get_chtab|get_error_handler|get_event_handler|get_file_info|get_flag|get_interrupt_handler|get_leash|get_module_info|get_priority|get_prompt|get_stream|get_stream_info|get_suspension_data|get_timer|get_var_bounds|get_var_info|getbit|getcwd|getenv|getval|global|global_op|ground|halt|help|if|import|include|incval|init_suspension_list|inline|insert_suspension|instance|integer|integer_atom|is|is_array|is_built_in|is_dynamic|is_event|is_handle|is_list|is_locked|is_predicate|is_record|is_suspension|join_string|keysort|kill|kill_display_matrix|kill_suspension|lcm|lib|listen|listing|ln|load|local|local_record|local_time|local_time_string|lock|lock_pass|macro|make|make_array|make_display_matrix|make_local_array|make_suspension|max|merge|merge_suspension_lists|meta|meta_attribute|meta_bind|meta_predicate|min|mkdir|mod|mode|module|module_interface|msort|mutex|mutex_init|name|new_socket_server|nl|nodbgcomp|nodebug|nonground|nonvar|nospy|not|not_unify|notify_constrained|notrace|number|number_merge|number_sort|number_string|numerator|occurs|once|op|open|os_file_name|parallel|pathname|pause|peer|peer_deregister_multitask|peer_do_multitask|peer_get_property|peer_multitask_confirm|peer_multitask_terminate|peer_queue_close|peer_queue_create|peer_queue_get_property|peer_register_multitask|phrase|pipe|plus|portray|portray_goal|portray_term|pragma|pred|print|printf|profile|prune_instances|put|put_char|random|rational|rationalize|read|read_annotated|read_directory|read_exdr|read_string|read_term|read_token|readvar|real|record|record_create|recorda|recorded|recorded_list|recordz|reexport|reference|referenced_record|rem|remote_connect|remote_connect_accept|remote_connect_setup|remote_disconnect|remote_yield|rename|repeat|rerecord|reset_error_handler|reset_error_handlers|reset_event_handler|retract|retract_all|retractall|round|schedule_suspensions|schedule_woken|seed|seek|select|set_chtab|set_error_handler|set_event_handler|set_flag|set_interrupt_handler|set_leash|set_prompt|set_stream|set_stream_property|set_suspension_data|set_suspension_priority|set_timer|set_var_bounds|setarg|setbit|setenv|setof|setval|sgn|sh|shelf|shelf_abolish|shelf_create|shelf_dec|shelf_get|shelf_inc|shelf_set|sin|skipped|sleep|socket|sort|split_string|sprintf|spy|spy_term|spy_var|sqrt|statistics|store|store_contains|store_count|store_create|store_delete|store_erase|store_get|store_inc|store_set|stored_keys|stored_keys_and_values|stream_select|stream_truncate|string|string_code|string_length|string_list|struct|subcall|subscript|substring|succ|suffix|sum|suspend|suspension_to_goal|suspensions|system|tan|term_hash|term_string|term_to_bytes|term_variables|test_and_setval|throw|times|tool|tool_body|trace|trace_call_port|trace_exit_port|trace_parent_port|trace_point_port|traceable|trigger|trimcore|true|truncate|tyi|tyo|type_of|unget|unlock|unschedule_suspension|unskipped|untraceable|update_struct|use_module|var|variable|variant|wait|wake|write|write_canonical|write_exdr|write_term|writeclause|writeln|writeq|xget|xor|xset|yield)\b
+  comments:
+    patterns:
+      -
+        name: comment.line.percent-sign.prolog
+        match: '%.*'
+      -
+        name: comment.block.prolog
+        begin: '/\*'
+        end: '\*/'
+        captures: {'0': {name: punctuation.definition.comment.prolog}}
+  constants:
+    patterns:
+      -
+        name: constant.numeric.integer.prolog
+        match: '(?<![a-zA-Z]|/)(\d+|(\d+\.\d+))'
+      -
+        name: string.quoted.double.prolog
+        match: '".*?"'
+  controlandkeywords:
+    patterns:
+      -
+        name: meta.if.prolog
+        begin: (->)
+        beginCaptures: {'1': {name: keyword.control.if.prolog}}
+        end: (;)
+        endCaptures: {'1': {name: keyword.control.else.prolog}}
+        patterns: [{include: $self}, {include: '#builtin'}, {include: '#comments'}, {include: '#atom'}, {include: '#variable'}, {name: meta.if.body.prolog, match: .}]
+      -
+        name: keyword.control.cut.prolog
+        match: '!'
+      -
+        name: keyword.operator.prolog
+        match: '(\s(is)\s)|=:=|=?\\?=|\\\+|@?>|@?=?<|\+|\*|\-'
+  variable:
+    patterns:
+      -
+        name: variable.parameter.uppercase.prolog
+        match: '(?<![a-zA-Z0-9_])[A-Z][a-zA-Z0-9_]*'
+      -
+        name: variable.language.anonymous.prolog
+        match: '(?<!\w)_'

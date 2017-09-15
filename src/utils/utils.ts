@@ -11,7 +11,8 @@ import {
   Range,
   TextDocument,
   workspace,
-  window
+  window,
+  DiagnosticCollection
 } from "vscode";
 
 interface ISnippet {
@@ -36,6 +37,9 @@ export interface IPredicate {
 export class Utils {
   private static snippets: ISnippet = null;
   private static predModules: IPredModule = null;
+  public static DIALECT: string | null = null;
+  public static RUNTIMEPATH: string | null = null;
+
   constructor() {}
   public static getPredDescriptions(pred: string): string {
     if (Utils.snippets[pred]) {
@@ -103,7 +107,7 @@ export class Utils {
 
     let predName: string = doc.getText(wordRange);
     let re = new RegExp("^" + predName + "\\s*\\(");
-    let re1 = new RegExp("^" + predName + "\\/(\\d+)");
+    let re1 = new RegExp("^" + predName + "\\s*\\/\\s*(\\d+)");
     let wholePred: string;
     let arity: number;
     let params: string;
@@ -149,7 +153,10 @@ export class Utils {
           arity +
           "\\b"
       );
-      let mtch = doc.getText().replace(/\n/g, "").match(reg);
+      let mtch = doc
+        .getText()
+        .replace(/\n/g, "")
+        .match(reg);
       if (mtch) {
         let mFile = mtch[1];
         let mod = Utils.execPrologSync(
@@ -217,13 +224,30 @@ export class Utils {
     if (!re.test(pred)) {
       return 0;
     }
-    let args = ["-f", "none", "-q"];
-    let plCode = `
-      outputArity :-
-        read(Term),
-        functor(Term, _, Arity),
-        format("arity=~d~n", [Arity]).
-    `;
+    let args = [],
+      plCode: string;
+
+    switch (Utils.DIALECT) {
+      case "swi":
+        args = ["-f", "none", "-q"];
+        plCode = `
+          outputArity :-
+            read(Term),
+            functor(Term, _, Arity),
+            format("arity=~d~n", [Arity]).
+        `;
+        break;
+      case "ecl":
+        plCode = `
+          outputArity :-
+            read(Term),
+            functor(Term, _, Arity),
+            printf("arity=%d%n", [Arity]).
+        `;
+
+      default:
+        break;
+    }
 
     let result = Utils.execPrologSync(
       args,
@@ -242,25 +266,43 @@ export class Utils {
     inputTerm: string,
     resultReg: RegExp
   ): string[] {
-    let section = workspace.getConfiguration("prolog");
-    let exec = section.get("executablePath", "swipl");
-
     let plCode = jsesc(clause, { quotes: "double" });
-    let input = `
-      open_string("${plCode}", Stream), 
-      load_files(runprolog, [stream(Stream)]).
-      ${call}. 
-      ${inputTerm}.
-      halt.
-    `;
+    let input: string,
+      prologProcess: cp.SpawnSyncReturns<Buffer>,
+      runOptions: cp.SpawnSyncOptions;
+    switch (Utils.DIALECT) {
+      case "swi":
+        input = `
+          open_string("${plCode}", Stream), 
+          load_files(runprolog, [stream(Stream)]).
+          ${call}. 
+          ${inputTerm}.
+          halt.
+        `;
+        runOptions = {
+          cwd: workspace.rootPath,
+          encoding: "utf8",
+          input: input
+        };
+        prologProcess = cp.spawnSync(Utils.RUNTIMEPATH, args, runOptions);
+        break;
+      case "ecl":
+        input = `${inputTerm}.`;
+        args = args.concat([
+          "-e",
+          `open(string(\"${plCode}\n\"), read, S),compile(stream(S)),close(S),call(${call}).`
+        ]);
+        runOptions = {
+          cwd: workspace.rootPath,
+          encoding: "utf8",
+          input: input
+        };
+        prologProcess = cp.spawnSync(Utils.RUNTIMEPATH, args, runOptions);
+        break;
+      default:
+        break;
+    }
 
-    let runOptions = {
-      cwd: workspace.rootPath,
-      encoding: "utf8",
-      input: input
-    };
-
-    let prologProcess = cp.spawnSync(exec, args, runOptions);
     if (prologProcess.status === 0) {
       let output = prologProcess.stdout.toString();
       let err = prologProcess.stderr.toString();
@@ -270,7 +312,7 @@ export class Utils {
       let match = output.match(resultReg);
       return match ? match : null;
     } else {
-      console.log("Error: " + prologProcess.error.message);
+      console.log("Error: " + prologProcess.stderr.toString());
       return null;
     }
   }

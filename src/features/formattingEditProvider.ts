@@ -18,6 +18,7 @@ import {
 } from "vscode";
 // import { ScopeInfoAPI, Token } from "scope-info";
 import * as jsesc from "jsesc";
+import { Utils } from "../utils/utils";
 
 interface IComment {
   location: number; // character location in the range
@@ -50,6 +51,7 @@ export default class PrologDocumentFormatter
   private _currentTermInfo: ITermInfo = null;
   // private _si: ScopeInfoAPI;
   private _startChars: number;
+  private _lastTermPos: number;
 
   constructor() {
     this._section = workspace.getConfiguration("prolog");
@@ -57,7 +59,7 @@ export default class PrologDocumentFormatter
     this._insertSpaces = this._section.get("format.insertSpaces", true);
     this._tabDistance = this._insertSpaces ? 0 : this._tabSize;
     this._executable = this._section.get("executablePath", "swipl");
-    this._args = ["--nodebug", "-q"];
+    this._args = [];
     this._outputChannel = window.createOutputChannel("PrologFormatter");
   }
 
@@ -223,16 +225,33 @@ export default class PrologDocumentFormatter
   private async getFormattedCode(doc: TextDocument, range: Range) {
     this._textEdits = [];
     this._currentTermInfo = null;
-    if (!doc.validateRange(range)) {
-      return [];
-    }
+    // if (!doc.validateRange(range)) {
+    //   return [];
+    // }
     let docText = jsesc(doc.getText(), { quotes: "double" });
     let rangeTxt = jsesc(doc.getText(range), { quotes: "double" });
-    let goals = `
-      use_module('${__dirname}/formatter.pl').
-      formatter:format_prolog_source(${this._tabSize}, ${this
-      ._tabDistance}, "${rangeTxt}", "${docText}").
-    `;
+    let goals: string;
+
+    switch (Utils.DIALECT) {
+      case "swi":
+        this._args = ["--nodebug", "-q"];
+        goals = `
+          use_module('${__dirname}/formatter_swi').
+          formatter:format_prolog_source(${this._tabSize}, ${this
+          ._tabDistance}, "${rangeTxt}", "${docText}").
+        `;
+        break;
+      case "ecl":
+        this._args = ["-f", `${__dirname}/formatter_ecl`];
+        rangeTxt += " end_of_file.";
+        goals = `
+          format_prolog_source("${rangeTxt}").
+        `;
+        break;
+      default:
+        break;
+    }
+
     let termStr = "";
     let prologProc = null;
 
@@ -248,19 +267,20 @@ export default class PrologDocumentFormatter
           }
         })
         .on("stdout", data => {
-          // console.log("data:" + data);
+          console.log("data:" + data);
           if (/::::::ALLOVER/.test(data)) {
-            this.resolve_terms(doc, termStr, range, true);
+            this.resolveTerms(doc, termStr, range, true);
           }
           if (/TERMSEGMENTBEGIN:::/.test(data)) {
-            this.resolve_terms(doc, termStr, range);
+            this.resolveTerms(doc, termStr, range);
             termStr = data + "\n";
           } else {
             termStr += data + "\n";
           }
         })
         .on("stderr", err => {
-          // console.log("err:" + err);
+          console.log("err:" + err);
+          this.outputMsg(err);
         })
         .on("close", _ => {
           console.log("closed");
@@ -278,7 +298,7 @@ export default class PrologDocumentFormatter
     }
   }
 
-  private resolve_terms(
+  private resolveTerms(
     doc: TextDocument,
     text: string,
     range: Range,
@@ -287,20 +307,55 @@ export default class PrologDocumentFormatter
     if (!/TERMSEGMENTBEGIN:::/.test(text)) {
       return;
     }
-    let termPosRe = /TERMPOSBEGIN:::(\d+):::TERMPOSEND/;
     let varsRe = /VARIABLESBEGIN:::\[([\s\S]*?)\]:::VARIABLESEND/;
     let termRe = /TERMBEGIN:::\n([\s\S]+?):::TERMEND/;
+    let termPosRe = /TERMPOSBEGIN:::(\d+):::TERMPOSEND/;
     let commsRe = /COMMENTSBIGIN:::([\s\S]*?):::COMMENTSEND/;
-    let termPos = text.match(termPosRe),
-      term = text.match(termRe),
+    let term = text.match(termRe),
       vars = text.match(varsRe),
+      termPos = text.match(termPosRe),
       comms = text.match(commsRe);
-    let commsObj: { comments: IComment[] } = JSON.parse(comms[1]);
-    let commsArr = commsObj.comments;
+    let termCharA = parseInt(termPos[1]);
+    let commsArr: IComment[] =
+      comms && comms[1] ? JSON.parse(comms[1]).comments : [];
+
+    switch (Utils.DIALECT) {
+      case "swi":
+        break;
+      case "ecl":
+        // comments inside of clause
+        if (this._currentTermInfo) {
+          let commReg = /\/\*[\s\S]*?\*\/|%[^'"\n]*\n/g;
+          let lastTermEnd = termCharA;
+          if (commsArr && commsArr[0]) {
+            lastTermEnd = commsArr[0].location;
+          }
+          let origTxt = doc
+            .getText()
+            .slice(
+              doc.offsetAt(range.start) + this._lastTermPos,
+              doc.offsetAt(range.start) + lastTermEnd
+            );
+          let match: RegExpExecArray;
+          while ((match = commReg.exec(origTxt)) !== null) {
+            this._currentTermInfo.comments.push({
+              location:
+                match.index + this._currentTermInfo.comments[0].comment.length,
+              comment: match[0]
+            });
+          }
+        }
+        this._lastTermPos = termCharA;
+        break;
+      default:
+        break;
+    }
 
     let formattedTerm = this.restoreVariableNames(term[1], vars[1].split(","));
-    let termCharA = parseInt(termPos[1]);
-    if (last) {
+    if (Utils.DIALECT === "ecl") {
+      formattedTerm = formattedTerm.replace(/\b_\d+\b/g, "_");
+    }
+    if (last && Utils.DIALECT === "swi") {
       termCharA++; // end_of_file offset of memory file
     }
     if (commsArr.length > 0) {
@@ -312,9 +367,7 @@ export default class PrologDocumentFormatter
     }
 
     if (!this._currentTermInfo) {
-      this._startChars = doc.getText(
-        new Range(new Position(0, 0), range.start)
-      ).length;
+      this._startChars = doc.offsetAt(range.start);
       this._currentTermInfo = {
         charsSofar: 0,
         startLine: range.start.line,
@@ -377,9 +430,11 @@ export default class PrologDocumentFormatter
         newComms
       );
     }
-    this._textEdits.push(
-      new TextEdit(termRange, this._currentTermInfo.termStr)
-    );
+    if (this._currentTermInfo.termStr !== "") {
+      this._textEdits.push(
+        new TextEdit(termRange, this._currentTermInfo.termStr)
+      );
+    }
   }
 
   // merge adjcent comments between which there are only spaces, including new lines
@@ -472,7 +527,10 @@ export default class PrologDocumentFormatter
     let dups: { newVars: string[]; dup: string[] } = this.getDups(vars);
     dups.newVars.forEach(pair => {
       let [abc, orig] = pair.split(":");
-      text = text.replace(new RegExp("\\b" + abc + "\\b", "g"), orig);
+      text = text.replace(
+        new RegExp("\\b" + abc.trim() + "\\b", "g"),
+        orig.trim()
+      );
     });
     return this.restoreVariableNames(text, dups.dup);
   }

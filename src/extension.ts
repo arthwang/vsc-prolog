@@ -10,9 +10,9 @@ import {
   window,
   languages,
   DocumentHighlightProvider,
-  Location
+  Location,
+  workspace
 } from "vscode";
-import * as jsesc from "jsesc";
 import PrologTerminal from "./features/prologTerminal";
 import { loadEditHelpers } from "./features/editHelpers";
 import { Utils } from "./utils/utils";
@@ -23,15 +23,43 @@ import { PrologDefinitionProvider } from "./features/definitionProvider";
 import { PrologReferenceProvider } from "./features/referenceProvider";
 import PrologLinter from "./features/prologLinter";
 import { PrologRefactor } from "./features/prologRefactor";
+import { ensureSymlink, remove } from "fs-extra-plus";
 
+async function initForDialect(context: ExtensionContext) {
+  const section = workspace.getConfiguration("prolog");
+  const dialect = section.get<string>("dialect");
+  const exec = section.get<string>("executablePath", "swipl");
+  Utils.DIALECT = dialect;
+  Utils.RUNTIMEPATH = exec;
+  const exPath = context.extensionPath;
+  const symLinks = [
+    {
+      path: `${exPath}/syntaxes`,
+      srcFile: `prolog.${dialect}.tmLanguage.json`,
+      targetFile: "prolog.tmLanguage.json"
+    },
+    {
+      path: `${exPath}/snippets`,
+      srcFile: `prolog.${dialect}.json`,
+      targetFile: "prolog.json"
+    }
+  ];
+  await Promise.all(
+    symLinks.map(async link => {
+      await remove(`${link.path}/${link.targetFile}`);
+      return await ensureSymlink(
+        `${link.path}/${link.srcFile}`,
+        `${link.path}/${link.targetFile}`
+      );
+    })
+  );
+}
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
-export function activate(context: ExtensionContext) {
-  // Use the console to output diagnostic information (console.log) and errors (console.error)
-  // This line of code will only be executed once when your extension is activated
+export async function activate(context: ExtensionContext) {
   console.log('Congratulations, your extension "vsc-prolog" is now active!');
 
-  // let prologDebugger = new PrologDebugger();
+  await initForDialect(context);
 
   const PROLOG_MODE: DocumentFilter = { language: "prolog", scheme: "file" };
 
@@ -55,12 +83,6 @@ export function activate(context: ExtensionContext) {
         linter.prevErrLine();
       }
     },
-    // {
-    //   command: "prolog.linter.exportPredicate",
-    //   callback: () => {
-    //     linter.exportPredicateUnderCursor();
-    //   }
-    // },
     {
       command: "prolog.load.document",
       callback: () => {

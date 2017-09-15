@@ -24,27 +24,49 @@ export class PrologDefinitionProvider implements DefinitionProvider {
       return null;
     }
 
-    let exec = workspace
-      .getConfiguration("prolog")
-      .get("executablePath", "swipl");
-    let args = ["-q", doc.fileName];
-    let prologCode = `
-    source_location:-
-      read(Term),
-      current_module(Module),
-      predicate_property(Module:Term, file(File)),
-      predicate_property(Module:Term, line_count(Line)),
-      format("File:~s;Line:~d~n", [File, Line]).
-      `;
+    let exec = Utils.RUNTIMEPATH;
+    let args: string[] = [],
+      prologCode: string,
+      result: string[],
+      predToFind: string;
 
-    let result: string[];
+    switch (Utils.DIALECT) {
+      case "swi":
+        args = ["-q", doc.fileName];
+        prologCode = `
+        source_location:-
+          read(Term),
+          current_module(Module),
+          predicate_property(Module:Term, file(File)),
+          predicate_property(Module:Term, line_count(Line)),
+          format("File:~s;Line:~d~n", [File, Line]).
+          `;
+        predToFind = pred.wholePred;
+        break;
+
+      case "ecl":
+        args = ["-f", doc.fileName];
+        prologCode = `
+        source_location:-
+          read(Term),
+          get_flag(Term, source_file, File),
+          get_flag(Term, source_line, Line),
+          printf("File:%s;Line:%d%n", [File, Line]).
+        `;
+        predToFind = pred.pi;
+        break;
+
+      default:
+        break;
+    }
+
     if (doc.isDirty) {
       doc.save().then(_ => {
         result = Utils.execPrologSync(
           args,
           prologCode,
           "source_location",
-          pred.wholePred,
+          predToFind,
           /File:(.+);Line:(\d+)/
         );
       });
@@ -53,7 +75,7 @@ export class PrologDefinitionProvider implements DefinitionProvider {
         args,
         prologCode,
         "source_location",
-        pred.wholePred,
+        predToFind,
         /File:(.+);Line:(\d+)/
       );
     }

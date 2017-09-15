@@ -6,8 +6,10 @@ import {
   TextDocument,
   CancellationToken,
   Hover,
-  Range
+  Range,
+  workspace
 } from "vscode";
+import * as cp from "child_process";
 import { Utils } from "../utils/utils";
 
 export default class PrologHoverProvider implements HoverProvider {
@@ -31,20 +33,39 @@ export default class PrologHoverProvider implements HoverProvider {
     if (pred.arity < 0) {
       return;
     }
-    // let functor = arity > 0 ? pred.substring(0, pred.indexOf("(")) : pred;
-    // let pi = functor + "/" + arity;
-    let modules: string[] = Utils.getPredModules(pred.pi);
     let contents: MarkedString[] = [];
-    let desc = Utils.getPredDescriptions(pred.pi);
-    if (desc !== "") {
-      contents.push({ language: "prolog", value: desc });
-    }
-    if (modules.length > 0) {
-      modules.forEach(module => {
-        contents.push(module + ":" + pred.pi + "\n");
-        let desc = Utils.getPredDescriptions(module + ":" + pred.pi);
-        contents.push({ language: "prolog", value: desc });
-      });
+    switch (Utils.DIALECT) {
+      case "swi":
+        let modules: string[] = Utils.getPredModules(pred.pi);
+        let desc = Utils.getPredDescriptions(pred.pi);
+        if (desc !== "") {
+          contents.push({ language: "prolog", value: desc });
+        }
+        if (modules.length > 0) {
+          modules.forEach(module => {
+            contents.push(module + ":" + pred.pi + "\n");
+            let desc = Utils.getPredDescriptions(module + ":" + pred.pi);
+            contents.push({ language: "prolog", value: desc });
+          });
+        }
+        break;
+      case "ecl":
+        let pro = cp.spawnSync(Utils.RUNTIMEPATH, ["-e", `help(${pred.pi})`]);
+        if (pro.status === 0) {
+          contents.push({
+            language: "prolog",
+            value: pro.output
+              .toString()
+              .trim()
+              .replace(/^\W*\n/, "")
+              .replace(/\n{3,}/g, "\n\n")
+              .replace(/  +/g, "  ")
+          });
+        } else {
+          return;
+        }
+      default:
+        break;
     }
     return contents === [] ? null : new Hover(contents, wordRange);
   }
