@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.4.1]
+## [0.4.2]
 - added fs-extra into .vscodeignore
 
 ## [0.4.0]
