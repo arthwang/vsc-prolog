@@ -26,6 +26,7 @@
 !node_modules/stack-trace/**/*
 !node_modules/through/**/*
 !node_modules/traverse-chain/**/*
+!node_modules/universalify/**/*
 !node_modules/vscode-debugadapter/**/*
 !node_modules/vscode-debugprotocol/**/*
 !node_modules/yamljs/**/*
