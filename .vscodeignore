@@ -14,6 +14,7 @@
 !node_modules/bluebird/**/*
 !node_modules/find-in-files/**/*
 !node_modules/find/**/*
+!node_modules/fs-extra/**/*
 !node_modules/fs-extra-plus/**/*
 !node_modules/jsesc/**/*
 !node_modules/path-parse/**/*
