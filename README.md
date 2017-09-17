@@ -209,11 +209,16 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
 
 ## Requirements
 
-Latest versions of VS code and SWI-Prolog installed.
+Latest versions of VS code and SWI-Prolog/ECLiPSe installed.
 
 ## Configurations
 
   * There are seven configurable settings with default values in VSC-Prolog:
+    * "prolog.dialect": "swi",
+
+      What dialect of prolog used:
+        * swi: SWI-Prolog
+        * ecl: ECLiPSe(eclipseclp).
 
     * "prolog.executablePath": "/usr/bin/swipl"
 
