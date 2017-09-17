@@ -1,9 +1,9 @@
 % formatter_ecl.pl
 :- use_module(library(source_processor)).
+:- local reference(non_clause_start, 0).
 
 format_prolog_source(RangeTxt) :-
 	open(string(RangeTxt), read, RStream),
-	open(queue(""), update, commQueue),
 	source_open(stream(RStream), [
 		keep_comments,
 		include_comment_files,
@@ -13,69 +13,50 @@ format_prolog_source(RangeTxt) :-
 	], SP0),
 	(
 	    fromto(begin, _, Class, end),
-	    fromto(SP0, SP1, SP2, SPend)
+			fromto(SP0, SP1, SP2, SPend),
+			param(RStream)
 	do
 		source_read(SP1, SP2, Class, SourceTerm),
 		SP1 = source_position{offset:Offset},
+		SP2 = source_position{offset:To},
 		arg(term of source_term, SourceTerm, Term),
-		writeln(Class:term:Term),
+		writeln(Class:term:Term:Offset-To),
 		(
-			Class = comment
+			Class \= comment
 		->
-			concat_atom(['COMMENTSBIGIN:::{"comments":[{"location":', Offset, ',"comment":"', Term, '"}]}:::COMMENTSEND'], CString),
-			printf(commQueue, '%q', [CString])
-		;
+			getval(non_clause_start, NonClauseStart),
+			writeln(noncs:NonClauseStart:ofs:Offset),
+		  (  NonClauseStart \= Offset
+			-> seek(RStream, NonClauseStart),
+				 StrLength is Offset - NonClauseStart,
+				 writeln(strlen:StrLength),
+				 read_string(RStream, end_of_file, StrLength, CommStr),
+				 seek(RStream, To)
+			;  CommStr = ""
+			),
 			arg(vars of source_term, SourceTerm, Vars),
 			maplist(var_name, Vars, VarsNames),
 			printf("TERMSEGMENTBEGIN:::%n", []),
 			printf("TERMBEGIN:::%n", []),
 			writeclause(Term),
 			printf(":::TERMEND%n", []),
-			(
-				read_string(commQueue, end_of_file, _, Comms)
-			-> 
-				true
-			;  
-				Comms = 'COMMENTSBIGIN:::{"comments":[]}'
+			(  CommStr = ""
+			-> true
+			;
+				concat_atom(['COMMENTSBIGIN:::{"comments":[{"location":', NonClauseStart, ',"comment":"', CommStr, '"}]}:::COMMENTSEND'], CString),
+				printf("%q%n", [CString])
 			),
-			printf("%s%n", [Comms]),
 			printf("VARIABLESBEGIN:::%w:::VARIABLESEND%n", [VarsNames]),
 			printf("TERMPOSBEGIN:::%d:::TERMPOSEND%n", [Offset]),
-			printf(":::TERMSEGMENTEND%n", [])
+			printf(":::TERMSEGMENTEND%n", []),
+			setval(non_clause_start, To)
+		;
+		  true
 		)
 	),
 	source_close(SPend, []),
 	close(RStream),
     writeln('::::::ALLOVER').
-
-output_codes(SP1, SourceTerm) :-
-	SP1 = source_position{offset:Offset},
-	arg(term of source_term, SourceTerm, Term),
-	(
-		Class = comment
-	->
-		concat_atom(['COMMENTSBIGIN:::{"comments":[{"location":', Offset, ',"comment":"', Term, '"}]}:::COMMENTSEND'], CString),
-		printf(commQueue, '%q', [CString])
-	;
-		arg(vars of source_term, SourceTerm, Vars),
-		maplist(var_name, Vars, VarsNames),
-		printf("TERMSEGMENTBEGIN:::%n", []),
-		printf("TERMBEGIN:::%n", []),
-		writeclause(Term),
-		printf(":::TERMEND%n", []),
-		(
-			read_string(commQueue, end_of_file, _, Comms)
-		-> 
-			true
-		;  
-			Comms = 'COMMENTSBIGIN:::{"comments":[]}'
-		),
-		printf("%s%n", [Comms]),
-		printf("VARIABLESBEGIN:::%w:::VARIABLESEND%n", [VarsNames]),
-		printf("TERMPOSBEGIN:::%d:::TERMPOSEND%n", [Offset]),
-		printf(":::TERMSEGMENTEND%n", [])
-	).
-
 
 var_name([Name|Var], VarName) :-
 	term_string(Var, VarStr),

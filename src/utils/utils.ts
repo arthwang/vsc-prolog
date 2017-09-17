@@ -306,8 +306,8 @@ export class Utils {
     if (prologProcess.status === 0) {
       let output = prologProcess.stdout.toString();
       let err = prologProcess.stderr.toString();
-      // console.log("out:" + output);
-      // console.log("err:" + err);
+      console.log("out:" + output);
+      console.log("err:" + err);
 
       let match = output.match(resultReg);
       return match ? match : null;

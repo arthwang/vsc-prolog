@@ -84,8 +84,9 @@ async function fileToSnippet(file: string) {
 }
 
 (async () => {
-  await libsToSnippets("./bips/kernel", true);
-  await libsToSnippets("./bips/lib", false);
-  await libsToSnippets("./bips/lib_public", false);
+  let docRoot = "/opt/eclipseclp/doc/bips/";
+  await libsToSnippets(docRoot + "kernel", true);
+  await libsToSnippets(docRoot + "lib", false);
+  await libsToSnippets(docRoot + "lib_public", false);
   await fse.writeJson("prolog.ecl.json", snippets);
 })();

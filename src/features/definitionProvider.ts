@@ -28,7 +28,9 @@ export class PrologDefinitionProvider implements DefinitionProvider {
     let args: string[] = [],
       prologCode: string,
       result: string[],
-      predToFind: string;
+      predToFind: string,
+      runOptions: cp.SpawnSyncOptions;
+    const fileLineRe = /File:(.+);Line:(\d+)/;
 
     switch (Utils.DIALECT) {
       case "swi":
@@ -42,42 +44,47 @@ export class PrologDefinitionProvider implements DefinitionProvider {
           format("File:~s;Line:~d~n", [File, Line]).
           `;
         predToFind = pred.wholePred;
+        doc.save().then(_ => {
+          result = Utils.execPrologSync(
+            args,
+            prologCode,
+            `source_location('${doc.fileName}', ${predToFind})`,
+            "true",
+            fileLineRe
+          );
+        });
         break;
 
       case "ecl":
-        args = ["-f", doc.fileName];
-        prologCode = `
-        source_location:-
-          read(Term),
-          get_flag(Term, source_file, File),
-          get_flag(Term, source_line, Line),
-          printf("File:%s;Line:%d%n", [File, Line]).
-        `;
+        args = [];
         predToFind = pred.pi;
+        prologCode = `ensure_loaded([
+          '${doc.fileName}', 
+          '${__dirname}/locate_clause_ecl']),
+          source_location('${doc.fileName}', ${predToFind}).
+          `;
+        runOptions = {
+          cwd: workspace.rootPath,
+          encoding: "utf8",
+          input: prologCode
+        };
+        if (doc.isDirty) {
+          doc.save().then(_ => {
+            let syncPro = cp.spawnSync(Utils.RUNTIMEPATH, args, runOptions);
+            if (syncPro.status === 0) {
+              result = syncPro.stdout.toString().match(fileLineRe);
+            }
+          });
+        } else {
+          let syncPro = cp.spawnSync(Utils.RUNTIMEPATH, args, runOptions);
+          if (syncPro.status === 0) {
+            result = syncPro.stdout.toString().match(fileLineRe);
+          }
+        }
         break;
 
       default:
         break;
-    }
-
-    if (doc.isDirty) {
-      doc.save().then(_ => {
-        result = Utils.execPrologSync(
-          args,
-          prologCode,
-          "source_location",
-          predToFind,
-          /File:(.+);Line:(\d+)/
-        );
-      });
-    } else {
-      result = Utils.execPrologSync(
-        args,
-        prologCode,
-        "source_location",
-        predToFind,
-        /File:(.+);Line:(\d+)/
-      );
     }
 
     if (result) {

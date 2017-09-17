@@ -267,7 +267,7 @@ export default class PrologDocumentFormatter
           }
         })
         .on("stdout", data => {
-          console.log("data:" + data);
+          // console.log("data:" + data);
           if (/::::::ALLOVER/.test(data)) {
             this.resolveTerms(doc, termStr, range, true);
           }
@@ -279,7 +279,7 @@ export default class PrologDocumentFormatter
           }
         })
         .on("stderr", err => {
-          console.log("err:" + err);
+          // console.log("err:" + err);
           this.outputMsg(err);
         })
         .on("close", _ => {
@@ -325,7 +325,7 @@ export default class PrologDocumentFormatter
       case "ecl":
         // comments inside of clause
         if (this._currentTermInfo) {
-          let commReg = /\/\*[\s\S]*?\*\/|%[^'"\n]*\n/g;
+          let commReg = /\/\*[\s\S]*?\*\/|%[^'"\n]*(?=\n)/g;
           let lastTermEnd = termCharA;
           if (commsArr && commsArr[0]) {
             lastTermEnd = commsArr[0].location;
@@ -337,10 +337,13 @@ export default class PrologDocumentFormatter
               doc.offsetAt(range.start) + lastTermEnd
             );
           let match: RegExpExecArray;
+          let firstCommLen = 0;
+          if (this._currentTermInfo.comments[0]) {
+            firstCommLen = this._currentTermInfo.comments[0].comment.length;
+          }
           while ((match = commReg.exec(origTxt)) !== null) {
             this._currentTermInfo.comments.push({
-              location:
-                match.index + this._currentTermInfo.comments[0].comment.length,
+              location: match.index + firstCommLen,
               comment: match[0]
             });
           }
@@ -479,7 +482,7 @@ export default class PrologDocumentFormatter
       let comment = comms[i].comment;
       let origSeg = origTxt.slice(lastOrigPos, index);
 
-      let noSpaceOrig = origSeg.replace(/\s|\n|\t|\(|\)/g, "");
+      let noSpaceOrig = origSeg.replace(/[\s()]/g, "");
       lastOrigPos = index + comment.length;
       let j = 0,
         noSpaceFormatted: string = "";
@@ -489,7 +492,8 @@ export default class PrologDocumentFormatter
             comment += "\n";
             lastOrigPos++;
           }
-          let tail = origSeg.match(/([()]*)(\s*)$/);
+
+          let tail = origSeg.match(/([()\s]*)(\s*)$/);
           let spaces = tail[2];
           if (spaces.length > 0) {
             comment = spaces + comment;
@@ -502,13 +506,7 @@ export default class PrologDocumentFormatter
         }
 
         let char = formatedText.charAt(j);
-        if (
-          char !== " " &&
-          char !== "\n" &&
-          char !== "\t" &&
-          char !== "(" &&
-          char !== ")"
-        ) {
+        if (!/[\s()]/.test(char)) {
           noSpaceFormatted += char;
         }
         j++;
