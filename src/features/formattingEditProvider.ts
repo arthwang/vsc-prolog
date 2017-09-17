@@ -224,9 +224,6 @@ export default class PrologDocumentFormatter
   private async getFormattedCode(doc: TextDocument, range: Range) {
     this._textEdits = [];
     this._currentTermInfo = null;
-    // if (!doc.validateRange(range)) {
-    //   return [];
-    // }
     let docText = jsesc(doc.getText(), { quotes: "double" });
     let rangeTxt = jsesc(doc.getText(range), { quotes: "double" });
     let goals: string;
@@ -266,7 +263,7 @@ export default class PrologDocumentFormatter
           }
         })
         .on("stdout", data => {
-          console.log("data:" + data);
+          // console.log("data:" + data);
           if (/::::::ALLOVER/.test(data)) {
             this.resolveTerms(doc, termStr, range, true);
           }
@@ -278,7 +275,7 @@ export default class PrologDocumentFormatter
           }
         })
         .on("stderr", err => {
-          console.log("err:" + err);
+          // console.log("err:" + err);
           this.outputMsg(err);
         })
         .on("close", _ => {

@@ -1,6 +1,6 @@
 # VSC-Prolog
 
-A VS Code extension which provides language support for Prolog (only SWI-Prolog now).
+A VS Code extension which provides language support for Prolog (mainly for SWI-Prolog and some features for ECLiPSe).
 
 ___________________
   [Features](#features) | [Configurations](#configurations) | [Debugger Settings](#debugger-settings) | [Commands & Keybindings](#commands-keybindings) | [Bug Reporting](https://github.com/arthwang/vsc-prolog/issues) | [Donation](#donation)
@@ -8,7 +8,7 @@ __________________
 
 ## Note before installation
 
-This extension can be installed via extensions viewlet of VS Code or 'Extensions: install extension' command from the command palette. The author notices that it is developed and tested in ***SWI-Prolog 7.4.2*** and ***VS Code 1.15*** on ***Debian 9.0*** (stretch). It's not yet tested under other environments.
+This extension can be installed via extensions viewlet of VS Code or 'Extensions: install extension' command from the command palette. The author notices that it is developed and tested in ***SWI-Prolog 7.4.2***, ***ECLiPSe 6.1*** and ***VS Code 1.15*** on ***Debian 9.0*** (stretch). It's not yet tested under other environments.
   > Please update to 7.5.13 of swipl if you want to use 'Show all references' feature.
 
 ## Features
@@ -17,16 +17,16 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
   * [Information Hovers](#information-hovers)
   * [Linter](#grammar-linter)
   * [Edit helpers](#edit-helpers)
-    * [Import/Dynamic helper](#import-or-dynamic-predicate-helper)
-    * [Export helper](#export-helper)
+    * [Import/Dynamic helper (SWI ONLY)](#import-or-dynamic-predicate-helper) 
+    * [Export helper (SWI ONLY)](#export-helper)
     * [Recursion helper](#recursion-helper)
     * [Anonymous variable helper](#anonymous-variable-helper)
   * [Load active source file and query goals](#load-active-source-file-and-query-goals)
   * [Goto definition of predicate under cursor](#go-to-definition)
-  * [Show all refences of predicate under cursor](#show-all-references-of-predicate-under-cursor)
-  * [Refactor predicate under cursor(experimental)](#refactor-predicate-under-cursor)
+  * [Show all refences of predicate under cursor (SWI ONLY)](#show-all-references-of-predicate-under-cursor)
+  * [Refactor predicate under cursor(experimental, SWI ONLY)](#refactor-predicate-under-cursor)
   * [Code formatter](#code-formatter)
-  * [Debugger(experimental)](#debugger)
+  * [Debugger(experimental, SWI ONLY)](#debugger)
     * Leep, creep, skip, Up, Stop, Restart
     * Breakpoints, including conditional breakpoints and hit count breakpoints
     * Spy(function breakpoints)
@@ -67,12 +67,15 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
 ### Edit helpers
 
 #### Import or Dynamic predicate helper
+  > This feature only works in SWI-Prolog.
 
   Clicking on the squiggle indicating 'undefined predicate' lights the yellow bulb in the left margin besides the line number. A suggesition list is presented when you click the bulb that includes 'add dynamic ' for the undefined predicate or 'import' it if VSC-Prolog finds it could be exported from some module(s). Triggering 'Add dynamic' inserts the predicate indicator into dynamic directive, or creates such a directive if no one exists. 'Add use_module' inserts ':- use_module' directive with the predicate indicator whithin the import list.
 
   ![import](images/import.gif)
 
 #### Export helper
+
+  > This feature only works in SWI-Prolog.
 
   Move cursor to the head of a clause or a fact to be exported and trigger the command 'Prolog: export predicate under cursor' via command palette or right click the predicate to pop up the Editor/context menu which contains the command. Then VSC-Prolog inserts :- module/2 if module is not defined or adds the predicate indicator to the export list otherwise. After that a message box displays that asks for if adding structured comment for the predicate and comment lines are inserted above the head of the clause if 'yes' chosen, you should edit the comments of course.
 
@@ -109,12 +112,16 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
 
 ### Show all references of predicate under cursor
 
+  > This feature only works in SWI-Prolog.
+
   Right click a predicate in editor, then trigger the command 'Find all references' from the editor context menu. All references of the predicate will be displayed in a popup panel.
 
   ![findrefs](images/findrefs.gif)
 
 ### Refactor predicate under cursor
 
+  > This feature only works in SWI-Prolog.
+  
   Right click a predicate in editor, then trigger the command 'Refactor predicate under cursor' from the editor context menu. VSC-Prolog pops up a message box to ask for user confirmation and then an input box shows off to accept new predicate name that is used to replace the original one in all the references and its definition clause head(s). 
   
   If the user selects a builtin or foreign predicate and confirms in the warning box, all the predicate functor names of referencs would be replaced but the definition remains unchanged. This maybe is useful if you want to substitute a predicate with the same arity.
@@ -144,6 +151,8 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
 
     ![format](images/format.gif)
 ### Debugger
+
+  > This feature only works in SWI-Prolog.
 
   The experimental debugger of VSC-Prolog tries to visualize the command line tracer of SWI-Prolog in VS Code. Read [VS Code handbook about debugging](https://code.visualstudio.com/docs/editor/debugging) for how VS Code debugging works generally.
   

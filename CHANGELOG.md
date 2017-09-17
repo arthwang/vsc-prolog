@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.4.0]
+- some features support eclipseclp
+
 ## [0.3.6]
 - fixed a bug in 'add dynamic'
 

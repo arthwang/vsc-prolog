@@ -15,7 +15,6 @@ format_prolog_source(RangeTxt, DocTxt) :-
 	(
 	    fromto(begin, _, Class, end),
 			fromto(SP0, SP1, SP2, SPend)
-			% param(RStream)
 	do
 		source_read(SP1, SP2, Class, SourceTerm),
 		SP1 = source_position{offset:Offset},
@@ -24,14 +23,6 @@ format_prolog_source(RangeTxt, DocTxt) :-
 		(
 			Class = clause
 		->
-			% getval(non_clause_start, NonClauseStart),
-		  % (  NonClauseStart \= Offset
-			% -> seek(RStream, NonClauseStart),
-			% 	 StrLength is Offset - NonClauseStart,
-			% 	 read_string(RStream, end_of_file, StrLength, CommStr),
-			% 	 seek(RStream, To)
-			% ;  CommStr = ""
-			% ),
 			arg(vars of source_term, SourceTerm, Vars),
 			maplist(var_name, Vars, VarsNames),
 			printf("TERMSEGMENTBEGIN:::%n", []),
