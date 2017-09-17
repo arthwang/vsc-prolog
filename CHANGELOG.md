@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.4.1]
+- added fs-extra into .vscodeignore
+
 ## [0.4.0]
 - some features support eclipseclp
 
