@@ -16,6 +16,7 @@
 !node_modules/find/**/*
 !node_modules/fs-extra/**/*
 !node_modules/fs-extra-plus/**/*
+!node_modules/graceful-fs/**/*
 !node_modules/jsesc/**/*
 !node_modules/path-parse/**/*
 !node_modules/process-promises/**/*
