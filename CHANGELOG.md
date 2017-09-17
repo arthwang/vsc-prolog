@@ -1,7 +1,7 @@
 # Changelog
 
-## [0.4.5]
-- added fs-extra,graceful-fs,universalify into .vscodeignore
+## [0.4.6]
+- added modules of fs-extra,graceful-fs,jsonfile,universalify into .vscodeignore
 
 ## [0.4.0]
 - some features support eclipseclp
