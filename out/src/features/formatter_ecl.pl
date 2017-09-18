@@ -21,7 +21,7 @@ format_prolog_source(RangeTxt, DocTxt) :-
 		SP2 = source_position{offset:To},
 		arg(term of source_term, SourceTerm, Term),
 		(
-			Class = clause
+		(Class = clause; Class = directive)
 		->
 			arg(vars of source_term, SourceTerm, Vars),
 			maplist(var_name, Vars, VarsNames),
@@ -29,12 +29,6 @@ format_prolog_source(RangeTxt, DocTxt) :-
 			printf("TERMBEGIN:::%n", []),
 			writeclause(Term),
 			printf(":::TERMEND%n", []),
-			% (  CommStr = ""
-			% -> true
-			% ;
-			% 	concat_atom(['COMMENTSBIGIN:::{"comments":[{"location":', NonClauseStart, ',"comment":"', CommStr, '"}]}:::COMMENTSEND'], CString),
-			% 	printf("%q%n", [CString])
-			% ),
 			printf("VARIABLESBEGIN:::%w:::VARIABLESEND%n", [VarsNames]),
 			printf("TERMPOSBEGIN:::%d:::TERMPOSEND%n", [Offset]),
 			printf("TERMENDBEGIN:::%d:::TERMENDEND%n", [To]),
