@@ -437,10 +437,9 @@ export default class PrologDocumentFormatter
     termCharZ: number,
     commsArr: IComment[]
   ) {
-    let formattedTerm = this.restoreVariableNames(
-      term[1],
-      vars[1].split(",")
-    ).replace(/\b_\d+\b/g, "_");
+    let formattedTerm = this.restoreVariableNames(term[1], vars[1].split(","))
+      .replace(/\b_\d+\b/g, "_")
+      .replace(/\s*$/, "");
     termCharA += doc.offsetAt(range.start);
     termCharZ += doc.offsetAt(range.start);
     this._currentTermInfo = {
@@ -554,7 +553,7 @@ export default class PrologDocumentFormatter
         j++;
       }
     }
-    return txtWithComm + formatedText.replace(/\s*$/, "");
+    return txtWithComm + formatedText;
   }
 
   private restoreVariableNames(text: string, vars: string[]): string {

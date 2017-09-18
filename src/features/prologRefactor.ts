@@ -37,6 +37,12 @@ export class PrologRefactor {
 
   // pick predicate at pos in doc
   public refactorPredUnderCursor() {
+    if (Utils.DIALECT !== "swi") {
+      window.showInformationMessage(
+        "Refactoring not available for this prolog dialect."
+      );
+      return;
+    }
     let doc: TextDocument = window.activeTextEditor.document;
     let pos: Position = window.activeTextEditor.selection.active;
 

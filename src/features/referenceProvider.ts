@@ -6,7 +6,8 @@ import {
   Position,
   ReferenceContext,
   CancellationToken,
-  Location
+  Location,
+  window
 } from "vscode";
 import { spawn } from "process-promises";
 
@@ -18,6 +19,12 @@ export class PrologReferenceProvider implements ReferenceProvider {
     context: ReferenceContext,
     token: CancellationToken
   ): Promise<Location[]> {
+    if (Utils.DIALECT !== "swi") {
+      window.showInformationMessage(
+        "'Finding all references' not available for this prolog dialect."
+      );
+      return [];
+    }
     let pred = Utils.getPredicateUnderCursor(doc, position);
     return await new PrologRefactor().findFilesAndRefs(pred);
   }

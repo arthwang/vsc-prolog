@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.4.7]
+- fixed a bug in formatting ecl codes
+
 ## [0.4.6]
 - added modules of fs-extra,graceful-fs,jsonfile,universalify into .vscodeignore
 
