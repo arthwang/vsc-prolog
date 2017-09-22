@@ -28,8 +28,7 @@ export class PrologRefactor {
 
   // pick predicate at pos in doc
   constructor() {
-    let section = workspace.getConfiguration("prolog");
-    this._executable = section.get<string>("executablePath", "swipl");
+    this._executable = Utils.RUNTIMEPATH;
     this._outputChannel = window.createOutputChannel("PrologFormatter");
     this._locations = [];
     this._clauseRefs = {};
@@ -37,12 +36,6 @@ export class PrologRefactor {
 
   // pick predicate at pos in doc
   public refactorPredUnderCursor() {
-    if (Utils.DIALECT !== "swi") {
-      window.showInformationMessage(
-        "Refactoring not available for this prolog dialect."
-      );
-      return;
-    }
     let doc: TextDocument = window.activeTextEditor.document;
     let pos: Position = window.activeTextEditor.selection.active;
 
@@ -130,7 +123,12 @@ export class PrologRefactor {
       })
     );
 
-    let files = await fif.find(pred.functor, workspace.rootPath, ".pl$");
+    let files = await fif.find(
+      pred.functor,
+      workspace.rootPath,
+      "\\.pl$|\\.ecl$"
+    );
+
     for (let file in files) {
       let defLoc = includingDefLoc && !this._defLocFound;
       await this.loadFileAndFindRefs(pred.pi, file, defLoc);
@@ -143,12 +141,25 @@ export class PrologRefactor {
     file: string,
     includingDefLoc = false
   ) {
-    let input = `
-        use_module('${__dirname}/findallrefs').
-        load_files('${file}').
-        findrefs:findrefs(${pi}, ${includingDefLoc}).
-        halt.
-      `;
+    let input: string,
+      args: string[] = [];
+    switch (Utils.DIALECT) {
+      case "swi":
+        input = `
+          use_module('${__dirname}/findallrefs_swi').
+          load_files('${file}').
+          findrefs:findrefs(${pi}, ${includingDefLoc}).
+          halt.
+        `;
+        args = ["-q"];
+        break;
+      case "ecl":
+        args = ["-f", `${__dirname}/findallrefs_ecl`];
+        input = `digout_predicate('${file}', ${pi}). `;
+        break;
+      default:
+        break;
+    }
     let runOptions = {
       cwd: workspace.rootPath,
       encoding: "utf8",
@@ -156,7 +167,7 @@ export class PrologRefactor {
     };
 
     try {
-      await spawn(this._executable, ["-q"], { cwd: workspace.rootPath })
+      await spawn(this._executable, args, { cwd: workspace.rootPath })
         .on("process", proc => {
           if (proc.pid) {
             proc.stdin.write(input);
@@ -164,65 +175,14 @@ export class PrologRefactor {
           }
         })
         .on("stdout", output => {
-          if (/{"reference":"built_in or foreign"}/.test(output)) {
-            this._isBuiltin = true;
-          }
-          if (/{"reference":"definition location found"}/.test(output)) {
-            this._defLocFound = true;
-          }
-          let refReg = /\{"reference":\s*(\{.+?\})\}/g;
-          let match: RegExpExecArray = refReg.exec(output);
-          while (match) {
-            let ref: { file: string; line: number; char: number } = JSON.parse(
-              match[1]
-            );
-            //relocate if ref points to start of the clause
-            let lines = fs
-              .readFileSync(ref.file)
-              .toString()
-              .split("\n");
-            let predName = pi.split("/")[0];
-            if (predName.indexOf(":") > -1) {
-              predName = predName.split(":")[1];
-            }
-            if (
-              !new RegExp("^" + predName).test(lines[ref.line].slice(ref.char))
-            ) {
-              let clauseStart = ref.line;
-              let start = ref.line;
-              if (
-                this._clauseRefs[ref.file] &&
-                this._clauseRefs[ref.file][clauseStart]
-              ) {
-                start = this._clauseRefs[ref.file][clauseStart] + 1;
-              }
-              let str = lines.slice(start).join("\n");
-              let index = str.indexOf(predName);
-              if (index > -1) {
-                str = str.slice(0, index);
-                let strLines = str.split("\n");
-                ref.line = start + strLines.length - 1;
-                ref.char = strLines[strLines.length - 1].length;
-                if (this._clauseRefs[ref.file]) {
-                  this._clauseRefs[ref.file][clauseStart] = ref.line;
-                } else {
-                  this._clauseRefs[ref.file] = {};
-                  this._clauseRefs[ref.file][clauseStart] = ref.line;
-                }
-              }
-            }
-            this._locations.push(
-              new Location(
-                Uri.file(ref.file),
-                new Range(
-                  ref.line,
-                  ref.char,
-                  ref.line,
-                  ref.char + predName.length
-                )
-              )
-            );
-            match = refReg.exec(output);
+          switch (Utils.DIALECT) {
+            case "swi":
+              this.findRefsFromOutputSwi(pi, output);
+              break;
+            case "ecl":
+              this.findRefsFromOutputEcl(file, pi, output);
+            default:
+              break;
           }
         })
         .on("stderr", err => {
@@ -240,5 +200,79 @@ export class PrologRefactor {
               ._executable}. Reason is unknown.`;
       }
     }
+  }
+  private findRefsFromOutputSwi(pi: string, output: string) {
+    if (/{"reference":"built_in or foreign"}/.test(output)) {
+      this._isBuiltin = true;
+    }
+    if (/{"reference":"definition location found"}/.test(output)) {
+      this._defLocFound = true;
+    }
+    let refReg = /\{"reference":\s*(\{.+?\})\}/g;
+    let match: RegExpExecArray = refReg.exec(output);
+    while (match) {
+      let ref: { file: string; line: number; char: number } = JSON.parse(
+        match[1]
+      );
+      //relocate if ref points to start of the clause
+      let lines = fs
+        .readFileSync(ref.file)
+        .toString()
+        .split("\n");
+      let predName = pi.split("/")[0];
+      if (predName.indexOf(":") > -1) {
+        predName = predName.split(":")[1];
+      }
+      if (!new RegExp("^" + predName).test(lines[ref.line].slice(ref.char))) {
+        let clauseStart = ref.line;
+        let start = ref.line;
+        if (
+          this._clauseRefs[ref.file] &&
+          this._clauseRefs[ref.file][clauseStart]
+        ) {
+          start = this._clauseRefs[ref.file][clauseStart] + 1;
+        }
+        let str = lines.slice(start).join("\n");
+        let index = str.indexOf(predName);
+        if (index > -1) {
+          str = str.slice(0, index);
+          let strLines = str.split("\n");
+          ref.line = start + strLines.length - 1;
+          ref.char = strLines[strLines.length - 1].length;
+          if (this._clauseRefs[ref.file]) {
+            this._clauseRefs[ref.file][clauseStart] = ref.line;
+          } else {
+            this._clauseRefs[ref.file] = {};
+            this._clauseRefs[ref.file][clauseStart] = ref.line;
+          }
+        }
+      }
+      this._locations.push(
+        new Location(
+          Uri.file(ref.file),
+          new Range(ref.line, ref.char, ref.line, ref.char + predName.length)
+        )
+      );
+      match = refReg.exec(output);
+    }
+  }
+
+  private findRefsFromOutputEcl(file: string, pi: string, output: string) {
+    let match = output.match(/references:\[(.*)\]/);
+    if (!match) {
+      return;
+    }
+    let locs = match[1].split(",");
+    workspace.openTextDocument(Uri.file(file)).then(doc => {
+      locs.forEach(fromS => {
+        const from = parseInt(fromS);
+        this._locations.push(
+          new Location(
+            Uri.file(file),
+            new Range(doc.positionAt(from), doc.positionAt(from))
+          )
+        );
+      });
+    });
   }
 }

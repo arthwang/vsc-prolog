@@ -1,9 +1,11 @@
 % formatter_ecl.pl
 :- use_module(library(source_processor)).
+:- use_module(load_modules_ecl).
+
 :- local reference(non_clause_start, 0).
 
 format_prolog_source(RangeTxt, DocTxt) :-
-	load_modules(DocTxt),
+	load_modules_from_text(DocTxt),
 	open(string(RangeTxt), read, RStream),
 	source_open(stream(RStream), [
 		keep_comments,
@@ -21,7 +23,7 @@ format_prolog_source(RangeTxt, DocTxt) :-
 		SP2 = source_position{offset:To},
 		arg(term of source_term, SourceTerm, Term),
 		(
-		(Class = clause; Class = directive)
+		(Class = clause; Class = directive; Class = handled_directive)
 		->
 			arg(vars of source_term, SourceTerm, Vars),
 			maplist(var_name, Vars, VarsNames),
@@ -40,28 +42,7 @@ format_prolog_source(RangeTxt, DocTxt) :-
 	),
 	source_close(SPend, []),
 	close(RStream),
-    writeln('::::::ALLOVER').
-
-load_modules(DocTxt) :-
-	open(string(DocTxt), read, RStream),
-	source_open(stream(RStream), [], SP0),
-	(  fromto(start, _, Kind, end),
-		 fromto(SP0, SP1, SP2, SPEnd)
-	do
-		 source_read(SP1, SP2, Kind, SourceTerm),
-		 arg(term of source_term, SourceTerm, Term),
-		 (  (   Term =.. [:- use_module(Module)]
-				;   Term =.. [import, _ from Module]
-				;   Term =.. [import, Module]
-				) 
-				->
-					 writeln(moduleUsed:Module),
-					 use_module(Module)
-				;  true
-		 )
-	),
-	source_close(SPEnd, []),
-	close(RStream).
+	writeln('::::::ALLOVER').
 
 var_name([Name|Var], VarName) :-
 		term_string(Var, VarStr),

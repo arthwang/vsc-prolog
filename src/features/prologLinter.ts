@@ -356,7 +356,7 @@ export default class PrologLinter implements CodeActionProvider {
         }
       })
       .on("stderr", (errStr: string) => {
-        // console.log("errStr" + errStr);
+        // console.log("linterr: " + errStr);
         switch (Utils.DIALECT) {
           case "swi":
             if (/which is referenced by/.test(errStr)) {
@@ -385,6 +385,7 @@ export default class PrologLinter implements CodeActionProvider {
 
             break;
           case "ecl":
+            this.outputChannel.clear();
             if (/^file/.test(errStr) || /^string stream/.test(errStr)) {
               if (lineErr) {
                 this.parseIssue(lineErr + "\n");
@@ -547,7 +548,7 @@ export default class PrologLinter implements CodeActionProvider {
 
   private outputMsg(msg: string) {
     this.outputChannel.append(msg + "\n");
-    this.outputChannel.show();
+    this.outputChannel.show(true);
   }
 
   private getClauseInfo(
@@ -750,6 +751,6 @@ export default class PrologLinter implements CodeActionProvider {
       }
     });
     editor.selection = new Selection(position, position);
-    this.outputChannel.show();
+    this.outputChannel.show(true);
   }
 }

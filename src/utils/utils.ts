@@ -1,3 +1,4 @@
+import { basename } from "path";
 "use strict";
 import * as fs from "fs";
 import * as YAML from "yamljs";
@@ -111,8 +112,8 @@ export class Utils {
     let wholePred: string;
     let arity: number;
     let params: string;
-    let text = doc
-      .getText()
+    const docTxt = doc.getText();
+    let text = docTxt
       .split("\n")
       .slice(position.line)
       .join("")
@@ -146,59 +147,110 @@ export class Utils {
       arity = parseInt(text.match(re1)[1]);
       params =
         arity === 0 ? "" : "(" + new Array(arity).fill("_").join(",") + ")";
-      let reg = new RegExp(
-        "module\\s*\\(\\s*([^,\\(]+)\\s*,\\s*\\[[^\\]]*?" +
-          predName +
-          "/" +
-          arity +
-          "\\b"
-      );
-      let mtch = doc
-        .getText()
-        .replace(/\n/g, "")
-        .match(reg);
-      if (mtch) {
-        let mFile = mtch[1];
-        let mod = Utils.execPrologSync(
-          ["-q"],
-          `find_module :-
-            absolute_file_name(${mFile}, File, [file_type(prolog)]),
-            load_files(File),
-            source_file_property(File, module(Mod)),
-            writeln(module:Mod).`,
-          "find_module",
-          "true",
-          /module:(\w+)/
-        );
-        if (mod) {
-          module = mod[1];
-        }
-      }
       wholePred = predName + params;
+      switch (Utils.DIALECT) {
+        case "swi":
+          let reg = new RegExp(
+            "module\\s*\\(\\s*([^,\\(]+)\\s*,\\s*\\[[^\\]]*?" +
+              predName +
+              "/" +
+              arity +
+              "\\b"
+          );
+          let mtch = docTxt.replace(/\n/g, "").match(reg);
+          if (mtch) {
+            let mFile = mtch[1];
+            let mod = Utils.execPrologSync(
+              ["-q"],
+              `find_module :-
+                absolute_file_name(${mFile}, File, [file_type(prolog)]),
+                load_files(File),
+                source_file_property(File, module(Mod)),
+                writeln(module:Mod).`,
+              "find_module",
+              "true",
+              /module:(\w+)/
+            );
+            if (mod) {
+              module = mod[1];
+            }
+          }
+          break;
+        case "ecl":
+          let modDefMatch = docTxt.match(/\n?\s*:-\s*module\((\w+)\)/);
+          let expRe1 = new RegExp(
+            "\\n\\s*:-\\s*export[^\\.]+\\b" + predName + "\\s*/\\s*" + arity
+          );
+          let expRe2 = new RegExp(
+            "\\n\\s*:-\\s*import.*\\b" +
+              predName +
+              "\\s*/\\s*" +
+              arity +
+              "\\b.*from\\s*(\\w+)"
+          );
+          let impModMtch = docTxt.match(expRe2);
+          if (modDefMatch && expRe1.test(docTxt)) {
+            module = modDefMatch[1];
+          } else if (impModMtch) {
+            module = impModMtch[1];
+          }
+          break;
+        default:
+          break;
+      }
     } else {
       arity = 0;
       params = "";
       wholePred = predName;
     }
 
+    const fileName = window.activeTextEditor.document.fileName;
     if (!module) {
-      let modMatch = doc
-        .getText()
+      let modMatch = docTxt
         .slice(0, doc.offsetAt(wordRange.start))
         .match(/([\S]+)\s*:\s*$/);
       if (modMatch) {
         module = modMatch[1];
       } else {
-        let mod = Utils.execPrologSync(
-          ["-q", "-l", `${__dirname}/findmodule.pl`],
-          "",
-          `(find_module('${window.activeTextEditor.document.fileName}',
-         ${wholePred},
-          Module),
-          writeln(module:Module))`,
-          "true",
-          /module:(\w+)/
-        );
+        let mod: string[];
+        switch (Utils.DIALECT) {
+          case "swi":
+            mod = Utils.execPrologSync(
+              ["-q", "-l", `${__dirname}/findmodule.pl`],
+              "",
+              `(find_module('${window.activeTextEditor.document.fileName}',
+              ${wholePred},
+              Module),
+              writeln(module:Module))`,
+              "true",
+              /module:(\w+)/
+            );
+            break;
+          case "ecl":
+            let modMtch = docTxt.match(/\n?\s*:-\s*module\((\w+)\)/);
+            let currMod: string, clause: string;
+            if (modMtch) {
+              clause = `find_module :-
+                  use_module('${fileName}'),
+                  get_flag(${predName}/${arity}, definition_module, Module)@${modMtch[1]},
+                  printf('module:%s%n', [Module])`;
+            } else {
+              clause = `find_module :-
+                  ensure_loaded('${fileName}'),
+                  get_flag(${predName}/${arity}, definition_module, Module),
+                  printf('module:%s%n', [Module])`;
+            }
+            mod = Utils.execPrologSync(
+              [],
+              clause,
+              "find_module",
+              "true",
+              /module:(\w+)/
+            );
+            break;
+          default:
+            break;
+        }
         if (mod) {
           module = mod[1];
         } else {
@@ -306,8 +358,8 @@ export class Utils {
     if (prologProcess.status === 0) {
       let output = prologProcess.stdout.toString();
       let err = prologProcess.stderr.toString();
-      console.log("out:" + output);
-      console.log("err:" + err);
+      // console.log("out:" + output);
+      // console.log("err:" + err);
 
       let match = output.match(resultReg);
       return match ? match : null;
