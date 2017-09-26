@@ -308,14 +308,21 @@ export default class PrologLinter implements CodeActionProvider {
       case "ecl":
         if (this.trigger === RunTrigger.onSave) {
           // goals = `lib(lint),lint('${textDocument.fileName}')`;
-          goals = `compile('${textDocument.fileName}', [debug:off])`;
+          goals = `
+          use_module('${this.context
+            .extensionPath}/out/src/features/load_modules'),
+          load_modules_from_file('${textDocument.fileName}'),
+          compile('${textDocument.fileName}', [debug:off])`;
           args = ["-e", goals];
         }
         if (this.trigger === RunTrigger.onType) {
           goals = `
-            open(string("${docTxtEsced}"), read, S),
-            compile(stream(S), [debug:off]),
-            close(S).
+          use_module('${this.context
+            .extensionPath}/out/src/features/load_modules'),
+          load_modules_from_text("${docTxtEsced}"),
+          open(string("${docTxtEsced}"), read, S),
+          compile(stream(S), [debug:off]),
+          close(S).
         `;
         }
 
@@ -331,7 +338,7 @@ export default class PrologLinter implements CodeActionProvider {
         }
       })
       .on("stdout", out => {
-        // console.log("out:" + out + "\n");
+        // console.log("lintout:" + out + "\n");
         if (Utils.DIALECT === "ecl" && !/checking completed/.test(out)) {
           if (/^File\s*/.test(out)) {
             if (lineErr) {
@@ -411,7 +418,8 @@ export default class PrologLinter implements CodeActionProvider {
               lineErr = "ERROR:" + fullName + ":" + line + ":" + msg;
             } else if (/^\|/.test(errStr)) {
               lineErr += "\n" + errStr;
-            } else if (/WARNING/.test(errStr)) {
+              // } else if (/WARNING/.test(errStr)) {
+            } else {
               this.outputMsg(errStr);
             }
 

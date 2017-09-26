@@ -57,10 +57,9 @@ export class PrologDefinitionProvider implements DefinitionProvider {
 
       case "ecl":
         args = [];
-        predToFind = pred.pi;
+        predToFind = pred.pi.split(":")[1];
         prologCode = `ensure_loaded([
-          '${doc.fileName}', 
-          '${__dirname}/locate_clause_ecl']),
+          '${__dirname}/locate_clause']),
           source_location('${doc.fileName}', ${predToFind}).
           `;
         runOptions = {

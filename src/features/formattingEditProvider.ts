@@ -101,11 +101,11 @@ export default class PrologDocumentFormatter
     const subtxt = txt
       .slice(0, offset + 1)
       .replace(/\/\*[\s\S]*?\*\//g, "")
-      .replace(/%.*\n/g, "")
       .replace(/\\'/g, "")
       .replace(/\\"/g, "")
       .replace(/"[^\"]*?"/g, "")
-      .replace(/'[^\']*?'/g, "");
+      .replace(/'[^\']*?'/g, "")
+      .replace(/%.*\n/g, "");
     const open = subtxt.lastIndexOf("/*");
     const close = subtxt.lastIndexOf("*/");
     return (
@@ -213,7 +213,7 @@ export default class PrologDocumentFormatter
 
   private outputMsg(msg: string) {
     this._outputChannel.append(msg);
-    this._outputChannel.show();
+    this._outputChannel.show(true);
   }
 
   private async getTextEdits(doc: TextDocument, range: Range) {
@@ -238,7 +238,7 @@ export default class PrologDocumentFormatter
         `;
         break;
       case "ecl":
-        this._args = ["-f", `${__dirname}/formatter_ecl`];
+        this._args = ["-f", `${__dirname}/formatter`];
         rangeTxt += " end_of_file.";
         goals = `
           format_prolog_source("${rangeTxt}", "${docText}").
@@ -275,7 +275,7 @@ export default class PrologDocumentFormatter
           }
         })
         .on("stderr", err => {
-          // console.log("err:" + err);
+          console.log("formatting err:" + err);
           // this.outputMsg(err);
         })
         .on("close", _ => {

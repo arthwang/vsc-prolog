@@ -1,0 +1,5 @@
+:-(module(load_file_module)).
+:-(export(/(load_file_module,2))).
+:-(use_module(library(regex))).
+:-(tool(/(load_file_module,2),/(load_file_module,3))).
+:-(:(sepia_kernel,store_pred(/(load_file_module,3),[](o(6),pw(7),a(1),y(4),o(352),2,a(2),y(5),o(104),a(2),read,o(399),a(3),y(1),proc(/(open,3)),115,o(99),a(3),o(104),a(2),end_of_file,o(285),a(4),y(3),o(395),y(1),a(1),proc(/(read_string,4)),123,o(203),y(2),o(128),0,0,ref(76),o(106),a(3),o(61),newline,o(85),o(106),a(4),o(77),y(7),o(85),o(105),a(1),"^\\s*:-\\s*module\\s*\\(\\s*(\\w+)\\s*\\)",o(395),y(3),a(2),proc(/(matchsub,4)),247,o(204),y(2),pw(7),o(353),y(5),a(1),y(7),a(2),o(143),proc(/(atom_string,2)),83,o(353),y(4),a(1),y(6),a(2),o(143),proc(:(sepia_kernel,/(use_module_body,2))),3,o(397),y(1),a(1),proc(/(close,1)),o(199),0,115,o(353),y(4),a(1),y(6),a(2),o(143),proc(:(sepia_kernel,/(ensure_loaded,2))),35,o(4),y(5),a(1),o(13),a(1),eclipse,o(397),y(1),a(1),proc(/(close,1)),o(0)),98,0,0,'/home/laowang/workspace/vsc-prolog/out/src/features/load_file_module.ecl',0,0))).

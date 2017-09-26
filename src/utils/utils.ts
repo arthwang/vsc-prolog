@@ -40,6 +40,7 @@ export class Utils {
   private static predModules: IPredModule = null;
   public static DIALECT: string | null = null;
   public static RUNTIMEPATH: string | null = null;
+  public static CONTEXT: ExtensionContext | null = null;
 
   constructor() {}
   public static getPredDescriptions(pred: string): string {
@@ -50,6 +51,7 @@ export class Utils {
   }
 
   public static init(context: ExtensionContext) {
+    Utils.CONTEXT = context;
     Utils.loadSnippets(context);
     Utils.genPredicateModules(context);
   }
@@ -364,7 +366,7 @@ export class Utils {
       let match = output.match(resultReg);
       return match ? match : null;
     } else {
-      console.log("Error: " + prologProcess.stderr.toString());
+      // console.log("Error: " + prologProcess.stderr.toString());
       return null;
     }
   }

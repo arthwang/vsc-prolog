@@ -1,13 +1,21 @@
 :- use_module(library(source_processor)).
-:- import matchsub / 4 from regex.
+:- use_module(library(regex)).
+:- use_module(load_modules).
 
 source_location(DocFile, PI) :-
-	locate_clause_in_file(DocFile, PI, File, Line),
+	load_modules_from_file(DocFile),
+	(
+	    get_flag(PI, tool, on)
+	->
+	    tool_body(PI, PIB, _)
+	;
+	    PIB = PI
+	),
+	locate_clause_in_file(DocFile, PIB, File, Line),
 	printf("File:%s;Line:%d%n", [File, Line]).
 
-locate_clause_in_file(DocFile, Name / Arity, FullName, Line) :-
-	(   FullName = DocFile
-	;
+locate_clause(Name / Arity, FullName, Line) :-
+	(
 	    get_flag(Name / Arity, source_file, FullName)
 	;
 	    get_flag(Name / Arity, definition_module, Module),

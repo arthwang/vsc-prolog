@@ -2,6 +2,7 @@
 */**
 !out/src/**/*.js
 !out/src/**/*.pl
+!out/src/**/*.ecl
 !out/src/**/*.eco
 !snippets/*.json
 !syntaxes/*.json

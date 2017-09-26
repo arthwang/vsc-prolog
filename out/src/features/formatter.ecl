@@ -1,6 +1,6 @@
-% formatter_ecl.pl
+% formatter.ecl
 :- use_module(library(source_processor)).
-:- use_module(load_modules_ecl).
+:- use_module(load_modules).
 
 :- local reference(non_clause_start, 0).
 
@@ -31,7 +31,9 @@ format_prolog_source(RangeTxt, DocTxt) :-
 			printf("TERMBEGIN:::%n", []),
 			writeclause(Term),
 			printf(":::TERMEND%n", []),
-			printf("VARIABLESBEGIN:::%w:::VARIABLESEND%n", [VarsNames]),
+			write("VARIABLESBEGIN:::"),
+			write_term(VarsNames, [depth(full)]),
+			writeln(":::VARIABLESEND"),
 			printf("TERMPOSBEGIN:::%d:::TERMPOSEND%n", [Offset]),
 			printf("TERMENDBEGIN:::%d:::TERMENDEND%n", [To]),
 			printf(":::TERMSEGMENTEND%n", []),

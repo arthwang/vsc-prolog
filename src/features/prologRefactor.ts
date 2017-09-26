@@ -154,7 +154,7 @@ export class PrologRefactor {
         args = ["-q"];
         break;
       case "ecl":
-        args = ["-f", `${__dirname}/findallrefs_ecl`];
+        args = ["-f", `${__dirname}/findallrefs`];
         input = `digout_predicate('${file}', ${pi}). `;
         break;
       default:
@@ -187,7 +187,7 @@ export class PrologRefactor {
         })
         .on("stderr", err => {
           this._outputChannel.append(err + "\n");
-          this._outputChannel.show();
+          this._outputChannel.show(true);
         });
     } catch (error) {
       let message: string = null;
@@ -258,10 +258,13 @@ export class PrologRefactor {
   }
 
   private findRefsFromOutputEcl(file: string, pi: string, output: string) {
+    // console.log("output:" + output);
+
     let match = output.match(/references:\[(.*)\]/);
-    if (!match) {
+    if (!match || match[1] === "") {
       return;
     }
+    let predLen = pi.split(":")[1].split("/")[0].length;
     let locs = match[1].split(",");
     workspace.openTextDocument(Uri.file(file)).then(doc => {
       locs.forEach(fromS => {
@@ -269,7 +272,7 @@ export class PrologRefactor {
         this._locations.push(
           new Location(
             Uri.file(file),
-            new Range(doc.positionAt(from), doc.positionAt(from))
+            new Range(doc.positionAt(from), doc.positionAt(from + predLen))
           )
         );
       });

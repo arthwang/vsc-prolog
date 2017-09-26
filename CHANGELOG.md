@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.0]
+- supported "find all references" and "refactoring predicate" for ECLiPe clp.
+- fixed some bugs
+
 ## [0.4.7]
 - fixed a bug in formatting ecl codes
 

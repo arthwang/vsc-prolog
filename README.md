@@ -23,8 +23,8 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
     * [Anonymous variable helper](#anonymous-variable-helper)
   * [Load active source file and query goals](#load-active-source-file-and-query-goals)
   * [Goto definition of predicate under cursor](#go-to-definition)
-  * [Show all refences of predicate under cursor (SWI ONLY)](#show-all-references-of-predicate-under-cursor)
-  * [Refactor predicate under cursor(experimental, SWI ONLY)](#refactor-predicate-under-cursor)
+  * [Show all refences of predicate under cursor](#show-all-references-of-predicate-under-cursor)
+  * [Refactor predicate under cursor(experimental](#refactor-predicate-under-cursor)
   * [Code formatter](#code-formatter)
   * [Debugger(experimental, SWI ONLY)](#debugger)
     * Leep, creep, skip, Up, Stop, Restart
@@ -112,16 +112,12 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
 
 ### Show all references of predicate under cursor
 
-  > This feature only works in SWI-Prolog.
-
   Right click a predicate in editor, then trigger the command 'Find all references' from the editor context menu. All references of the predicate will be displayed in a popup panel.
 
   ![findrefs](images/findrefs.gif)
 
 ### Refactor predicate under cursor
 
-  > This feature only works in SWI-Prolog.
-  
   Right click a predicate in editor, then trigger the command 'Refactor predicate under cursor' from the editor context menu. VSC-Prolog pops up a message box to ask for user confirmation and then an input box shows off to accept new predicate name that is used to replace the original one in all the references and its definition clause head(s). 
   
   If the user selects a builtin or foreign predicate and confirms in the warning box, all the predicate functor names of referencs would be replaced but the definition remains unchanged. This maybe is useful if you want to substitute a predicate with the same arity.
@@ -344,7 +340,7 @@ Latest versions of VS code and SWI-Prolog/ECLiPSe installed.
 
 ## Acknowledgements
 
-  >I would like to thank the VS Code team of Microsoft for providing this powerful platform. I've read over many source files of extensions shipped with VS Code and other language support extensions such as php, java, etc. I thank Professor Jan Wielemaker who is known as the original author of SWI-Prolog for his many professional and patient helps about SWI-Prolog system when I consulted on SWI-Prolog forum. Some segments of codes of this extension are gratefully borrowed from other resources such as Sublimeprolog tmlanguage syntax yaml file, SWI-Prolog source files, etc. The backend of 'find all references' and 'refactor predicate under cursor' mainly comes from gist code of github of Jan Wielemaker.
+  >I would like to thank the VS Code team of Microsoft for providing this powerful platform. I've read over many source files of extensions shipped with VS Code and other language support extensions such as php, java, etc. I thank Professor Jan Wielemaker who is known as the original author of SWI-Prolog for his many professional and patient helps about SWI-Prolog system when I consulted on SWI-Prolog forum. Some segments of codes of this extension are gratefully borrowed from other resources such as Sublimeprolog tmlanguage syntax yaml file, SWI-Prolog source files, etc. The backend of 'find all references' and 'refactor predicate under cursor' mainly comes from gist code of github of Jan Wielemaker. I thank Joachim Schimpf for his help in supporting for ECLiPe clp.
 
 ## License
 
