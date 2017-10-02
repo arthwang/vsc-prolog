@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.5.2]
+## [0.5.3]
 - fixed duplicated msgs bug in linter for ecl 
 
 ## [0.5.0]
