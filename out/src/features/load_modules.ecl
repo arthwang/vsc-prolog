@@ -1,10 +1,9 @@
 % load_modules.ecl
 :- module(load_modules).
-:- export load_modules_from_file/1,
-          load_modules_from_text/1.
+:- export load_modules_from_file / 1, load_modules_from_text / 1.
 :- use_module(library(source_processor)).
-:- tool(load_modules_from_file/1, load_modules_from_file/2).
-:- tool(load_modules_from_text/1, load_modules_from_text/2).
+:- tool(load_modules_from_file / 1, load_modules_from_file / 2).
+:- tool(load_modules_from_text / 1, load_modules_from_text / 2).
 
 load_modules_from_file(FileName, Module) :-
 	load_modules(FileName, file, Module).
@@ -13,6 +12,7 @@ load_modules_from_text(Text, Module) :-
 	load_modules(Text, text, Module).
 
 load_modules(Source, Type, Module) :-
+	set_stream(error, null),
 	(
 	    Type = text
 	->
@@ -37,7 +37,8 @@ load_modules(Source, Type, Module) :-
 	    close(RStream)
 	;
 	    true
-	).
+	),
+	set_stream(error, stderr).
 
 load_module(Term, Module) :-
 	Term = lib(Lib),

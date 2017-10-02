@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.5.1]
+- fixed duplicated msgs bug in linter for ecl 
+
 ## [0.5.0]
 - supported "find all references" and "refactoring predicate" for ECLiPe clp.
 - fixed some bugs
