@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.5.9]
+- fixed a goto definition bug for ecl
+
 ## [0.5.7]
 - fixed a formatting bug for ecl
 

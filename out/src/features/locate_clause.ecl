@@ -14,17 +14,21 @@ source_location(DocFile, PI) :-
 	locate_clause_in_file(DocFile, PIB, File, Line),
 	printf("File:%s;Line:%d%n", [File, Line]).
 
-locate_clause(Name / Arity, FullName, Line) :-
+locate_clause_in_file(DocFile, Name / Arity, FullName, Line) :-
 	(
-	    get_flag(Name / Arity, source_file, FullName)
+	    FullName = DocFile
 	;
-	    get_flag(Name / Arity, definition_module, Module),
-	    current_compiled_file(File, _, Module),
-	    matchsub("(.+)\\.eco", File, [], [BaseName]),
 	    (
-		concat_strings(BaseName, ".ecl", FullName)
+		get_flag(Name / Arity, source_file, FullName)
 	    ;
-		concat_strings(BaseName, ".pl", FullName)
+		get_flag(Name / Arity, definition_module, Module),
+		current_compiled_file(File, _, Module),
+		matchsub("(.+)\\.eco", File, [], [BaseName]),
+		(
+		    concat_strings(BaseName, ".ecl", FullName)
+		;
+		    concat_strings(BaseName, ".pl", FullName)
+		)
 	    )
 	),
 	exists(FullName),
@@ -47,4 +51,3 @@ locate_clause(Name / Arity, FullName, Line) :-
 	),
 	!,
 	source_close(SPEnd, []).
-	   
