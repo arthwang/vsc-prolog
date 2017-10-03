@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.5.6]
+## [0.5.7]
 - fixed a formatting bug for ecl
 
 ## [0.5.3]
