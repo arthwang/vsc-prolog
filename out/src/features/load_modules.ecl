@@ -41,7 +41,7 @@ load_modules(Source, Type, Module) :-
 	set_stream(error, stderr).
 
 load_module(Term, Module) :-
-	Term = lib(Lib),
+	Term =.. [:-, lib(Lib)],
 	lib(Lib) @ Module,
 	!.
 load_module(Term, Module) :-
