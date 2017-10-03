@@ -162,6 +162,9 @@
       },
       "patterns": [
         {
+          "include": "#comments"
+        },
+        {
           "include": "#atom"
         },
         {

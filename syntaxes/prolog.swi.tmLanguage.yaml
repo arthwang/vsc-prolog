@@ -110,6 +110,8 @@ patterns:
         name: keyword.control.fact.end.prolog
     patterns:
       -
+        include: '#comments'
+      -
         include: '#atom'
       -
         include: '#variable'

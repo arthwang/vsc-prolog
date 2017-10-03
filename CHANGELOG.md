@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.5.10]
+- fixed comments highlighting bugs
+
 ## [0.5.9]
 - fixed a goto definition bug for ecl
 

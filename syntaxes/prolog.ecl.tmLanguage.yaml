@@ -115,6 +115,9 @@ patterns:
         include: '#variable'
       -
         include: '#constants'
+      -
+        include: '#comments'
+
 repository:
   atom:
     patterns:
@@ -167,7 +170,7 @@ repository:
         match: '!'
       -
         name: keyword.operator.prolog
-        match: '(\s(is)\s)|=:=|=?\\?=|\\\+|@?>|@?=?<|\+|\*|\-'
+        match: '(\s(is)\s)|=:=|=?\\?=|\\\+|@?>|@?=?<|\+|\*|\-|#?='
   variable:
     patterns:
       -
