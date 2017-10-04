@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.5.11]
+- fixed a bug concerning query goal under cursor
+
 ## [0.5.10]
 - fixed comments highlighting bugs
 

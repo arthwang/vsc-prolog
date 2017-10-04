@@ -80,6 +80,10 @@ export default class PrologTerminal {
     if (!pred) {
       return;
     }
-    this.sendString(pred.wholePred);
+    let goal = pred.wholePred;
+    if (goal.indexOf(":") > -1) {
+      goal = goal.split(":")[1];
+    }
+    this.sendString(goal);
   }
 }
