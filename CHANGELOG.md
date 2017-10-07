@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.5.12]
+- fixed a formatting bug concerning ecl line comment
+
 ## [0.5.11]
 - fixed a bug concerning query goal under cursor
 

@@ -76,10 +76,10 @@ export default class PrologTerminal {
     let editor: TextEditor = window.activeTextEditor;
     let doc: TextDocument = editor.document;
     let pred = Utils.getPredicateUnderCursor(doc, editor.selection.active);
-    this.loadDocument();
     if (!pred) {
       return;
     }
+    this.loadDocument();
     let goal = pred.wholePred;
     if (goal.indexOf(":") > -1) {
       goal = goal.split(":")[1];

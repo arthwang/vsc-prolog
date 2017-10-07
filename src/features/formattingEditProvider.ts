@@ -275,7 +275,7 @@ export default class PrologDocumentFormatter
           }
         })
         .on("stderr", err => {
-          console.log("formatting err:" + err);
+          // console.log("formatting err:" + err);
           // this.outputMsg(err);
         })
         .on("close", _ => {
@@ -324,7 +324,7 @@ export default class PrologDocumentFormatter
         break;
       case "ecl":
         // comments inside of clause
-        let commReg = /\/\*[\s\S]*?\*\/|%[^'"\n]*(?=\n)/g;
+        let commReg = /\/\*[\s\S]*?\*\/|%.*?(?=\n)/g;
         let lastTermEnd = termCharA;
         if (commsArr && commsArr[0]) {
           lastTermEnd = commsArr[0].location;
@@ -336,15 +336,31 @@ export default class PrologDocumentFormatter
             doc.offsetAt(range.start) + termCharZ
           );
         let match: RegExpExecArray;
-        // let firstCommLen = 0;
-        // if (this._currentTermInfo.comments[0]) {
-        //   firstCommLen = this._currentTermInfo.comments[0].comment.length;
-        // }
         while ((match = commReg.exec(origTxt)) !== null) {
-          commsArr.push({
-            location: match.index,
-            comment: match[0]
-          });
+          let m = match[0];
+          let comm: IComment = null;
+          if (m.startsWith("%")) {
+            let commPos = doc.positionAt(
+              doc.offsetAt(range.start) + termCharA + match.index
+            );
+            let lineStr = doc.lineAt(commPos.line).text;
+            comm = this.handleLineComment(
+              doc,
+              lineStr,
+              m,
+              match.index,
+              commPos.character,
+              commsArr
+            );
+          } else {
+            comm = {
+              location: match.index,
+              comment: m
+            };
+          }
+          if (comm !== null) {
+            commsArr.push(comm);
+          }
         }
         this.resolveTermsEcl(
           doc,
@@ -362,6 +378,28 @@ export default class PrologDocumentFormatter
     }
   }
 
+  private handleLineComment(
+    doc: TextDocument,
+    lineStr: string,
+    originalMatched: string,
+    index: number,
+    charPos: number,
+    commsArr: IComment[]
+  ): IComment {
+    if (lineStr.replace(/^\s*/, "") === originalMatched) {
+      return { location: index, comment: originalMatched };
+    }
+    let i = charPos;
+    let docText = jsesc(doc.getText(), { quotes: "double" });
+    while (i > -1) {
+      let termStr = lineStr.slice(0, i).replace(/(,|;|\.)\s*$/, "");
+      if (Utils.isValidEclTerm(docText, termStr)) {
+        return { location: index + i - charPos, comment: lineStr.slice(i) };
+      }
+      i = lineStr.indexOf("%", i + 1);
+    }
+    return null;
+  }
   private resolveTermsSwi(
     doc: TextDocument,
     range: Range,

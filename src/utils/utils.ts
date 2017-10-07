@@ -382,4 +382,32 @@ export class Utils {
       });
     });
   }
+
+  public static isValidEclTerm(docText: string, str: string): boolean {
+    if (Utils.DIALECT !== "ecl") {
+      return false;
+    }
+
+    let goals = `
+        use_module('${Utils.CONTEXT
+          .extensionPath}/out/src/features/load_modules'),
+        load_modules_from_text("${docText}"),
+        catch((term_string(_, "${str}"), writeln("result:validTerm")),
+          _, writeln("result:invalidTerm")).
+          `;
+    let runOptions = {
+      cwd: workspace.rootPath,
+      encoding: "utf8",
+      input: goals
+    };
+    let prologProcess = cp.spawnSync(Utils.RUNTIMEPATH, [], runOptions);
+    if (prologProcess.status === 0) {
+      let output = prologProcess.stdout.toString();
+      let err = prologProcess.stderr.toString();
+      let match = output.match(/result:validTerm/);
+      return match ? true : false;
+    } else {
+      return false;
+    }
+  }
 }
