@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.5.13]
+- supported lgt source file extension
+
 ## [0.5.12]
 - fixed a formatting bug concerning ecl line comment
 

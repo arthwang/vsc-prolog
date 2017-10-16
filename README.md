@@ -321,7 +321,11 @@ Latest versions of VS code and SWI-Prolog/ECLiPSe installed.
 
   * The debugger doesn't support clp(constraint logic programming).
 
-  * Formatting doesn't work when there are singleton variables including named underscore-starting singleton variables in the scopes to be formatted.
+  * Formatting doesn't work when there are any syntax errors in the scope to be formatted.
+
+  * Formatting for swi doesn't work when there are singleton variables including named underscore-starting singleton variables in the scopes to be formatted.
+
+  * Formatting for ECLiPSe would remove line comments after invalid terms of the lines. 
 
   * During debug tracing, prompt for stdin input doesn't display in debug console. 
 
