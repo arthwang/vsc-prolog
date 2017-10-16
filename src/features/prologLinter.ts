@@ -316,7 +316,7 @@ export default class PrologLinter implements CodeActionProvider {
           if (extname(textDocument.fileName) === ".lgt") {
             this.outputChannel.clear();
             this.outputMsg(
-              "The linter doesn't support 'onType' trigger. Please change the setting of 'prolog.linter.run' to 'onSave'!"
+              "The linter doesn't support 'onType' trigger for logtalk package. Please change the setting of 'prolog.linter.run' to 'onSave'!"
             );
             return;
           }
