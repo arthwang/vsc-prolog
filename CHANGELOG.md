@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.6.0]
+- supported linter and formatter for logtalk package of swi
+
 ## [0.5.13]
 - supported lgt source file extension
 

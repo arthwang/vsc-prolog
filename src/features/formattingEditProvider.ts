@@ -16,9 +16,9 @@ import {
   Position,
   extensions
 } from "vscode";
-// import { ScopeInfoAPI, Token } from "scope-info";
 import * as jsesc from "jsesc";
 import { Utils } from "../utils/utils";
+import { extname } from "path";
 
 interface IComment {
   location: number; // character location in the range
@@ -236,6 +236,10 @@ export default class PrologDocumentFormatter
           formatter:format_prolog_source(${this._tabSize}, ${this
           ._tabDistance}, "${rangeTxt}", "${docText}").
         `;
+        if (extname(doc.fileName) === ".lgt") {
+          goals = "use_module(library(logtalk))," + goals;
+        }
+
         break;
       case "ecl":
         this._args = ["-f", `${__dirname}/formatter`];

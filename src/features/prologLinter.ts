@@ -26,7 +26,7 @@ import {
   WorkspaceEdit
 } from "vscode";
 import { Utils, IPredicate } from "../utils/utils";
-import { basename } from "path";
+import { basename, extname } from "path";
 import * as find from "find";
 
 export enum RunTrigger {
@@ -295,6 +295,16 @@ export default class PrologLinter implements CodeActionProvider {
       case "swi":
         if (this.trigger === RunTrigger.onSave) {
           args = ["-g", "halt", "-l", textDocument.fileName];
+          if (extname(textDocument.fileName) === ".lgt") {
+            args = [
+              "-g",
+              "use_module(library(logtalk))",
+              "-g",
+              `consult('${textDocument.fileName}')`,
+              "-g",
+              "halt"
+            ];
+          }
         }
         if (this.trigger === RunTrigger.onType) {
           args = ["-q"];
@@ -303,6 +313,13 @@ export default class PrologLinter implements CodeActionProvider {
             load_files('${textDocument.fileName}', [stream(S),if(true)]).
             list_undefined.
           `;
+          if (extname(textDocument.fileName) === ".lgt") {
+            this.outputChannel.clear();
+            this.outputMsg(
+              "The linter doesn't support 'onType' trigger. Please change the setting of 'prolog.linter.run' to 'onSave'!"
+            );
+            return;
+          }
         }
         break;
       case "ecl":
