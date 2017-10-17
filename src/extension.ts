@@ -88,13 +88,13 @@ export async function activate(context: ExtensionContext) {
     {
       command: "prolog.load.document",
       callback: () => {
-        PrologTerminal.getInstance().loadDocument();
+        PrologTerminal.loadDocument();
       }
     },
     {
       command: "prolog.query.goal",
       callback: () => {
-        PrologTerminal.getInstance().queryGoalUnderCursor();
+        PrologTerminal.queryGoalUnderCursor();
       }
     },
     {
@@ -154,6 +154,7 @@ export async function activate(context: ExtensionContext) {
       new PrologReferenceProvider()
     )
   );
+  context.subscriptions.push(PrologTerminal.init());
   // context.subscriptions.push(prologDebugger);
 }
 

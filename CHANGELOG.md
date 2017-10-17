@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.6.2]
+- load logtalk source file into integrated termninal
+
 ## [0.6.1]
 - supported linter for logtalk with ecl as backend
 
