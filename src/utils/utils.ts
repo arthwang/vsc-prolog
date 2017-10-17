@@ -41,6 +41,7 @@ export class Utils {
   public static DIALECT: string | null = null;
   public static RUNTIMEPATH: string | null = null;
   public static CONTEXT: ExtensionContext | null = null;
+  public static LOGTALK: string = "none";
 
   constructor() {}
   public static getPredDescriptions(pred: string): string {

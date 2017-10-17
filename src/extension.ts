@@ -29,8 +29,10 @@ async function initForDialect(context: ExtensionContext) {
   const section = workspace.getConfiguration("prolog");
   const dialect = section.get<string>("dialect");
   const exec = section.get<string>("executablePath", "swipl");
+
   Utils.DIALECT = dialect;
   Utils.RUNTIMEPATH = exec;
+  Utils.LOGTALK = section.get<string>("logtalk.starter", "none");
   const exPath = context.extensionPath;
   const symLinks = [
     {

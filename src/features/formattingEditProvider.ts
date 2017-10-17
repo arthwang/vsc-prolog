@@ -280,7 +280,7 @@ export default class PrologDocumentFormatter
         })
         .on("stderr", err => {
           // console.log("formatting err:" + err);
-          this.outputMsg(err);
+          // this.outputMsg(err);
         })
         .on("close", _ => {
           console.log("closed");

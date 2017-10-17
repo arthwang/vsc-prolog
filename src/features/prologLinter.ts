@@ -53,6 +53,7 @@ export default class PrologLinter implements CodeActionProvider {
   private documentListener: Disposable;
   private openDocumentListener: Disposable;
   private outputChannel: OutputChannel = null;
+  private logtalked: boolean = false;
 
   constructor(private context: ExtensionContext) {
     this.executable = null;
@@ -291,28 +292,22 @@ export default class PrologLinter implements CodeActionProvider {
     let lineErr: string = "";
     let docTxt = textDocument.getText();
     let docTxtEsced = jsesc(docTxt, { quotes: "double" });
+    if (
+      extname(textDocument.fileName) === ".lgt" &&
+      this.trigger === RunTrigger.onType
+    ) {
+      this.outputChannel.clear();
+      this.outputMsg(
+        "The linter doesn't support 'onType' trigger for logtalk package. Please change the setting of 'prolog.linter.run' to 'onSave'!"
+      );
+      return;
+    }
     switch (Utils.DIALECT) {
       case "swi":
         if (this.trigger === RunTrigger.onSave) {
           args = ["-g", "halt", "-l", textDocument.fileName];
-          if (extname(textDocument.fileName) === ".lgt") {
-            args = [
-              "-g",
-              "use_module(library(logtalk))",
-              "-g",
-              `consult('${textDocument.fileName}')`,
-              "-g",
-              "halt"
-            ];
-          }
         }
         if (this.trigger === RunTrigger.onType) {
-          args = ["-q"];
-          goals = `
-            open_string("${docTxtEsced}", S),
-            load_files('${textDocument.fileName}', [stream(S),if(true)]).
-            list_undefined.
-          `;
           if (extname(textDocument.fileName) === ".lgt") {
             this.outputChannel.clear();
             this.outputMsg(
@@ -320,11 +315,16 @@ export default class PrologLinter implements CodeActionProvider {
             );
             return;
           }
+          args = ["-q"];
+          goals = `
+            open_string("${docTxtEsced}", S),
+            load_files('${textDocument.fileName}', [stream(S),if(true)]).
+            list_undefined.
+          `;
         }
         break;
       case "ecl":
         if (this.trigger === RunTrigger.onSave) {
-          // goals = `lib(lint),lint('${textDocument.fileName}')`;
           goals = `
           use_module('${this.context
             .extensionPath}/out/src/features/load_modules'),
@@ -345,6 +345,13 @@ export default class PrologLinter implements CodeActionProvider {
 
       default:
         break;
+    }
+
+    if (extname(textDocument.fileName) === ".lgt" && Utils.LOGTALK !== "none") {
+      this.logtalked = true;
+      this.executable = Utils.LOGTALK;
+      args = [];
+      goals = `logtalk_compile(['${textDocument.fileName}']),halt.\n`;
     }
     let child = spawn(this.executable, args, options)
       .on("process", process => {
@@ -381,68 +388,96 @@ export default class PrologLinter implements CodeActionProvider {
       })
       .on("stderr", (errStr: string) => {
         // console.log("linterr: " + errStr);
-        switch (Utils.DIALECT) {
-          case "swi":
-            if (/which is referenced by/.test(errStr)) {
-              let regex = /Warning:\s*(.+),/;
-              let match = errStr.match(regex);
-              lineErr = " Predicate " + match[1] + " not defined";
-            } else if (/clause of /.test(errStr)) {
-              let regex = /^(Warning:\s*([^:]+):)(\d+):(\d+)?/;
-              let match = errStr.match(regex);
-              let fileName = match[2];
-              let line = parseInt(match[3]);
-              let char = match[4] ? parseInt(match[4]) : 0;
-              let rangeStr = line + ":" + char + ":200: ";
-              let lineMsg = match[1] + rangeStr + lineErr;
-              this.parseIssue(lineMsg + "\n");
-            } else if (/:\s*$/.test(errStr)) {
-              lineErr = errStr;
-            } else {
-              if (errStr.startsWith("ERROR") || errStr.startsWith("Warning")) {
+        if (this.logtalked) {
+          if (lineErr === "") {
+            let type: string;
+            let regex = /^(\*|\!)\s*(.+)/;
+            let match = errStr.match(regex);
+            if (match) {
+              if (match[1] === "*") {
+                type = "Warning";
+              }
+              if (match[1] === "!") {
+                type = "ERROR";
+              }
+              lineErr = type + ":" + match[2];
+            }
+          } else if (/in file/.test(errStr)) {
+            let regex = /in file (\S+).+line (\d+)/;
+            let match = errStr.match(regex);
+            let errMsg: string;
+            if (match) {
+              lineErr = lineErr.replace(":", `:${match[1]}:${match[2]}:0:200:`);
+              this.parseIssue(lineErr + "\n");
+              lineErr = "";
+            }
+          }
+        } else
+          switch (Utils.DIALECT) {
+            case "swi":
+              if (/which is referenced by/.test(errStr)) {
+                let regex = /Warning:\s*(.+),/;
+                let match = errStr.match(regex);
+                lineErr = " Predicate " + match[1] + " not defined";
+              } else if (/clause of /.test(errStr)) {
+                let regex = /^(Warning:\s*([^:]+):)(\d+):(\d+)?/;
+                let match = errStr.match(regex);
+                let fileName = match[2];
+                let line = parseInt(match[3]);
+                let char = match[4] ? parseInt(match[4]) : 0;
+                let rangeStr = line + ":" + char + ":200: ";
+                let lineMsg = match[1] + rangeStr + lineErr;
+                this.parseIssue(lineMsg + "\n");
+              } else if (/:\s*$/.test(errStr)) {
                 lineErr = errStr;
               } else {
-                lineErr = lineErr.concat(errStr);
-              }
-              this.parseIssue(lineErr + "\n");
-            }
-
-            break;
-          case "ecl":
-            this.outputChannel.clear();
-            if (/^file/.test(errStr) || /^string stream/.test(errStr)) {
-              if (lineErr) {
+                if (
+                  errStr.startsWith("ERROR") ||
+                  errStr.startsWith("Warning")
+                ) {
+                  lineErr = errStr;
+                } else {
+                  lineErr = lineErr.concat(errStr);
+                }
                 this.parseIssue(lineErr + "\n");
               }
-              let fullName: string, line: string, msg: string;
-              let match = errStr.match(
-                /file\s*([^,]+),\s*line\s*(\d+):\s*(.*)/
-              );
 
-              if (match) {
-                fullName = find.fileSync(
-                  new RegExp(match[1]),
-                  workspace.rootPath
-                )[0];
-                line = match[2];
-                msg = match[3];
+              break;
+            case "ecl":
+              this.outputChannel.clear();
+              if (/^file/.test(errStr) || /^string stream/.test(errStr)) {
+                if (lineErr) {
+                  this.parseIssue(lineErr + "\n");
+                }
+                let fullName: string, line: string, msg: string;
+                let match = errStr.match(
+                  /file\s*([^,]+),\s*line\s*(\d+):\s*(.*)/
+                );
+
+                if (match) {
+                  fullName = find.fileSync(
+                    new RegExp(match[1]),
+                    workspace.rootPath
+                  )[0];
+                  line = match[2];
+                  msg = match[3];
+                } else {
+                  match = errStr.match(/line\s*(\d+):\s*(.*)/);
+                  fullName = textDocument.fileName;
+                  line = match[1];
+                  msg = match[2];
+                }
+                lineErr = "ERROR:" + fullName + ":" + line + ":" + msg;
+              } else if (/^\|/.test(errStr)) {
+                lineErr += "\n" + errStr;
+                // } else if (/WARNING/.test(errStr)) {
               } else {
-                match = errStr.match(/line\s*(\d+):\s*(.*)/);
-                fullName = textDocument.fileName;
-                line = match[1];
-                msg = match[2];
+                this.outputMsg(errStr);
               }
-              lineErr = "ERROR:" + fullName + ":" + line + ":" + msg;
-            } else if (/^\|/.test(errStr)) {
-              lineErr += "\n" + errStr;
-              // } else if (/WARNING/.test(errStr)) {
-            } else {
-              this.outputMsg(errStr);
-            }
 
-          default:
-            break;
-        }
+            default:
+              break;
+          }
       })
       .then(result => {
         if (lineErr) {
@@ -480,11 +515,16 @@ export default class PrologLinter implements CodeActionProvider {
       .catch(error => {
         let message: string = null;
         if ((<any>error).code === "ENOENT") {
-          message = `Cannot lint the prolog file. The Prolog executable was not found. Use the 'prolog.executablePath' setting to configure`;
+          message = `Cannot lint the prolog file. The Prolog executable was not found.`;
+          if (this.logtalked) {
+            message += ` Use the 'prolog.logtalk.starter' setting to configure`;
+          } else {
+            message += ` Use the 'prolog.executablePath' setting to configure`;
+          }
         } else {
           message = error.message
             ? error.message
-            : `Failed to run swipl using path: ${this
+            : `Failed to run prolog executable using path: ${this
                 .executable}. Reason is unknown.`;
         }
         console.log(message);

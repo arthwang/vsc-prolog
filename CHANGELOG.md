@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.6.1]
+- supported linter for logtalk with ecl as backend
+
 ## [0.6.0]
 - supported linter and formatter for logtalk package of swi
 
