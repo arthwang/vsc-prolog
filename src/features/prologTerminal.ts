@@ -14,7 +14,7 @@ import {
 import { extname } from "path";
 
 export default class PrologTerminal {
-  private static _instance: PrologTerminal = new PrologTerminal();
+  // private static _instance: PrologTerminal = new PrologTerminal();
   private static _terminal: Terminal;
   private static _document: TextDocument;
   private static _docType: string = "prolog";
@@ -24,6 +24,7 @@ export default class PrologTerminal {
 
   public static init(): Disposable {
     return (<any>window).onDidCloseTerminal(terminal => {
+      PrologTerminal._terminal = null;
       terminal.dispose();
     });
   }

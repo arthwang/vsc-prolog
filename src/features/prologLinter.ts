@@ -527,7 +527,7 @@ export default class PrologLinter implements CodeActionProvider {
             : `Failed to run prolog executable using path: ${this
                 .executable}. Reason is unknown.`;
         }
-        console.log(message);
+        this.outputMsg(message);
       });
   }
 
