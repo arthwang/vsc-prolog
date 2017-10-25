@@ -387,7 +387,7 @@ export default class PrologLinter implements CodeActionProvider {
         }
       })
       .on("stderr", (errStr: string) => {
-        // console.log("linterr: " + errStr);
+        console.log("linterr: " + errStr);
         if (this.logtalked) {
           if (lineErr === "") {
             let type: string;
@@ -403,7 +403,7 @@ export default class PrologLinter implements CodeActionProvider {
               lineErr = type + ":" + match[2];
             }
           } else if (/in file/.test(errStr)) {
-            let regex = /in file (\S+).+line (\d+)/;
+            let regex = /in file (\S+).+lines?\s+(\d+)/;
             let match = errStr.match(regex);
             let errMsg: string;
             if (match) {

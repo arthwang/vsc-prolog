@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.6.3]
+- fixed a logtalk linter bug
+
 ## [0.6.2]
 - load logtalk source file into integrated termninal
 
