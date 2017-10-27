@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.6.4]
+- fixed a bug of goto-definition
+
 ## [0.6.3]
 - fixed a logtalk linter bug
 

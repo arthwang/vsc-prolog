@@ -43,16 +43,26 @@ export class PrologDefinitionProvider implements DefinitionProvider {
           predicate_property(Module:Term, line_count(Line)),
           format("File:~s;Line:~d~n", [File, Line]).
           `;
-        predToFind = pred.wholePred;
-        doc.save().then(_ => {
+        predToFind = pred.wholePred.split(":")[1];
+        if (doc.isDirty) {
+          doc.save().then(_ => {
+            result = Utils.execPrologSync(
+              args,
+              prologCode,
+              "source_location",
+              predToFind,
+              fileLineRe
+            );
+          });
+        } else {
           result = Utils.execPrologSync(
             args,
             prologCode,
-            `source_location('${doc.fileName}', ${predToFind})`,
-            "true",
+            "source_location",
+            predToFind,
             fileLineRe
           );
-        });
+        }
         break;
 
       case "ecl":

@@ -367,7 +367,7 @@ export class Utils {
       let match = output.match(resultReg);
       return match ? match : null;
     } else {
-      // console.log("Error: " + prologProcess.stderr.toString());
+      // console.log("UtilsExecSyncError: " + prologProcess.stderr.toString());
       return null;
     }
   }
