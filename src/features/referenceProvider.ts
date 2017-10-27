@@ -13,13 +13,13 @@ import { spawn } from "process-promises";
 
 export class PrologReferenceProvider implements ReferenceProvider {
   constructor() {}
-  public async provideReferences(
+  public provideReferences(
     doc: TextDocument,
     position: Position,
     context: ReferenceContext,
     token: CancellationToken
   ): Promise<Location[]> {
     let pred = Utils.getPredicateUnderCursor(doc, position);
-    return await new PrologRefactor().findFilesAndRefs(pred);
+    return new PrologRefactor().findFilesAndRefs(pred);
   }
 }

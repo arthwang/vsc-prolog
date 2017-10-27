@@ -105,15 +105,22 @@ export class PrologRefactor {
     return;
   }
 
-  public async findAllRefs(): Promise<Location[]> {
+  public findAllRefs(): Promise<Location[]> {
     let doc: TextDocument = window.activeTextEditor.document;
     let pos: Position = window.activeTextEditor.selection.active;
 
     let pred: IPredicate = Utils.getPredicateUnderCursor(doc, pos);
-    return await this.findFilesAndRefs(pred);
+    return this.findFilesAndRefs(pred);
   }
 
   public async findFilesAndRefs(
+    pred: IPredicate,
+    includingDefLoc = false
+  ): Promise<Location[]> {
+    return await this.findFilesAndRefs1(pred, includingDefLoc);
+  }
+
+  public async findFilesAndRefs1(
     pred: IPredicate,
     includingDefLoc = false
   ): Promise<Location[]> {

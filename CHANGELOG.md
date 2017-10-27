@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.6.5]
+- fixed a bug of find all references
+
 ## [0.6.4]
 - fixed a bug of goto-definition
 
