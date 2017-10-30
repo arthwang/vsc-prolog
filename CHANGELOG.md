@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.7.0]
+- remove logtalk support to avoid possible conflict with VSC-Logtalk
+
 ## [0.6.5]
 - fixed a bug of find all references
 

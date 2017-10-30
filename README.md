@@ -32,7 +32,6 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
     * Spy(function breakpoints)
     * Data inspection
     * Evaluation
-  * [Logtalk support](#logtalk-support)
 
 ## Feature descriptions and usages
 
@@ -204,13 +203,9 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
 
     ![input](images/input.gif)
 
-* Logtalk support
-
-   The syntax highlighting, linting and code formatting support logtalk with SWI and ECLiPSe as backend compilers except that logtalk specified codes not formatted if the backend compiler is ECLiPSe.
-
 ## Requirements
 
-Latest versions of VS code and SWI-Prolog/ECLiPSe installed. Latest logtalk installed and the backend compiler for logtalk set if using logtalk.
+Latest versions of VS code and SWI-Prolog/ECLiPSe installed.
 
 ## Configurations
 
@@ -225,10 +220,6 @@ Latest versions of VS code and SWI-Prolog/ECLiPSe installed. Latest logtalk inst
 
       Points to the Prolog executable.
     
-    * "prolog.logtalk.starter": "/usr/bin/swilgt"
-
-      Points to the logtalk starter that can be created by logtalk command logtalk_backend_select command.
-
     * "prolog.linter.run": "onType"
 
       How to trigger the linter: onType or onSave. 'onType' means linting is in nearly real time manner (controlled by next setting: prolog.linter.delay) whileas 'onSave' linter is called when saving the document.
@@ -335,8 +326,6 @@ Latest versions of VS code and SWI-Prolog/ECLiPSe installed. Latest logtalk inst
   * Formatting for swi doesn't work when there are singleton variables including named underscore-starting singleton variables in the scopes to be formatted.
 
   * Formatting for ECLiPSe would remove line comments after invalid terms of the lines. 
-
-  * logtalk specified codes in source files(.lgt) are not formatted when the backend compiler is not SWI-Prolog.
 
   * During debug tracing, prompt for stdin input doesn't display in debug console. 
 

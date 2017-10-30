@@ -14,11 +14,8 @@ import {
 import { extname } from "path";
 
 export default class PrologTerminal {
-  // private static _instance: PrologTerminal = new PrologTerminal();
   private static _terminal: Terminal;
   private static _document: TextDocument;
-  private static _docType: string = "prolog";
-  private static _openedAs: string = "prolog";
 
   constructor() {}
 
@@ -31,11 +28,7 @@ export default class PrologTerminal {
 
   private static createPrologTerm() {
     if (PrologTerminal._terminal) {
-      if (PrologTerminal._openedAs === PrologTerminal._docType) {
-        return;
-      } else {
-        PrologTerminal._terminal.dispose();
-      }
+      return;
     }
 
     let section = workspace.getConfiguration("prolog");
@@ -43,13 +36,6 @@ export default class PrologTerminal {
     if (section) {
       let executable = section.get<string>("executablePath", "swipl");
       let args = section.get<string[]>("terminal.runtimeArgs");
-      PrologTerminal._openedAs = "prolog";
-      if (PrologTerminal._docType === "logtalk" && Utils.LOGTALK !== "none") {
-        executable = Utils.LOGTALK;
-        args = [];
-        title = "Logtlak";
-        PrologTerminal._openedAs = "logtalk";
-      }
       PrologTerminal._terminal = (<any>window).createTerminal(
         title,
         executable,
@@ -71,10 +57,6 @@ export default class PrologTerminal {
 
   public static loadDocument() {
     PrologTerminal._document = window.activeTextEditor.document;
-    PrologTerminal._docType =
-      extname(PrologTerminal._document.fileName) === ".lgt"
-        ? "logtalk"
-        : "prolog";
     PrologTerminal.createPrologTerm();
     let goals = "['" + PrologTerminal._document.fileName + "']";
     if (PrologTerminal._document.isDirty) {

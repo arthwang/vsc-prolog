@@ -236,9 +236,6 @@ export default class PrologDocumentFormatter
           formatter:format_prolog_source(${this._tabSize}, ${this
           ._tabDistance}, "${rangeTxt}", "${docText}").
         `;
-        if (extname(doc.fileName) === ".lgt") {
-          goals = "use_module(library(logtalk))," + goals;
-        }
 
         break;
       case "ecl":
