@@ -8,7 +8,7 @@ __________________
 
 ## Note before installation
 
-This extension can be installed via extensions viewlet of VS Code or 'Extensions: install extension' command from the command palette. The author notices that it is developed and tested in ***SWI-Prolog 7.4.2***, ***ECLiPSe 6.1*** and ***VS Code 1.15*** on ***Debian 9.0*** (stretch). It's not yet tested under other environments.
+This extension can be installed via extensions viewlet of VS Code or 'Extensions: install extension' command from the command palette. The author notices that it is developed and tested in ***SWI-Prolog 7.4.2***, ***ECLiPSe 6.1*** and ***VS Code 1.15*** on ***Debian 9.0*** (stretch).  It's tested under Windows 10 but not other environments.
   > Please update to 7.5.13 of swipl if you want to use 'Show all references' feature.
 
 ## Features
@@ -127,6 +127,8 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
   ![refactoring](images/refactoring.gif)
 
 ### Code formatter
+  
+  > This feature only works on linux system.
 
   Code formatting is implemented by calling portray_clause, so the beautification style is depended on portray_clause. Thus two limits should be mentioned.
   * Terms with any grammar errors are not formatted

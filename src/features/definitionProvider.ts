@@ -9,8 +9,9 @@ import {
   workspace
 } from "vscode";
 import * as cp from "child_process";
-import * as jsesc from "jsesc";
 import { Utils } from "../utils/utils";
+import * as path from "path";
+import * as jsesc from "jsesc";
 
 export class PrologDefinitionProvider implements DefinitionProvider {
   public provideDefinition(
@@ -67,10 +68,10 @@ export class PrologDefinitionProvider implements DefinitionProvider {
 
       case "ecl":
         args = [];
+        let lc = path.resolve(`${__dirname}/locate_clause`);
         predToFind = pred.pi.split(":")[1];
-        prologCode = `ensure_loaded([
-          '${__dirname}/locate_clause']),
-          source_location('${doc.fileName}', ${predToFind}).
+        prologCode = `ensure_loaded(['${lc}']),
+          source_location('${jsesc(doc.fileName)}', ${predToFind}).
           `;
         runOptions = {
           cwd: workspace.rootPath,

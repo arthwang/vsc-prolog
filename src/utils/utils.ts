@@ -6,6 +6,7 @@ import * as cp from "child_process";
 import * as jsesc from "jsesc";
 import { CompleterResult } from "readline";
 import { error } from "util";
+import * as path from "path";
 import {
   ExtensionContext,
   Position,
@@ -161,7 +162,7 @@ export class Utils {
           );
           let mtch = docTxt.replace(/\n/g, "").match(reg);
           if (mtch) {
-            let mFile = mtch[1];
+            let mFile = jsesc(mtch[1]);
             let mod = Utils.execPrologSync(
               ["-q"],
               `find_module :-
@@ -206,7 +207,7 @@ export class Utils {
       wholePred = predName;
     }
 
-    const fileName = window.activeTextEditor.document.fileName;
+    const fileName = jsesc(window.activeTextEditor.document.fileName);
     if (!module) {
       let modMatch = docTxt
         .slice(0, doc.offsetAt(wordRange.start))
@@ -217,10 +218,11 @@ export class Utils {
         let mod: string[];
         switch (Utils.DIALECT) {
           case "swi":
+            const fm = path.resolve(`${__dirname}/findmodule.pl`);
             mod = Utils.execPrologSync(
-              ["-q", "-l", `${__dirname}/findmodule.pl`],
+              ["-q", "-l", fm],
               "",
-              `(find_module('${window.activeTextEditor.document.fileName}',
+              `(find_module('${fileName}',
               ${wholePred},
               Module),
               writeln(module:Module))`,
@@ -366,13 +368,15 @@ export class Utils {
       let match = output.match(resultReg);
       return match ? match : null;
     } else {
-      // console.log("UtilsExecSyncError: " + prologProcess.stderr.toString());
+      console.log("UtilsExecSyncError: " + prologProcess.stderr.toString());
       return null;
     }
   }
 
   public static insertBuiltinsToSyntaxFile(context: ExtensionContext) {
-    let syntaxFile = context.extensionPath + "/syntaxes/prolog.tmLanguage.yaml";
+    let syntaxFile = path.resolve(
+      context.extensionPath + "/syntaxes/prolog.tmLanguage.yaml"
+    );
     YAML.load(syntaxFile, obj => {
       let builtins: string = Utils.getBuiltinNames().join("|");
       obj.repository.builtin.patterns[1].match = "\\b(" + builtins + ")\\b";
@@ -387,10 +391,11 @@ export class Utils {
     if (Utils.DIALECT !== "ecl") {
       return false;
     }
-
+    let lm = path.resolve(
+      `${Utils.CONTEXT.extensionPath}/out/src/features/load_modules`
+    );
     let goals = `
-        use_module('${Utils.CONTEXT
-          .extensionPath}/out/src/features/load_modules'),
+        use_module('${lm}'),
         load_modules_from_text("${docText}"),
         catch((term_string(_, "${str}"), writeln("result:validTerm")),
           _, writeln("result:invalidTerm")).

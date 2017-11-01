@@ -26,8 +26,9 @@ import {
   WorkspaceEdit
 } from "vscode";
 import { Utils, IPredicate } from "../utils/utils";
-import { basename, extname } from "path";
+import { basename, extname, resolve } from "path";
 import * as find from "find";
+import * as path from "path";
 
 export enum RunTrigger {
   onType,
@@ -45,7 +46,7 @@ export default class PrologLinter implements CodeActionProvider {
   private diagnostics: { [docName: string]: Diagnostic[] } = {};
   private filePathIds: { [id: string]: string } = {};
   private sortedDiagIndex: { [docName: string]: number[] } = {};
-  private swiRegex = /([^:]+):\s*([^:]+):(\d+):((\d+):)?((\d+):)?\s*([\s\S]*)/;
+  private swiRegex = /([^:]+?):\s*(.+?):(\d+):((\d+):)?((\d+):)?\s*([\s\S]*)/;
   private executable: string;
   private trigger: RunTrigger;
   private timer: NodeJS.Timer = null;
@@ -291,27 +292,32 @@ export default class PrologLinter implements CodeActionProvider {
     let lineErr: string = "";
     let docTxt = textDocument.getText();
     let docTxtEsced = jsesc(docTxt, { quotes: "double" });
+    let fname = jsesc(textDocument.fileName);
     switch (Utils.DIALECT) {
       case "swi":
         if (this.trigger === RunTrigger.onSave) {
-          args = ["-g", "halt", "-l", textDocument.fileName];
+          args = ["-g", "halt", "-l", fname];
         }
         if (this.trigger === RunTrigger.onType) {
           args = ["-q"];
           goals = `
             open_string("${docTxtEsced}", S),
-            load_files('${textDocument.fileName}', [stream(S),if(true)]).
+            load_files('${fname}', [stream(S),if(true)]).
             list_undefined.
           `;
         }
         break;
       case "ecl":
         if (this.trigger === RunTrigger.onSave) {
+          let lm = jsesc(
+            path.resolve(
+              `${this.context.extensionPath}/out/src/features/load_modules`
+            )
+          );
           goals = `
-          use_module('${this.context
-            .extensionPath}/out/src/features/load_modules'),
-          load_modules_from_file('${textDocument.fileName}'),
-          compile('${textDocument.fileName}', [debug:off])`;
+          use_module('${lm}'),
+          load_modules_from_file('${fname}'),
+          compile('${fname}', [debug:off])`;
           args = ["-e", goals];
         }
         if (this.trigger === RunTrigger.onType) {
@@ -371,7 +377,7 @@ export default class PrologLinter implements CodeActionProvider {
               let match = errStr.match(regex);
               lineErr = " Predicate " + match[1] + " not defined";
             } else if (/clause of /.test(errStr)) {
-              let regex = /^(Warning:\s*([^:]+):)(\d+):(\d+)?/;
+              let regex = /^(Warning:\s*(.+?):)(\d+):(\d+)?/;
               let match = errStr.match(regex);
               let fileName = match[2];
               let line = parseInt(match[3]);
@@ -451,7 +457,7 @@ export default class PrologLinter implements CodeActionProvider {
             let diag = this.diagnostics[doc][si[i]];
             let severity =
               diag.severity === DiagnosticSeverity.Error ? "ERROR" : "Warning";
-            let msg = `${basename(doc)}:line:${diag.range.start.line +
+            let msg = `${basename(doc)}:${diag.range.start.line +
               1}:\t${severity}:\t${diag.message}\n`;
             this.outputChannel.append(msg);
           }
@@ -568,7 +574,7 @@ export default class PrologLinter implements CodeActionProvider {
     let input = `
     clause_location(Pred) :-
       open_string("${docTxt}", S),
-      load_files('${doc.fileName}', [module(user), stream(S), if(true)]),
+      load_files('${jsesc(doc.fileName)}', [module(user), stream(S), if(true)]),
       close(S),
       (   functor(Pred, :, 2)
       ->  Pred1 = pred

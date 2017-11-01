@@ -115,8 +115,8 @@ startup(StartGoal) :-
     leash(-exit),
     visible(-exit),
     qualify(StartGoal, GStart),
-    output_clause_location(StartGoal, _),
-    noguitracer, !,
+    output_clause_location(StartGoal, _), !,
+   % noguitracer, !,
     trace,
     call(GStart),
     notrace.

@@ -13,6 +13,9 @@ import { IPredicate, Utils } from "../utils/utils";
 import { spawn } from "process-promises";
 import * as fif from "find-in-files";
 import * as fs from "fs";
+import * as jsesc from "jsesc";
+import { resolve } from "path";
+import * as path from "path";
 
 interface IClauseRefs {
   [file: string]: { [clauseLine: number]: number };
@@ -132,11 +135,12 @@ export class PrologRefactor {
 
     let files = await fif.find(
       pred.functor,
-      workspace.rootPath,
+      jsesc(workspace.rootPath),
       "\\.pl$|\\.ecl$"
     );
 
     for (let file in files) {
+      file = jsesc(file);
       let defLoc = includingDefLoc && !this._defLocFound;
       await this.loadFileAndFindRefs(pred.pi, file, defLoc);
     }
@@ -152,8 +156,9 @@ export class PrologRefactor {
       args: string[] = [];
     switch (Utils.DIALECT) {
       case "swi":
+        let pfile = jsesc(path.resolve(`${__dirname}/findallrefs_swi`));
         input = `
-          use_module('${__dirname}/findallrefs_swi').
+          use_module('${pfile}').
           load_files('${file}').
           findrefs:findrefs(${pi}, ${includingDefLoc}).
           halt.
@@ -161,17 +166,13 @@ export class PrologRefactor {
         args = ["-q"];
         break;
       case "ecl":
-        args = ["-f", `${__dirname}/findallrefs`];
+        let efile = jsesc(path.resolve(`${__dirname}/findallrefs`));
+        args = ["-f", efile];
         input = `digout_predicate('${file}', ${pi}). `;
         break;
       default:
         break;
     }
-    let runOptions = {
-      cwd: workspace.rootPath,
-      encoding: "utf8",
-      input: input
-    };
 
     try {
       await spawn(this._executable, args, { cwd: workspace.rootPath })
@@ -182,6 +183,8 @@ export class PrologRefactor {
           }
         })
         .on("stdout", output => {
+          // console.log("out:" + output);
+
           switch (Utils.DIALECT) {
             case "swi":
               this.findRefsFromOutputSwi(pi, output);
@@ -193,6 +196,7 @@ export class PrologRefactor {
           }
         })
         .on("stderr", err => {
+          // console.log("err:" + err);
           this._outputChannel.append(err + "\n");
           this._outputChannel.show(true);
         });
@@ -256,7 +260,7 @@ export class PrologRefactor {
       }
       this._locations.push(
         new Location(
-          Uri.file(ref.file),
+          Uri.file(jsesc(path.resolve(ref.file))),
           new Range(ref.line, ref.char, ref.line, ref.char + predName.length)
         )
       );

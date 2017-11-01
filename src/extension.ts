@@ -13,6 +13,7 @@ import {
   Location,
   workspace
 } from "vscode";
+import * as path from "path";
 import PrologTerminal from "./features/prologTerminal";
 import { loadEditHelpers } from "./features/editHelpers";
 import { Utils } from "./utils/utils";
@@ -24,6 +25,8 @@ import { PrologReferenceProvider } from "./features/referenceProvider";
 import PrologLinter from "./features/prologLinter";
 import { PrologRefactor } from "./features/prologRefactor";
 import { ensureSymlink, remove } from "fs-extra-plus";
+import * as jsesc from "jsesc";
+import * as fs from "fs";
 
 async function initForDialect(context: ExtensionContext) {
   const section = workspace.getConfiguration("prolog");
@@ -31,29 +34,36 @@ async function initForDialect(context: ExtensionContext) {
   const exec = section.get<string>("executablePath", "swipl");
 
   Utils.DIALECT = dialect;
-  Utils.RUNTIMEPATH = exec;
-  const exPath = context.extensionPath;
+  Utils.RUNTIMEPATH = jsesc(exec);
+  const exPath = jsesc(context.extensionPath);
+  const diaFile = path.resolve(`${exPath}/.vscode`) + "/dialect.json";
+  const lastDialect = JSON.parse(fs.readFileSync(diaFile).toString()).dialect;
+  if (lastDialect === dialect) {
+    return;
+  }
+
   const symLinks = [
     {
-      path: `${exPath}/syntaxes`,
+      path: path.resolve(`${exPath}/syntaxes`),
       srcFile: `prolog.${dialect}.tmLanguage.json`,
       targetFile: "prolog.tmLanguage.json"
     },
     {
-      path: `${exPath}/snippets`,
+      path: path.resolve(`${exPath}/snippets`),
       srcFile: `prolog.${dialect}.json`,
       targetFile: "prolog.json"
     }
   ];
   await Promise.all(
     symLinks.map(async link => {
-      await remove(`${link.path}/${link.targetFile}`);
+      await remove(path.resolve(`${link.path}/${link.targetFile}`));
       return await ensureSymlink(
-        `${link.path}/${link.srcFile}`,
-        `${link.path}/${link.targetFile}`
+        path.resolve(`${link.path}/${link.srcFile}`),
+        path.resolve(`${link.path}/${link.targetFile}`)
       );
     })
   );
+  fs.writeFileSync(diaFile, JSON.stringify({ dialect: dialect }));
 }
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -121,26 +131,28 @@ export async function activate(context: ExtensionContext) {
       new PrologDocumentHighlightProvider()
     )
   );
-  context.subscriptions.push(
-    languages.registerDocumentRangeFormattingEditProvider(
-      PROLOG_MODE,
-      new PrologDocumentFormatter()
-    )
-  );
-  context.subscriptions.push(
-    languages.registerOnTypeFormattingEditProvider(
-      PROLOG_MODE,
-      new PrologDocumentFormatter(),
-      ".",
-      "\n"
-    )
-  );
-  context.subscriptions.push(
-    languages.registerDocumentFormattingEditProvider(
-      PROLOG_MODE,
-      new PrologDocumentFormatter()
-    )
-  );
+  if (process.platform !== "win32") {
+    context.subscriptions.push(
+      languages.registerDocumentRangeFormattingEditProvider(
+        PROLOG_MODE,
+        new PrologDocumentFormatter()
+      )
+    );
+    context.subscriptions.push(
+      languages.registerOnTypeFormattingEditProvider(
+        PROLOG_MODE,
+        new PrologDocumentFormatter(),
+        ".",
+        "\n"
+      )
+    );
+    context.subscriptions.push(
+      languages.registerDocumentFormattingEditProvider(
+        PROLOG_MODE,
+        new PrologDocumentFormatter()
+      )
+    );
+  }
   context.subscriptions.push(
     languages.registerDefinitionProvider(
       PROLOG_MODE,

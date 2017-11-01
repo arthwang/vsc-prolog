@@ -1,5 +1,6 @@
 *
 */**
+!.vscode/dialect.json
 !out/src/**/*.js
 !out/src/**/*.pl
 !out/src/**/*.ecl

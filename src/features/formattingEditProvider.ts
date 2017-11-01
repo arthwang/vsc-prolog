@@ -1,3 +1,4 @@
+import * as os from "os";
 ("use strict");
 import { spawn } from "process-promises";
 import {
@@ -19,6 +20,7 @@ import {
 import * as jsesc from "jsesc";
 import { Utils } from "../utils/utils";
 import { extname } from "path";
+import * as path from "path";
 
 interface IComment {
   location: number; // character location in the range
@@ -231,15 +233,17 @@ export default class PrologDocumentFormatter
     switch (Utils.DIALECT) {
       case "swi":
         this._args = ["--nodebug", "-q"];
+        let pfile = jsesc(path.resolve(`${__dirname}/formatter_swi`));
         goals = `
-          use_module('${__dirname}/formatter_swi').
+          use_module('${pfile}').
           formatter:format_prolog_source(${this._tabSize}, ${this
           ._tabDistance}, "${rangeTxt}", "${docText}").
         `;
 
         break;
       case "ecl":
-        this._args = ["-f", `${__dirname}/formatter`];
+        let efile = jsesc(path.resolve(`${__dirname}/formatter`));
+        this._args = ["-f", efile];
         rangeTxt += " end_of_file.";
         goals = `
           format_prolog_source("${rangeTxt}", "${docText}").
@@ -536,7 +540,7 @@ export default class PrologDocumentFormatter
       let lastComm = newComms[last].comment;
       let lastEnd = lastLoc + lastComm.length;
       let middleTxt = origTxt.slice(lastEnd, comms[i].location);
-      if (middleTxt.replace(/\s|\n|\t/g, "").length === 0) {
+      if (middleTxt.replace(/\s|\r?\n|\t/g, "").length === 0) {
         newComms[last].comment += middleTxt + comms[i].comment;
       } else {
         newComms.push(comms[i]);
@@ -567,10 +571,14 @@ export default class PrologDocumentFormatter
         noSpaceFormatted: string = "";
       while (j < chars) {
         if (noSpaceFormatted === noSpaceOrig) {
-          if (origTxt.charAt(index + comment.length) === "\n") {
-            comment += "\n";
-            lastOrigPos++;
+          if (origTxt.slice(index + comment.length).startsWith(os.EOL)) {
+            comment += os.EOL;
+            lastOrigPos += os.EOL.length;
           }
+          // if (origTxt.charAt(index + comment.length) === os.EOL) {
+          //   comment += os.EOL;
+          //   lastOrigPos += os.EOL.length;
+          // }
 
           let tail = origSeg.match(/([()\s]*[()])?(\s*)$/);
           let spaces = tail[2];
@@ -581,7 +589,7 @@ export default class PrologDocumentFormatter
           txtWithComm += formatedText.slice(0, j) + tail1 + comment;
           formatedText = formatedText
             .slice(j + tail1.length)
-            .replace(/^\n/, "");
+            .replace(/^\r?\n/, "");
           break;
         }
 

@@ -10,8 +10,7 @@ import {
   OutputChannel,
   TextEditor
 } from "vscode";
-
-import { extname } from "path";
+import * as jsesc from "jsesc";
 
 export default class PrologTerminal {
   private static _terminal: Terminal;
@@ -58,7 +57,8 @@ export default class PrologTerminal {
   public static loadDocument() {
     PrologTerminal._document = window.activeTextEditor.document;
     PrologTerminal.createPrologTerm();
-    let goals = "['" + PrologTerminal._document.fileName + "']";
+    let fname = jsesc(PrologTerminal._document.fileName);
+    let goals = `["${fname}"]`;
     if (PrologTerminal._document.isDirty) {
       PrologTerminal._document.save().then(_ => {
         PrologTerminal.sendString(goals);

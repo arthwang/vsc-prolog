@@ -2,7 +2,6 @@ import { LaunchRequestArguments } from "./prologDebugger";
 import { EventEmitter } from "events";
 import * as fs from "fs";
 import { spawn } from "process-promises";
-import { Utils } from "../utils/utils";
 import { DebugProtocol } from "vscode-debugprotocol";
 import { PrologDebugSession } from "./prologDebugSession";
 import {
@@ -12,8 +11,9 @@ import {
   OutputEvent,
   TerminatedEvent
 } from "vscode-debugadapter";
-import { basename } from "path";
+import { basename, resolve } from "path";
 import * as Net from "net";
+import * as jsesc from "jsesc";
 
 export interface ITraceCmds {
   continue: string[2];
@@ -81,7 +81,10 @@ export class PrologDebugger extends EventEmitter {
     if (this._soureLineLocations[source]) {
       return;
     }
-    let lines = fs.readFileSync(source).toString().split("\n");
+    let lines = fs
+      .readFileSync(source)
+      .toString()
+      .split("\n");
     let lengths = lines.map(line => {
       return line.length + 1;
     });
@@ -181,16 +184,23 @@ export class PrologDebugger extends EventEmitter {
   }
 
   public initPrologDebugger() {
+    //   let dirName = jsesc(__dirname);
+
+    let dbg = jsesc(resolve(`${__dirname}/debugger`));
+    console.log(dbg);
+
     this._prologProc.stdin.write(`
-          use_module('${__dirname}/debugger').\n
-          prolog_debugger:load_source_file('${this._launchRequestArguments
-            .program}').
+          use_module('${dbg}').\n
+          prolog_debugger:load_source_file('${jsesc(
+            this._launchRequestArguments.program
+          )}').
             `);
   }
   private async createPrologProc() {
+    console.log("path:" + this._launchRequestArguments.runtimeExecutable);
     this.killPrologProc();
     let pp = await spawn(
-      this._launchRequestArguments.runtimeExecutable,
+      jsesc(this._launchRequestArguments.runtimeExecutable),
       this._launchRequestArguments.runtimeArgs.concat("-q"),
       { cwd: this._launchRequestArguments.cwd }
     )
@@ -201,7 +211,7 @@ export class PrologDebugger extends EventEmitter {
         }
       })
       .on("stdout", data => {
-        // this._debugSession.debugOutput("\n" + data);
+        //this._debugSession.debugOutput("\n" + data);
         if (/"response":/.test(data)) {
           this.handleOutput(data);
         } else if (!this.filterOffOutput(data)) {
@@ -209,6 +219,7 @@ export class PrologDebugger extends EventEmitter {
         }
       })
       .on("stderr", err => {
+        //this._debugSession.debugOutput("\n" + err);
         this._debugSession.sendEvent(new OutputEvent(err + "\n", "stderr"));
       })
       .on("exit", () => {
@@ -222,7 +233,9 @@ export class PrologDebugger extends EventEmitter {
       .catch(error => {
         let message: string = null;
         if ((<any>error).code === "ENOENT") {
-          message = `Cannot debug the prolog file. The Prolog executable was not found. Correct the 'prolog.executablePath' configure please.`;
+          message = `Cannot debug the prolog file. The Prolog executable '${this
+            ._launchRequestArguments
+            .runtimeExecutable}' was not found. Correct 'runtimeExecutable' setting in launch.json file.`;
         } else {
           message = error.message
             ? error.message
