@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.8.0]
+- windows 10 support
+
 ## [0.7.0]
 - remove logtalk support to avoid possible conflict with VSC-Logtalk
 
