@@ -21,6 +21,7 @@
 !node_modules/graceful-fs/**/*
 !node_modules/jsesc/**/*
 !node_modules/jsonfile/**/*
+!node_modules/os/**/*
 !node_modules/path-parse/**/*
 !node_modules/process-promises/**/*
 !node_modules/q/**/*
