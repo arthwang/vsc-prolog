@@ -1,7 +1,7 @@
 # Changelog
 
-## [0.8.1]
-- update readme
+## [0.8.2]
+- updated readme
 
 ## [0.8.0]
 - windows 10 support

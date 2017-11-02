@@ -10,7 +10,7 @@ __________________
 
 This extension can be installed via extensions viewlet of VS Code or 'Extensions: install extension' command from the command palette. The author notices that it is developed and tested in ***SWI-Prolog 7.4.2***, ***ECLiPSe 6.1*** and ***VS Code 1.15*** on ***Debian 9.0*** (stretch).  It's tested under Windows 10 but not other environments.
   * Please update to 7.5.13 of swipl if you want to use 'Show all references' feature.
-  * For Windows users: Run VS Code as administrator if going to switch to ECLiPSe from default SWI-Prolog or back to SWI from ECLiPSe. Non-administrator is ok while remain using the same dialect as previous.
+  * For Windows users: Run VS Code as administrator if going to switch to ECLiPSe from default SWI-Prolog or back to SWI from ECLiPSe. Non-administrator is ok while remain using the same dialect as last time.
 
 
 ## Features
@@ -27,7 +27,7 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
   * [Goto definition of predicate under cursor](#go-to-definition)
   * [Show all refences of predicate under cursor](#show-all-references-of-predicate-under-cursor)
   * [Refactor predicate under cursor(experimental](#refactor-predicate-under-cursor)
-  * [Code formatter](#code-formatter)
+  * [Code formatter (Linux os only)](#code-formatter)
   * [Debugger(experimental, SWI ONLY)](#debugger)
     * Leep, creep, skip, Up, Stop, Restart
     * Breakpoints, including conditional breakpoints and hit count breakpoints
