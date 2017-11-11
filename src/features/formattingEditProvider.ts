@@ -17,7 +17,8 @@ import {
   Position,
   extensions
 } from "vscode";
-import * as jsesc from "jsesc";
+import * as jsesc from "js-string-escape";
+// import * as jsesc from "jsesc";
 import { Utils } from "../utils/utils";
 import { extname } from "path";
 import * as path from "path";
@@ -51,7 +52,6 @@ export default class PrologDocumentFormatter
   private _outputChannel: OutputChannel;
   private _textEdits: TextEdit[] = [];
   private _currentTermInfo: ITermInfo = null;
-  // private _si: ScopeInfoAPI;
   private _startChars: number;
 
   constructor() {
@@ -226,8 +226,8 @@ export default class PrologDocumentFormatter
   private async getFormattedCode(doc: TextDocument, range: Range) {
     this._textEdits = [];
     this._currentTermInfo = null;
-    let docText = jsesc(doc.getText(), { quotes: "double" });
-    let rangeTxt = jsesc(doc.getText(range), { quotes: "double" });
+    let docText = jsesc(doc.getText());
+    let rangeTxt = jsesc(doc.getText(range));
     let goals: string;
 
     switch (Utils.DIALECT) {

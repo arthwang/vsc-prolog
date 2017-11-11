@@ -5,6 +5,7 @@
 
 format_prolog_source(TabSize, TabDistance, RangeTxt, DocTxt) :-
     load_modules(DocTxt),
+    writeln(range:RangeTxt),
     atom_string(RangeAtom, RangeTxt),
     atom_to_memory_file(RangeAtom, MemFH),
     setup_call_cleanup(open_memory_file(MemFH, read, MemRStream),
@@ -54,17 +55,24 @@ read_and_portray_term(_, _, _) :-
     halt. 
     
 read_terms(ReadStream, MFH) :-
+    % read_term(ReadStream, _, []),
+    stream_property(ReadStream, encoding(Enc)),
+    writeln(enc:Enc),
+    
     repeat,
     catch(read_term(ReadStream,
                     Term,
                     [ variable_names(VarsNames1),
                       term_position(TPos),
-                      comments(TermComms)
+                      comments(TermComms),
+                      character_escapes(false)
                     ]),
           E,
           ( print_message(error, E),
             halt(1)
           )),
+        writeln(term:Term),
+        format('term:~q~n', [Term]),
     setup_call_cleanup(open_memory_file(MFH, write, MFWS),
                     portray_clause(MFWS, Term),
                     close(MFWS)),
@@ -80,7 +88,7 @@ read_terms(ReadStream, MFH) :-
     stream_position_data(char_count, TPos, TermCharA),
     format('TERMPOSBEGIN:::~d:::TERMPOSEND~n', [TermCharA]),
     writeln('TERMBEGIN:::'),
-    portray_clause(Term1),
+    portray_clause(current_output, Term1),
     writeln(':::TERMEND'),
     maplist(convert_comm_pos, TermComms, TermComms1),
     CommDict=_{comments:TermComms1},
