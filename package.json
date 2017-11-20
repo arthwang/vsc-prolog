@@ -277,7 +277,8 @@
                     "type": "string",
                     "enum": [
                         "onSave",
-                        "onType"
+                        "onType",
+                        "never"
                     ],
                     "default": "onType",
                     "description": "How to trigger the linter."

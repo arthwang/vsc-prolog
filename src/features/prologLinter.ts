@@ -32,7 +32,8 @@ import * as path from "path";
 
 export enum RunTrigger {
   onType,
-  onSave
+  onSave,
+  never
 }
 export default class PrologLinter implements CodeActionProvider {
   private commandAddDynamic: Disposable;
@@ -486,8 +487,9 @@ export default class PrologLinter implements CodeActionProvider {
     if (section) {
       this.executable = section.get<string>("executablePath", "swipl");
       let trigger = section.get<string>("linter.run");
-      this.trigger =
-        trigger === "onSave" ? RunTrigger.onSave : RunTrigger.onType;
+      if(trigger === "onSave") {RunTrigger.onSave}
+      else if(trigger === "onType") {RunTrigger.onType}
+      else {RunTrigger.never}
       if (this.documentListener) {
         this.documentListener.dispose();
       }
@@ -505,7 +507,7 @@ export default class PrologLinter implements CodeActionProvider {
       this.documentListener = workspace.onDidChangeTextDocument(e => {
         this.triggerLinter(e.document);
       });
-    } else {
+    } else if(this.trigger !== RunTrigger.never){
       if (this.timer) {
         clearTimeout(this.timer);
       }
@@ -529,7 +531,7 @@ export default class PrologLinter implements CodeActionProvider {
       this.timer = setTimeout(() => {
         this.doPlint(textDocument);
       }, this.delay);
-    } else {
+    } else if(this.trigger !== RunTrigger.never){
       this.doPlint(textDocument);
     }
   }
