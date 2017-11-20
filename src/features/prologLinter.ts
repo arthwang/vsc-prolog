@@ -486,10 +486,13 @@ export default class PrologLinter implements CodeActionProvider {
     let section = workspace.getConfiguration("prolog");
     if (section) {
       this.executable = section.get<string>("executablePath", "swipl");
-      let trigger = section.get<string>("linter.run");
-      if(trigger === "onSave") {RunTrigger.onSave}
-      else if(trigger === "onType") {RunTrigger.onType}
-      else {RunTrigger.never}
+      if (Utils.LINTERTRIGGER === "onSave") {
+        this.trigger = RunTrigger.onSave;
+      } else if (Utils.LINTERTRIGGER === "onType") {
+        this.trigger = RunTrigger.onType;
+      } else {
+        this.trigger = RunTrigger.never;
+      }
       if (this.documentListener) {
         this.documentListener.dispose();
       }
@@ -507,7 +510,7 @@ export default class PrologLinter implements CodeActionProvider {
       this.documentListener = workspace.onDidChangeTextDocument(e => {
         this.triggerLinter(e.document);
       });
-    } else if(this.trigger !== RunTrigger.never){
+    } else {
       if (this.timer) {
         clearTimeout(this.timer);
       }
@@ -531,7 +534,7 @@ export default class PrologLinter implements CodeActionProvider {
       this.timer = setTimeout(() => {
         this.doPlint(textDocument);
       }, this.delay);
-    } else if(this.trigger !== RunTrigger.never){
+    } else if (this.trigger !== RunTrigger.never) {
       this.doPlint(textDocument);
     }
   }

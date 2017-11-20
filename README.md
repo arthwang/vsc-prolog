@@ -63,6 +63,7 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
   * Traverse error lines in the editor by commands, the error/warning message responding to the line is presented in OUTPUT channel.
     * Prolog: Goto next error line (default map to f8) 
     * Prolog: Goto previous error line (default map to shift-f8)
+  * Linter can be configured as action upon saving, typing and disabled by setting prolog.linter.run to 'onSave', 'onType' and 'never' respectively
     
   ![linter](images/linter.gif)
 
@@ -226,7 +227,7 @@ Latest versions of VS code and SWI-Prolog/ECLiPSe installed.
     
     * "prolog.linter.run": "onType"
 
-      How to trigger the linter: onType or onSave. 'onType' means linting is in nearly real time manner (controlled by next setting: prolog.linter.delay) whileas 'onSave' linter is called when saving the document.
+      How to trigger the linter: onType or onSave or never. 'onType' means linting is in nearly real time manner (controlled by next setting: prolog.linter.delay) whileas 'onSave' linter is called when saving the document. 'never' disables the linter.
 
     * "prolog.linter.delay": 500
 

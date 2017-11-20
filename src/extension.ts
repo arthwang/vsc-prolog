@@ -32,6 +32,7 @@ async function initForDialect(context: ExtensionContext) {
   const section = workspace.getConfiguration("prolog");
   const dialect = section.get<string>("dialect");
   const exec = section.get<string>("executablePath", "swipl");
+  Utils.LINTERTRIGGER = section.get<string>("linter.run");
 
   Utils.DIALECT = dialect;
   Utils.RUNTIMEPATH = jsesc(exec);
@@ -76,24 +77,9 @@ export async function activate(context: ExtensionContext) {
 
   Utils.init(context);
 
-  let linter = new PrologLinter(context);
-  linter.activate();
-
   loadEditHelpers(context.subscriptions);
 
   let myCommands = [
-    {
-      command: "prolog.linter.nextErrLine",
-      callback: () => {
-        linter.nextErrLine();
-      }
-    },
-    {
-      command: "prolog.linter.prevErrLine",
-      callback: () => {
-        linter.prevErrLine();
-      }
-    },
     {
       command: "prolog.load.document",
       callback: () => {
@@ -113,15 +99,38 @@ export async function activate(context: ExtensionContext) {
       }
     }
   ];
+
+  let linter: PrologLinter;
+  if (Utils.LINTERTRIGGER !== "never") {
+    linter = new PrologLinter(context);
+    linter.activate();
+    myCommands = myCommands.concat([
+      {
+        command: "prolog.linter.nextErrLine",
+        callback: () => {
+          linter.nextErrLine();
+        }
+      },
+      {
+        command: "prolog.linter.prevErrLine",
+        callback: () => {
+          linter.prevErrLine();
+        }
+      }
+    ]);
+  }
+
   myCommands.map(command => {
     context.subscriptions.push(
       commands.registerCommand(command.command, command.callback)
     );
   });
 
-  context.subscriptions.push(
-    languages.registerCodeActionsProvider(PROLOG_MODE, linter)
-  );
+  if (Utils.LINTERTRIGGER !== "never") {
+    context.subscriptions.push(
+      languages.registerCodeActionsProvider(PROLOG_MODE, linter)
+    );
+  }
   context.subscriptions.push(
     languages.registerHoverProvider(PROLOG_MODE, new PrologHoverProvider())
   );
