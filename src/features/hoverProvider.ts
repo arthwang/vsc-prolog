@@ -36,17 +36,19 @@ export default class PrologHoverProvider implements HoverProvider {
     let contents: MarkedString[] = [];
     switch (Utils.DIALECT) {
       case "swi":
-        let modules: string[] = Utils.getPredModules(pred.pi);
-        let desc = Utils.getPredDescriptions(pred.pi);
-        if (desc !== "") {
+        let pi = pred.pi.indexOf(":") > -1 ? pred.pi.split(":")[1] : pred.pi;
+        let modules: string[] = Utils.getPredModules(pi);
+        if (modules.length === 0) {
+          let desc = Utils.getPredDescriptions(pi);
           contents.push({ language: "prolog", value: desc });
-        }
-        if (modules.length > 0) {
-          modules.forEach(module => {
-            contents.push(module + ":" + pred.pi + "\n");
-            let desc = Utils.getPredDescriptions(module + ":" + pred.pi);
-            contents.push({ language: "prolog", value: desc });
-          });
+        } else {
+          if (modules.length > 0) {
+            modules.forEach(module => {
+              contents.push(module + ":" + pi + "\n");
+              let desc = Utils.getPredDescriptions(module + ":" + pi);
+              contents.push({ language: "prolog", value: desc });
+            });
+          }
         }
         break;
       case "ecl":

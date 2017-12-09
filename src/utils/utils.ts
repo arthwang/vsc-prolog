@@ -83,7 +83,8 @@ export class Utils {
     }
   }
 
-  public static getPredModules(pred: string): string[] {
+  public static getPredModules(pred1: string): string[] {
+    let pred = pred1.indexOf(":") > -1 ? pred1.split(":")[1] : pred1;
     return Utils.predModules[pred] ? Utils.predModules[pred] : [];
   }
 
@@ -237,7 +238,9 @@ export class Utils {
             if (modMtch) {
               clause = `find_module :-
                   use_module('${fileName}'),
-                  get_flag(${predName}/${arity}, definition_module, Module)@${modMtch[1]},
+                  get_flag(${predName}/${arity}, definition_module, Module)@${
+                modMtch[1]
+              },
                   printf('module:%s%n', [Module])`;
             } else {
               clause = `find_module :-
@@ -347,7 +350,9 @@ export class Utils {
         input = `${inputTerm}.`;
         args = args.concat([
           "-e",
-          `open(string(\"${plCode}\n\"), read, S),compile(stream(S)),close(S),call(${call}).`
+          `open(string(\"${
+            plCode
+          }\n\"), read, S),compile(stream(S)),close(S),call(${call}).`
         ]);
         runOptions = {
           cwd: workspace.rootPath,
