@@ -38,20 +38,18 @@ export class PrologDefinitionProvider implements DefinitionProvider {
         args = ["-q", doc.fileName];
         prologCode = `
         source_location:-
-          read(Term),
           current_module(Module),
-          predicate_property(Module:Term, file(File)),
-          predicate_property(Module:Term, line_count(Line)),
+          predicate_property(${pred.wholePred}, file(File)),
+          predicate_property(${pred.wholePred}, line_count(Line)),
           format("File:~s;Line:~d~n", [File, Line]).
           `;
-        predToFind = pred.wholePred.split(":")[1];
         if (doc.isDirty) {
           doc.save().then(_ => {
             result = Utils.execPrologSync(
               args,
               prologCode,
               "source_location",
-              predToFind,
+              "",
               fileLineRe
             );
           });
@@ -60,7 +58,7 @@ export class PrologDefinitionProvider implements DefinitionProvider {
             args,
             prologCode,
             "source_location",
-            predToFind,
+            "",
             fileLineRe
           );
         }

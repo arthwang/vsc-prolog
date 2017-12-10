@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.8.6]
+
+* fixed a bug in definitionProvider.ts
+
 ## [0.8.5]
 
 * fixed a hover bug
