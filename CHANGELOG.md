@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.8.7]
+
+* setting of prolog.format.enabled
+
 ## [0.8.6]
 
 * fixed a bug in definitionProvider.ts

@@ -33,6 +33,7 @@ async function initForDialect(context: ExtensionContext) {
   const dialect = section.get<string>("dialect");
   const exec = section.get<string>("executablePath", "swipl");
   Utils.LINTERTRIGGER = section.get<string>("linter.run");
+  Utils.FORMATENABLED = section.get<boolean>("format.enabled");
 
   Utils.DIALECT = dialect;
   Utils.RUNTIMEPATH = jsesc(exec);
@@ -140,7 +141,7 @@ export async function activate(context: ExtensionContext) {
       new PrologDocumentHighlightProvider()
     )
   );
-  if (process.platform !== "win32") {
+  if (process.platform !== "win32" && Utils.FORMATENABLED) {
     context.subscriptions.push(
       languages.registerDocumentRangeFormattingEditProvider(
         PROLOG_MODE,
@@ -179,4 +180,4 @@ export async function activate(context: ExtensionContext) {
 }
 
 // this method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() { }

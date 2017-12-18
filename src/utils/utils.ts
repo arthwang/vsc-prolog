@@ -43,8 +43,9 @@ export class Utils {
   public static RUNTIMEPATH: string | null = null;
   public static CONTEXT: ExtensionContext | null = null;
   public static LINTERTRIGGER: string | null = null;
+  public static FORMATENABLED: boolean;
 
-  constructor() {}
+  constructor() { }
   public static getPredDescriptions(pred: string): string {
     if (Utils.snippets[pred]) {
       return Utils.snippets![pred].description;
@@ -157,10 +158,10 @@ export class Utils {
         case "swi":
           let reg = new RegExp(
             "module\\s*\\(\\s*([^,\\(]+)\\s*,\\s*\\[[^\\]]*?" +
-              predName +
-              "/" +
-              arity +
-              "\\b"
+            predName +
+            "/" +
+            arity +
+            "\\b"
           );
           let mtch = docTxt.replace(/\n/g, "").match(reg);
           if (mtch) {
@@ -188,10 +189,10 @@ export class Utils {
           );
           let expRe2 = new RegExp(
             "\\n\\s*:-\\s*import.*\\b" +
-              predName +
-              "\\s*/\\s*" +
-              arity +
-              "\\b.*from\\s*(\\w+)"
+            predName +
+            "\\s*/\\s*" +
+            arity +
+            "\\b.*from\\s*(\\w+)"
           );
           let impModMtch = docTxt.match(expRe2);
           if (modDefMatch && expRe1.test(docTxt)) {
@@ -240,7 +241,7 @@ export class Utils {
                   use_module('${fileName}'),
                   get_flag(${predName}/${arity}, definition_module, Module)@${
                 modMtch[1]
-              },
+                },
                   printf('module:%s%n', [Module])`;
             } else {
               clause = `find_module :-
@@ -351,7 +352,7 @@ export class Utils {
         args = args.concat([
           "-e",
           `open(string(\"${
-            plCode
+          plCode
           }\n\"), read, S),compile(stream(S)),close(S),call(${call}).`
         ]);
         runOptions = {

@@ -12,7 +12,6 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
   * Please update to 7.5.13 of swipl if you want to use 'Show all references' feature.
   * For Windows users: Run VS Code as administrator if going to switch to ECLiPSe from default SWI-Prolog or back to SWI from ECLiPSe. Non-administrator is ok while remain using the same dialect as last time.
 
-
 ## Features
   * [Syntax highlighting](#syntax-highlighting)
   * [Snippets](#predicate-snippets)
@@ -133,12 +132,13 @@ This extension can be installed via extensions viewlet of VS Code or 'Extensions
   
   > This feature only works on linux system.
 
-  Code formatting is implemented by calling portray_clause, so the beautification style is depended on portray_clause. Thus two limits should be mentioned.
+  Code formatting is implemented by calling portray_clause, so the beautification style is depended on portray_clause. Thus some limits should be mentioned.
   * Terms with any grammar errors are not formatted
   * Terms with singleton variables, including named anonymous variables are not formatted, since portray_clause outputs all singletons as anonymous variables resulting in user's intention alteration.
+  * portray_clause/1 transpiles or expands some times terms to different lexical literals. Just set the configuration 'prolog.format.enabled' to 'false' if it is not what you expect.
 
   VSC-Prolog formats codes for three scopes of active document in editor:
-  * document scope
+   * document scope
     
     Right click any area of active prolog source document in editor to pop up editor context menu, then trigger the command 'Format Document' (default map to alt+shift+f). The whole document would be formatted.
 
@@ -236,6 +236,10 @@ Latest versions of VS code and SWI-Prolog/ECLiPSe installed.
     * "prolog.terminal.runtimeArgs": [ ]
 
       Arguments of Prolog executable run in terminal. This prolog process is used to load and execute the program in active editor, including 'query goal under cursor' command. This is a array of strings, i.e. ['-q', '-f', 'none'].
+
+    * "prolog.format.enabled": true
+       
+       Enable or disable formatting source code.
 
     * "prolog.format.tabSize": 4
     

@@ -236,8 +236,9 @@ export default class PrologDocumentFormatter
         let pfile = jsesc(path.resolve(`${__dirname}/formatter_swi`));
         goals = `
           use_module('${pfile}').
-          formatter:format_prolog_source(${this._tabSize}, ${this
-          ._tabDistance}, "${rangeTxt}", "${docText}").
+          formatter:format_prolog_source(${this._tabSize}, ${
+          this._tabDistance
+        }, "${rangeTxt}", "${docText}").
         `;
 
         break;
@@ -293,8 +294,9 @@ export default class PrologDocumentFormatter
       } else {
         message = error.message
           ? error.message
-          : `Failed to run swipl using path: ${this
-              ._executable}. Reason is unknown.`;
+          : `Failed to run swipl using path: ${
+              this._executable
+            }. Reason is unknown.`;
       }
     }
   }

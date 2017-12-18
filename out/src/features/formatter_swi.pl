@@ -55,7 +55,6 @@ read_and_portray_term(_, _, _) :-
     halt. 
     
 read_terms(ReadStream, MFH) :-
-    % read_term(ReadStream, _, []),
     stream_property(ReadStream, encoding(Enc)),
     writeln(enc:Enc),
     
