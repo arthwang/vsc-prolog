@@ -1,8 +1,9 @@
 # Changelog
 
-## [0.8.8]
+## [0.8.9]
 
 * fixed a bug of escape in formatter.swi.pl
+* add some commands into menus
 
 ## [0.8.7]
 
