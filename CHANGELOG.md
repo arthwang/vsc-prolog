@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.8.8]
+
+* fixed a bug of escape in formatter.swi.pl
+
 ## [0.8.7]
 
 * setting of prolog.format.enabled
