@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.8.10]
+
+* fixed a bug in loading file in terminal
+
 ## [0.8.9]
 
 * fixed a bug of escape in formatter.swi.pl

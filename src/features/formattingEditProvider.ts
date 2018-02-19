@@ -269,7 +269,7 @@ export default class PrologDocumentFormatter
           }
         })
         .on("stdout", data => {
-          console.log("data:" + data);
+          // console.log("data:" + data);
           if (/::::::ALLOVER/.test(data)) {
             this.resolveTerms(doc, termStr, range, true);
           }

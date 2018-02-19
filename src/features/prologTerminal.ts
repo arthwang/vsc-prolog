@@ -57,8 +57,8 @@ export default class PrologTerminal {
   public static loadDocument() {
     PrologTerminal._document = window.activeTextEditor.document;
     PrologTerminal.createPrologTerm();
-    let fname = jsesc(PrologTerminal._document.fileName);
-    let goals = `["${fname}"]`;
+    let fname = jsesc(PrologTerminal._document.fileName, { quotes: "single" });
+    let goals = `['${fname}']`;
     if (PrologTerminal._document.isDirty) {
       PrologTerminal._document.save().then(_ => {
         PrologTerminal.sendString(goals);
