@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.8.11]
+
+* goto definition for dcg non-terminal
+
 ## [0.8.10]
 
 * fixed a bug in loading file in terminal

@@ -38,9 +38,14 @@ export class PrologDefinitionProvider implements DefinitionProvider {
         args = ["-q", doc.fileName];
         prologCode = `
         source_location:-
-          current_module(Module),
-          predicate_property(${pred.wholePred}, file(File)),
-          predicate_property(${pred.wholePred}, line_count(Line)),
+          (current_predicate(${pred.pi}) ->
+            Pred = ${pred.wholePred}
+          ; DcgArity is ${pred.arity + 2},
+            functor(Term, ${pred.functor}, DcgArity),
+            Pred = ${pred.module}:Term
+          ),
+          predicate_property(Pred, file(File)),
+          predicate_property(Pred, line_count(Line)),
           format("File:~s;Line:~d~n", [File, Line]).
           `;
         if (doc.isDirty) {
