@@ -1,8 +1,8 @@
 # Changelog
 
-## [0.8.12]
+## [0.8.13]
 
-* resolve path in prologDebugger.ts for Windows
+* resolve and escape breakpoint pathes in prologDebugger.ts for Windows
 
 ## [0.8.11]
 

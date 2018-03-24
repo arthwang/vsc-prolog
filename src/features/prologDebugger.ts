@@ -259,7 +259,7 @@ export class PrologDebugger extends EventEmitter {
     bpResponse: DebugProtocol.SetBreakpointsResponse
   ) {
     this._bpResponse = bpResponse;
-    let path = resolve(breakpoints.source.path);
+    let path = jsesc(resolve(breakpoints.source.path));
     let bps = breakpoints.breakpoints.map(bp => {
       return JSON.stringify({
         line: bp.line,
