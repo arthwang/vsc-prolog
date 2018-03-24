@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.8.12]
+
+* resolve path in prologDebugger.ts for Windows
+
 ## [0.8.11]
 
 * goto definition for dcg non-terminal

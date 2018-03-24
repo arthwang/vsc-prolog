@@ -233,14 +233,15 @@ export class PrologDebugger extends EventEmitter {
       .catch(error => {
         let message: string = null;
         if ((<any>error).code === "ENOENT") {
-          message = `Cannot debug the prolog file. The Prolog executable '${this
-            ._launchRequestArguments
-            .runtimeExecutable}' was not found. Correct 'runtimeExecutable' setting in launch.json file.`;
+          message = `Cannot debug the prolog file. The Prolog executable '${
+            this._launchRequestArguments.runtimeExecutable
+          }' was not found. Correct 'runtimeExecutable' setting in launch.json file.`;
         } else {
           message = error.message
             ? error.message
-            : `Failed to run swipl using path: ${this._launchRequestArguments
-                .runtimeExecutable}. Reason is unknown.`;
+            : `Failed to run swipl using path: ${
+                this._launchRequestArguments.runtimeExecutable
+              }. Reason is unknown.`;
         }
         this._debugSession.debugOutput("\n" + message);
         throw new Error(error);
@@ -258,7 +259,7 @@ export class PrologDebugger extends EventEmitter {
     bpResponse: DebugProtocol.SetBreakpointsResponse
   ) {
     this._bpResponse = bpResponse;
-    let path = breakpoints.source.path;
+    let path = resolve(breakpoints.source.path);
     let bps = breakpoints.breakpoints.map(bp => {
       return JSON.stringify({
         line: bp.line,
