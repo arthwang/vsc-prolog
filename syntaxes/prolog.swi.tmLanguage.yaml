@@ -169,7 +169,7 @@ repository:
         match: '!'
       -
         name: keyword.operator.prolog
-        match: '(\s(is)\s)|=:=|=?\\?=|\\\+|@?>|@?=?<|\+|\*|\-'
+        match: '(\s(is)\s)|=:=|=\.\.|=?\\?=|\\\+|@?>|@?=?<|\+|\*|\-'
   variable:
     patterns:
       -
