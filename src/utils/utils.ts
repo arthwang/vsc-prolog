@@ -223,7 +223,7 @@ export class Utils {
           case "swi":
             const fm = path.resolve(`${__dirname}/findmodule.pl`);
             mod = Utils.execPrologSync(
-              ["-q", "-l", fm],
+              ["-q", fm],
               "",
               `(find_module('${fileName}',
               ${wholePred},

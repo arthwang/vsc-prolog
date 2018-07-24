@@ -1,7 +1,7 @@
 ("use strict");
 import { truncate, truncateSync } from "fs";
 import * as jsesc from "jsesc";
-import { spawn } from "process-promises";
+import { spawn } from "ts-process-promises";
 import {
   CancellationToken,
   CodeActionContext,
@@ -285,7 +285,7 @@ export default class PrologLinter implements CodeActionProvider {
     this.sortedDiagIndex = {};
     this.diagnosticCollection.delete(textDocument.uri);
     let options = workspace.rootPath
-      ? { cwd: workspace.rootPath, encoding: "utf8" }
+      ? { cwd: workspace.rootPath }
       : undefined;
 
     let args: string[] = [],
@@ -297,7 +297,7 @@ export default class PrologLinter implements CodeActionProvider {
     switch (Utils.DIALECT) {
       case "swi":
         if (this.trigger === RunTrigger.onSave) {
-          args = ["-g", "halt", "-l", fname];
+          args = ["-g", "halt", fname];
         }
         if (this.trigger === RunTrigger.onType) {
           args = ["-q"];
@@ -324,7 +324,7 @@ export default class PrologLinter implements CodeActionProvider {
         if (this.trigger === RunTrigger.onType) {
           goals = `
           use_module('${this.context
-            .extensionPath}/out/src/features/load_modules'),
+              .extensionPath}/out/src/features/load_modules'),
           load_modules_from_text("${docTxtEsced}"),
           open(string("${docTxtEsced}"), read, S),
           compile(stream(S), [debug:off]),
@@ -336,11 +336,15 @@ export default class PrologLinter implements CodeActionProvider {
         break;
     }
 
-    let child = spawn(this.executable, args, options)
+    const child = process.platform === 'darwin' ? spawn(this.executable, args) : spawn(this.executable, args, options);
+    // spawn(this.executable, args, options) //Weird! this options make the child hanging in macos
+    child
       .on("process", process => {
         if (process.pid) {
-          process.stdin.write(goals);
-          process.stdin.end();
+          if (this.trigger === RunTrigger.onType) {
+            process.stdin.write(goals);
+            process.stdin.end();
+          }
           this.outputChannel.clear();
         }
       })
@@ -435,6 +439,7 @@ export default class PrologLinter implements CodeActionProvider {
         }
       })
       .then(result => {
+        // console.log('exit code:' + result.exitCode);
         if (lineErr) {
           this.parseIssue(lineErr + "\n");
         }
@@ -476,10 +481,11 @@ export default class PrologLinter implements CodeActionProvider {
           message = error.message
             ? error.message
             : `Failed to run prolog executable using path: ${this
-                .executable}. Reason is unknown.`;
+              .executable}. Reason is unknown.`;
         }
         this.outputMsg(message);
       });
+
   }
 
   private loadConfiguration(): void {

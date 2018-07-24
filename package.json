@@ -10,7 +10,7 @@
         "vscode": "^1.16.0"
     },
     "categories": [
-        "Languages",
+        "Programming Languages",
         "Formatters",
         "Snippets",
         "Linters",
@@ -339,7 +339,7 @@
         "pkgvars": "node ./node_modules/vscode/bin/install"
     },
     "devDependencies": {
-        "@types/bluebird": "^3.5.11",
+        "@types/bluebird": "^3.5.22",
         "@types/mocha": "^2.2.43",
         "@types/node": "^8.0.28",
         "cross-var": "^1.0.3",
@@ -357,6 +357,7 @@
         "q": "^1.5.0",
         "readline-promise": "0.0.1",
         "split": "^1.0.1",
+        "ts-process-promises": "^1.0.2",
         "vscode": "^1.1.6",
         "vscode-debugadapter": "^1.23.0",
         "yamljs": "^0.3.0"
