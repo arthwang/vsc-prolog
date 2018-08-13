@@ -18,15 +18,15 @@ export function loadEditHelpers(subscriptions: Disposable[]) {
     languages.setLanguageConfiguration("prolog", {
       indentationRules: {
         // decreaseIndentPattern: /(.*:-\s*|.*-->\s*|.*:->\s*|.*:<-\s*|\s*\)|\s*\])$/,
-        decreaseIndentPattern: /(\s*\)|\s*\])$/,
+        decreaseIndentPattern: /(\s*\)|\s*\]|.+\.)$/,
         increaseIndentPattern: /(.*:-\s*|.*-->\s*|.*:->\s*|.*:<-\s*|.+\[|.+\()$/
       },
       wordPattern: /(-?\d*\.\d\w*)|([^\`\~\!\@\#\%\^\&\*\(\)\-\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\?\s]+)/g,
       onEnterRules: [
-        {
-          beforeText: /.+:-|:- begin_tests.+\.$/,
-          action: { indentAction: IndentAction.Indent }
-        },
+        // {
+        //   beforeText: /.+:-|:- begin_tests.+\.$/,
+        //   action: { indentAction: IndentAction.Indent }
+        // },
         {
           beforeText: /(^\s*|.*%.+)$/,
           action: { indentAction: IndentAction.None }
@@ -39,6 +39,10 @@ export function loadEditHelpers(subscriptions: Disposable[]) {
           beforeText: /.+\([^\)]*$/,
           action: { indentAction: IndentAction.Indent }
         },
+        // {
+        //   beforeText: /.+\[[^\]]*$/,
+        //   action: { indentAction: IndentAction.Indent }
+        // },
         {
           // e.g. /** | */
           beforeText: /^\s*\/\*\*(?!\/)([^\*]|\*(?!\/))*$/,

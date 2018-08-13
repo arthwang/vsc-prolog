@@ -1,7 +1,6 @@
-("use strict");
 import { truncate, truncateSync } from "fs";
 import * as jsesc from "jsesc";
-import { spawn } from "ts-process-promises";
+import { spawn } from "process-promises";
 import {
   CancellationToken,
   CodeActionContext,
@@ -336,9 +335,7 @@ export default class PrologLinter implements CodeActionProvider {
         break;
     }
 
-    const child = process.platform === 'darwin' ? spawn(this.executable, args) : spawn(this.executable, args, options);
-    // spawn(this.executable, args, options) //Weird! this options make the child hanging in macos
-    child
+    spawn(this.executable, args, options)
       .on("process", process => {
         if (process.pid) {
           if (this.trigger === RunTrigger.onType) {
