@@ -3,8 +3,7 @@
 A VS Code extension which provides language support for Prolog (mainly for SWI-Prolog and some features for ECLiPSe).
 
 ___________________
-  [Features](#features) | [Configurations](#configurations) | [Debugger Settings](#debugger-settings) | [Commands & Keybindings](#commands-keybindings) | [Bug Reporting](https://github.com/arthwang/vsc-prolog/issues) | [Donation](#donation)
-__________________
+  [Features](#features) | [Configurations](#configurations) | [Debugger Settings](#debugger-settings) | [Commands & Keybindings](#commands-keybindings) | [Bug Reporting](https://github.com/arthwang/vsc-prolog/issues) 
 
 ## Note before installation
 
@@ -358,9 +357,3 @@ Latest versions of VS code and SWI-Prolog/ECLiPSe installed.
 ## License
 
   [MIT](http://www.opensource.org/licenses/mit-license.php)
-
-## Donation
-
-  >If this extension works well for you, would you please donate a loaf of bread to encourage me, a freelance programmer, to spend more time to improve it. Any amount is greatly appreciated.
-
-   [PayPal](https://paypal.me/ArthurWang9)
