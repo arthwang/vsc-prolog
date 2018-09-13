@@ -17,8 +17,7 @@ export function loadEditHelpers(subscriptions: Disposable[]) {
   subscriptions.push(
     languages.setLanguageConfiguration("prolog", {
       indentationRules: {
-        // decreaseIndentPattern: /(.*:-\s*|.*-->\s*|.*:->\s*|.*:<-\s*|\s*\)|\s*\])$/,
-        decreaseIndentPattern: /(\s*\)|\s*\]|.+\.)$/,
+        decreaseIndentPattern: /(\s*\)|\s*\])$/,
         increaseIndentPattern: /(.*:-\s*|.*-->\s*|.*:->\s*|.*:<-\s*|.+\[|.+\()$/
       },
       wordPattern: /(-?\d*\.\d\w*)|([^\`\~\!\@\#\%\^\&\*\(\)\-\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\?\s]+)/g,
