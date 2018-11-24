@@ -320,7 +320,7 @@ export default class PrologLinter implements CodeActionProvider {
           goals = `
           use_module('${lm}'),
           load_modules_from_file('${fname}'),
-          compile('${fname}', [debug:off])`;
+          compile('${fname}', [debug:off]), halt`;
           args = ["-e", goals];
         }
         if (this.trigger === RunTrigger.onType) {
@@ -409,13 +409,17 @@ export default class PrologLinter implements CodeActionProvider {
             if (this.enableOutput) {
               this.outputChannel.clear();
             }
-            if (/^file/.test(errStr) || /^string stream/.test(errStr)) {
-              if (lineErr) {
+            if (/^[fF]ile|^string stream|^Stream/.test(errStr)) {
+              if (lineErr !== '') {
                 this.parseIssue(lineErr + "\n");
+                if (this.enableOutput) {
+                  this.outputMsg(lineErr);
+                }
+                lineErr = '';
               }
               let fullName: string, line: string, msg: string;
               let match = errStr.match(
-                /file\s*([^,]+),\s*line\s*(\d+):\s*(.*)/
+                /[fF]ile\s*([^,]+),\s*line\s*(\d+):\s*(.*)/
               );
 
               if (match) {
@@ -426,19 +430,19 @@ export default class PrologLinter implements CodeActionProvider {
                 line = match[2];
                 msg = match[3];
               } else {
-                match = errStr.match(/line\s*(\d+):\s*(.*)/);
                 fullName = textDocument.fileName;
+                match = errStr.match(/line\s*(\d+):\s*(.*)/);
+                if (!match) {
+                  match = errStr.match(/:(\d+):\s*(.*)/);
+                }
                 line = match[1];
                 msg = match[2];
               }
-              lineErr = "ERROR:" + fullName + ":" + line + ":" + msg;
-            } else if (/^\|/.test(errStr)) {
+              const msgType = /error:|[sS]tream/.test(lineErr) ? "ERROR:" : "WARNING:";
+              lineErr = msgType + fullName + ":" + line + ":" + msg;
+            } else if (!/^\s*$/.test(errStr)) {
               lineErr += "\n" + errStr;
-              // } else if (/WARNING/.test(errStr)) {
-            } else if (this.enableOutput) {
-              this.outputMsg(errStr);
             }
-
           default:
             break;
         }
