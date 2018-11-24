@@ -306,6 +306,11 @@
                     "default": 500,
                     "description": "The milliseconds to delay when using onType trigger."
                 },
+                "prolog.linter.enableMsgInOutput": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Enable errors and warnings in OUTPUT channel."
+                },
                 "prolog.terminal.runtimeArgs": {
                     "type": "array",
                     "description": "Arguments of Prolog executable run in terminal.",

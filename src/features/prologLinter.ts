@@ -54,6 +54,7 @@ export default class PrologLinter implements CodeActionProvider {
   private documentListener: Disposable;
   private openDocumentListener: Disposable;
   private outputChannel: OutputChannel = null;
+  private enableOutput: boolean = false;
 
   constructor(private context: ExtensionContext) {
     this.executable = null;
@@ -75,6 +76,8 @@ export default class PrologLinter implements CodeActionProvider {
       this.exportPredicateUnderCursor,
       this
     );
+    this.enableOutput = workspace.getConfiguration("prolog")
+      .get<boolean>("linter.enableMsgInOutput");
   }
 
   private getDirectiveLines(
@@ -258,7 +261,7 @@ export default class PrologLinter implements CodeActionProvider {
     else if (match[1] == "Warning") severity = DiagnosticSeverity.Warning;
     let line = parseInt(match[3]) - 1;
     // move up to above line if the line to mark error is empty
-    line = line < 0 ? 0 : line;
+    // line = line < 0 ? 0 : line;
     let fromCol = match[5] ? parseInt(match[5]) : 0;
     fromCol = fromCol < 0 ? 0 : fromCol;
     let toCol = match[7] ? parseInt(match[7]) : 200;
@@ -342,7 +345,9 @@ export default class PrologLinter implements CodeActionProvider {
             process.stdin.write(goals);
             process.stdin.end();
           }
-          this.outputChannel.clear();
+          if (this.enableOutput) {
+            this.outputChannel.clear();
+          }
         }
       })
       .on("stdout", out => {
@@ -351,6 +356,7 @@ export default class PrologLinter implements CodeActionProvider {
           if (/^File\s*/.test(out)) {
             if (lineErr) {
               this.parseIssue(lineErr + "\n");
+              lineErr = '';
             }
             let match = out.match(/File\s*([^,]+),.*line\s*(\d+):\s*(.*)/);
             let fullName: string;
@@ -365,7 +371,7 @@ export default class PrologLinter implements CodeActionProvider {
             lineErr = "Warning:" + fullName + ":" + match[2] + ":" + match[3];
           } else if (/^\|/.test(out)) {
             lineErr += out;
-          } else if (/WARNING/.test(out)) {
+          } else if (/WARNING/.test(out) && this.enableOutput) {
             this.outputMsg(out);
           }
         }
@@ -381,7 +387,7 @@ export default class PrologLinter implements CodeActionProvider {
             } else if (/clause of /.test(errStr)) {
               let regex = /^(Warning:\s*(.+?):)(\d+):(\d+)?/;
               let match = errStr.match(regex);
-              let fileName = match[2];
+              // let fileName = match[2];
               let line = parseInt(match[3]);
               let char = match[4] ? parseInt(match[4]) : 0;
               let rangeStr = line + ":" + char + ":200: ";
@@ -396,11 +402,13 @@ export default class PrologLinter implements CodeActionProvider {
                 lineErr = lineErr.concat(errStr);
               }
               this.parseIssue(lineErr + "\n");
+              lineErr = '';
             }
-
             break;
           case "ecl":
-            this.outputChannel.clear();
+            if (this.enableOutput) {
+              this.outputChannel.clear();
+            }
             if (/^file/.test(errStr) || /^string stream/.test(errStr)) {
               if (lineErr) {
                 this.parseIssue(lineErr + "\n");
@@ -427,7 +435,7 @@ export default class PrologLinter implements CodeActionProvider {
             } else if (/^\|/.test(errStr)) {
               lineErr += "\n" + errStr;
               // } else if (/WARNING/.test(errStr)) {
-            } else {
+            } else if (this.enableOutput) {
               this.outputMsg(errStr);
             }
 
@@ -437,8 +445,9 @@ export default class PrologLinter implements CodeActionProvider {
       })
       .then(result => {
         // console.log('exit code:' + result.exitCode);
-        if (lineErr) {
+        if (lineErr !== '') {
           this.parseIssue(lineErr + "\n");
+          lineErr = '';
         }
         for (let doc in this.diagnostics) {
           let index = this.diagnostics[doc]
@@ -453,7 +462,9 @@ export default class PrologLinter implements CodeActionProvider {
           });
           this.diagnosticCollection.set(Uri.file(doc), this.diagnostics[doc]);
         }
-        this.outputChannel.clear();
+        if (this.enableOutput) {
+          this.outputChannel.clear();
+        }
         for (let doc in this.sortedDiagIndex) {
           let si = this.sortedDiagIndex[doc];
           for (let i = 0; i < si.length; i++) {
@@ -462,9 +473,11 @@ export default class PrologLinter implements CodeActionProvider {
               diag.severity === DiagnosticSeverity.Error ? "ERROR" : "Warning";
             let msg = `${basename(doc)}:${diag.range.start.line +
               1}:\t${severity}:\t${diag.message}\n`;
-            this.outputChannel.append(msg);
+            if (this.enableOutput) {
+              this.outputChannel.append(msg);
+            }
           }
-          if (si.length > 0) {
+          if (si.length > 0 && this.enableOutput) {
             this.outputChannel.show(true);
           }
         }
@@ -559,7 +572,6 @@ export default class PrologLinter implements CodeActionProvider {
     if (this.trigger === RunTrigger.onSave) {
       workspace.onDidOpenTextDocument(this.doPlint, this, subscriptions);
     }
-    // this.outputChannel.show();
     workspace.onDidCloseTextDocument(
       textDocument => {
         this.diagnosticCollection.delete(textDocument.uri);

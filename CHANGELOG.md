@@ -1,5 +1,7 @@
 # Changelog
 
+## [0.8.19]
+* added option prolog.linter.enableMsgInOutput
 ## [0.8.18]
 
 * fixed some bugs

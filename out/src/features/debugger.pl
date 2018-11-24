@@ -400,17 +400,17 @@ goal_var_name(Var, [_|VT], [_|AT], NVar) :-
     goal_var_name(Var, VT, AT, NVar).
      
 
-test(GoalStr) :-
-    writeln(given:GoalStr),
-    retractall(clause_handled(_, _)),
-    retractall(subterm_pos(_, _, _, _)),
-    writeln(oka),
-    F='/home/laowang/workspace/vsc-prolog/test/test.pl',
-    consult(F),
-    clause(rewrite_module_declaration(_, _), _, Ref),
-    locate_from_term_position(_, Ref, GoalStr, CharA),
-    from_char_to_line_char(F, CharA, Line, Ch),
-    writeln(location:Line:Ch).
+% test(GoalStr) :-
+%     writeln(given:GoalStr),
+%     retractall(clause_handled(_, _)),
+%     retractall(subterm_pos(_, _, _, _)),
+%     writeln(oka),
+%     F='/home/laowang/workspace/vsc-prolog/test/test.pl',
+%     consult(F),
+%     clause(rewrite_module_declaration(_, _), _, Ref),
+%     locate_from_term_position(_, Ref, GoalStr, CharA),
+%     from_char_to_line_char(F, CharA, Line, Ch),
+%     writeln(location:Line:Ch).
 
 print_properties(Frame, [H|T]) :-
     catch(( prolog_frame_attribute(Frame, H, Value),
