@@ -1,9 +1,14 @@
 # Changelog
 
+<<<<<<< HEAD
 ## [0.8.20]
 * fixed a bug in ecl linter
 ## [0.8.19]
 * added option prolog.linter.enableMsgInOutput
+=======
+## [0.8.19]
+* fixed windows path bugs for ecl
+>>>>>>> b84ec8c37f51cb579ff5f6a3655d7d1d5ce24d58
 ## [0.8.18]
 
 * fixed some bugs
