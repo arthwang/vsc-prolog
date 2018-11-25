@@ -292,7 +292,7 @@ export default class PrologLinter implements CodeActionProvider {
     let lineErr: string = "";
     let docTxt = textDocument.getText();
     let docTxtEsced = jsesc(docTxt, { quotes: "double" });
-    let fname = jsesc(textDocument.fileName);
+    let fname = jsesc(path.resolve(textDocument.fileName));
     switch (Utils.DIALECT) {
       case "swi":
         if (this.trigger === RunTrigger.onSave) {
@@ -308,27 +308,24 @@ export default class PrologLinter implements CodeActionProvider {
         }
         break;
       case "ecl":
+        let dir = jsesc(path.resolve(`${this.context.extensionPath}/out/src/features`));
         if (this.trigger === RunTrigger.onSave) {
-          let lm = jsesc(
-            path.resolve(
-              `${this.context.extensionPath}/out/src/features/load_modules`
-            )
-          );
-          goals = `
-          use_module('${lm}'),
-          load_modules_from_file('${fname}'),
-          compile('${fname}', [debug:off])`;
+          const fdir = path.dirname(fname);
+          const file = path.basename(fname);
+          goals = `(cd("${dir}"),
+          use_module('load_modules'),
+          cd("${fdir}"),
+          load_modules_from_file('${file}'),
+          compile('${file}', [debug:off]),halt)`;
           args = ["-e", goals];
         }
         if (this.trigger === RunTrigger.onType) {
-          goals = `
-          use_module('${this.context
-              .extensionPath}/out/src/features/load_modules'),
+          goals = `(cd("${dir}"),
+          use_module(load_modules),
           load_modules_from_text("${docTxtEsced}"),
           open(string("${docTxtEsced}"), read, S),
           compile(stream(S), [debug:off]),
-          close(S).
-        `;
+          close(S),halt)`;
         }
 
       default:
@@ -346,7 +343,7 @@ export default class PrologLinter implements CodeActionProvider {
         }
       })
       .on("stdout", out => {
-        // console.log("lintout:" + out + "\n");
+         console.log("lintout:" + out + "\n");
         if (Utils.DIALECT === "ecl" && !/checking completed/.test(out)) {
           if (/^File\s*/.test(out)) {
             if (lineErr) {
@@ -371,7 +368,7 @@ export default class PrologLinter implements CodeActionProvider {
         }
       })
       .on("stderr", (errStr: string) => {
-        // console.log("linterr: " + errStr);
+         console.log("linterr: " + errStr);
         switch (Utils.DIALECT) {
           case "swi":
             if (/which is referenced by/.test(errStr)) {
@@ -488,7 +485,7 @@ export default class PrologLinter implements CodeActionProvider {
   private loadConfiguration(): void {
     let section = workspace.getConfiguration("prolog");
     if (section) {
-      this.executable = section.get<string>("executablePath", "swipl");
+      this.executable = path.resolve(section.get<string>("executablePath", "swipl"));
       if (Utils.LINTERTRIGGER === "onSave") {
         this.trigger = RunTrigger.onSave;
       } else if (Utils.LINTERTRIGGER === "onType") {

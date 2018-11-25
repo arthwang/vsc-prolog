@@ -1,5 +1,7 @@
 # Changelog
 
+## [0.8.19]
+* fixed windows path bugs for ecl
 ## [0.8.18]
 
 * fixed some bugs
