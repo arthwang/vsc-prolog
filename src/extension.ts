@@ -59,14 +59,14 @@ async function initForDialect(context: ExtensionContext) {
   await Promise.all(
     symLinks.map(async link => {
       await remove(path.resolve(`${link.path}/${link.targetFile}`));
-      try{
-      return await ensureSymlink(
-        path.resolve(`${link.path}/${link.srcFile}`),
-        path.resolve(`${link.path}/${link.targetFile}`)
-      );
-      }catch(err){
+      try {
+        return await ensureSymlink(
+          path.resolve(`${link.path}/${link.srcFile}`),
+          path.resolve(`${link.path}/${link.targetFile}`)
+        );
+      } catch (err) {
         window.showErrorMessage("VSC-Prolog failed in initialization. Try to run vscode in administrator role.");
-        throw(err);
+        throw (err);
       }
     })
   );
