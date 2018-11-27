@@ -12,7 +12,7 @@ import {
   TerminatedEvent
 } from "vscode-debugadapter";
 import { basename, resolve } from "path";
-import * as Net from "net";
+// import * as Net from "net";
 import * as jsesc from "jsesc";
 
 export interface ITraceCmds {
@@ -192,8 +192,8 @@ export class PrologDebugger extends EventEmitter {
     this._prologProc.stdin.write(`
           use_module('${dbg}').\n
           prolog_debugger:load_source_file('${jsesc(
-            this._launchRequestArguments.program
-          )}').
+        this._launchRequestArguments.program
+      )}').
             `);
   }
   private async createPrologProc() {
@@ -235,13 +235,13 @@ export class PrologDebugger extends EventEmitter {
         if ((<any>error).code === "ENOENT") {
           message = `Cannot debug the prolog file. The Prolog executable '${
             this._launchRequestArguments.runtimeExecutable
-          }' was not found. Correct 'runtimeExecutable' setting in launch.json file.`;
+            }' was not found. Correct 'runtimeExecutable' setting in launch.json file.`;
         } else {
           message = error.message
             ? error.message
             : `Failed to run swipl using path: ${
-                this._launchRequestArguments.runtimeExecutable
-              }. Reason is unknown.`;
+            this._launchRequestArguments.runtimeExecutable
+            }. Reason is unknown.`;
         }
         this._debugSession.debugOutput("\n" + message);
         throw new Error(error);

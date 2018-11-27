@@ -348,7 +348,7 @@ export default class PrologLinter implements CodeActionProvider {
         }
       })
       .on("stdout", out => {
-        console.log("lintout:" + out + "\n");
+        // console.log("lintout:" + out + "\n");
         if (Utils.DIALECT === "ecl" && !/checking completed/.test(out)) {
           if (/^File\s*/.test(out)) {
             if (lineErr) {
@@ -374,7 +374,7 @@ export default class PrologLinter implements CodeActionProvider {
         }
       })
       .on("stderr", (errStr: string) => {
-        console.log("linterr: " + errStr);
+        // console.log("linterr: " + errStr);
         switch (Utils.DIALECT) {
           case "swi":
             if (/which is referenced by/.test(errStr)) {

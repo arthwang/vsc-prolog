@@ -3,31 +3,27 @@ import {
   ErrorDestination,
   OutputEvent,
   InitializedEvent,
-  StoppedEvent,
   StackFrame,
   Source,
   Scope,
   Thread
 } from "vscode-debugadapter";
 import { DebugProtocol } from "vscode-debugprotocol";
-import * as fs from "fs";
 import {
   ITraceCmds,
   LaunchRequestArguments,
   PrologDebugger
 } from "./prologDebugger";
 import { basename } from "path";
-import { Utils } from "../utils/utils";
-import * as cp from "child_process";
 import { spawn, SpawnOptions } from "process-promises";
-import * as Net from "net";
+// import { window } from "vscode";
 
 export class PrologDebugSession extends DebugSession {
   private static SCOPEREF = 1;
   public static THREAD_ID = 100;
   private _prologDebugger: PrologDebugger;
   private _runtimeExecutable: string;
-  private _runtimeArgs: string[];
+  // private _runtimeArgs: string[];
   private _startupQuery: string;
   private _startFile: string;
   private _cwd: string;
@@ -126,11 +122,12 @@ export class PrologDebugSession extends DebugSession {
     response: DebugProtocol.LaunchResponse,
     args: LaunchRequestArguments
   ) {
+    // window.showInformationMessage("hello");
     this._startupQuery = args.startupQuery || "start";
     this._startFile = args.program;
     this._cwd = args.cwd;
     this._runtimeExecutable = args.runtimeExecutable || "swipl";
-    this._runtimeArgs = args.runtimeArgs || null;
+    // this._runtimeArgs = args.runtimeArgs || null;
     this._stopOnEntry = typeof args.stopOnEntry ? args.stopOnEntry : true;
     this._traceCmds = args.traceCmds;
     this._prologDebugger = await new PrologDebugger(args, this);
