@@ -25,7 +25,7 @@ import {
   WorkspaceEdit
 } from "vscode";
 import { Utils, IPredicate } from "../utils/utils";
-import { basename, extname, resolve } from "path";
+// import { basename, extname, resolve } from "path";
 import * as find from "find";
 import * as path from "path";
 
@@ -472,7 +472,7 @@ export default class PrologLinter implements CodeActionProvider {
             let diag = this.diagnostics[doc][si[i]];
             let severity =
               diag.severity === DiagnosticSeverity.Error ? "ERROR" : "Warning";
-            let msg = `${basename(doc)}:${diag.range.start.line +
+            let msg = `${path.basename(doc)}:${diag.range.start.line +
               1}:\t${severity}:\t${diag.message}\n`;
             if (this.enableOutput) {
               this.outputChannel.append(msg);
@@ -667,7 +667,7 @@ export default class PrologLinter implements CodeActionProvider {
             close(S)
         ).
     `;
-    let modname = basename(doc.fileName).split(".")[0];
+    let modname = path.basename(doc.fileName).split(".")[0];
     let modDec = Utils.execPrologSync(
       ["-q"],
       input,

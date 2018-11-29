@@ -14,9 +14,8 @@ import {
   LaunchRequestArguments,
   PrologDebugger
 } from "./prologDebugger";
-import { basename } from "path";
+import * as path from "path";
 import { spawn, SpawnOptions } from "process-promises";
-// import { window } from "vscode";
 
 export class PrologDebugSession extends DebugSession {
   private static SCOPEREF = 1;
@@ -104,7 +103,7 @@ export class PrologDebugSession extends DebugSession {
         frame.id,
         `(${frame.level})${frame.name}`,
         new Source(
-          basename(frame.file),
+          path.basename(frame.file),
           this.convertDebuggerPathToClient(frame.file)
         ),
         this.convertDebuggerLineToClient(frame.line),
@@ -124,7 +123,7 @@ export class PrologDebugSession extends DebugSession {
   ) {
     // window.showInformationMessage("hello");
     this._startupQuery = args.startupQuery || "start";
-    this._startFile = args.program;
+    this._startFile = path.resolve(args.program);
     this._cwd = args.cwd;
     this._runtimeExecutable = args.runtimeExecutable || "swipl";
     // this._runtimeArgs = args.runtimeArgs || null;
