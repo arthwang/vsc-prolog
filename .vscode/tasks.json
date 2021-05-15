@@ -7,23 +7,42 @@
 // ${cwd}: the current working directory of the spawned process
 // A task runner that calls a custom npm script that compiles the extension.
 {
-    "version": "0.1.0",
-    "isShellCommand": true,
+    "version": "2.0.0",
     "command": "npm",
     "args": [
         "run"
     ],
     "isBackground": true,
-    "showOutput": "always",
-    "tasks": [{
-            "taskName": "compile",
+    "tasks": [
+        {
+            "label": "compile",
+            "type": "shell",
+            "command": "npm",
+            "args": [
+                "run",
+                "compile"
+            ],
             "problemMatcher": "$tsc-watch"
         },
         {
-            "taskName": "syntax"
+            "label": "syntax",
+            "type": "shell",
+            "command": "npm",
+            "args": [
+                "run",
+                "syntax"
+            ],
+            "problemMatcher": []
         },
         {
-            "taskName": "updateVSCProlog"
+            "label": "updateVSCProlog",
+            "type": "shell",
+            "command": "npm",
+            "args": [
+                "run",
+                "updateVSCProlog"
+            ],
+            "problemMatcher": []
         }
     ]
 }
