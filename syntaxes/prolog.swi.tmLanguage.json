@@ -232,6 +232,10 @@
         {
           "name": "string.quoted.double.prolog",
           "match": "\".*?\""
+        },
+        {
+          "name": "string.quoted.back.prolog",
+          "match": "`.*?`"
         }
       ]
     },
